@@ -7,8 +7,4 @@ api = Api(aadhaar_ocr_blueprint)
 class AadhaarOCR(Resource):
 
     def get(self,unipe_employee_id):
-        
-        return {"foo": "bar"}, 200
-    
-    def post(self,unipe_employee_id):
         return {"foo": "bar"}, 200
