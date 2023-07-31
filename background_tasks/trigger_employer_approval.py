@@ -10,14 +10,13 @@ class TriggerEmployerApproval(BackgroundTask):
     def run(self, payload):
         # check typecasting
         cognito_sign_up_info: CognitoSignUp = payload["cognito_sign_up_info"]
-        cognito_sign_up_info_dump = cognito_sign_up_info.model_dump()
         company_name = cognito_sign_up_info.company_name
         employer_id = cognito_sign_up_info.employer_id
         employer_id_trimmed = employer_id.split("-")[-1]
 
         # dump cognito_sign_up
         cognito_sign_up_insert_res = OpsEmployerLogins.insert_one(
-            cognito_sign_up_info_dump)
+            cognito_sign_up_info.model_dump())
         self.logger.info("cognito_sign_up_insert_res", extra={
             "data": cognito_sign_up_insert_res
         })
@@ -38,7 +37,7 @@ class TriggerEmployerApproval(BackgroundTask):
                 html_blocks=HTMLBlocksService.compile_html_blocks(
                     [
                         ("Employer Information Received",
-                         cognito_sign_up_info_dump),
+                         cognito_sign_up_info.model_dump()),
                     ],
                     [
                         ("Send for Approval",
