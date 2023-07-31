@@ -4,6 +4,7 @@ import os
 from fastapi import APIRouter, BackgroundTasks
 
 from background_tasks.approve_employer_approval import ApproveEmployerApproval
+from background_tasks.deny_employer_approval import DenyEmployerApproval
 from background_tasks.start_employer_approval import StartEmployerApproval
 from background_tasks.trigger_employer_approval import TriggerEmployerApproval
 from ops.models.cognito_sign_up import CognitoSignUp
@@ -62,7 +63,11 @@ def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: st
 
 
 @router.get("/deny")
-def deny_employer_approval(employer_id: str):
+def deny_employer_approval(background_tasks: BackgroundTasks, employer_id: str):
+    handler_payload = {
+        "employer_id": employer_id
+    }
+    background_tasks.add_task(DenyEmployerApproval().run, handler_payload)
     return {
         "status": "SUCCESS",
         "message": "employer approval denied"
