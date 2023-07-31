@@ -3,6 +3,8 @@ import os
 
 from fastapi import APIRouter, BackgroundTasks
 
+from background_tasks.approve_employer_approval import ApproveEmployerApproval
+from background_tasks.start_employer_approval import StartEmployerApproval
 from background_tasks.trigger_employer_approval import TriggerEmployerApproval
 from ops.models.cognito_sign_up import CognitoSignUp
 
@@ -36,7 +38,11 @@ def trigger_employer_approval(background_tasks: BackgroundTasks, cognito_sign_up
 
 
 @router.get("/start")
-def start_employer_approval(employer_id: str):
+def start_employer_approval(background_tasks: BackgroundTasks, employer_id: str):
+    handler_payload = {
+        "employer_id": employer_id
+    }
+    background_tasks.add_task(StartEmployerApproval().run, handler_payload)
     return {
         "status": "SUCCESS",
         "message": "employer approval started"
@@ -44,7 +50,11 @@ def start_employer_approval(employer_id: str):
 
 
 @router.get("/approve")
-def approve_employer_approval(employer_id: str):
+def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: str):
+    handler_payload = {
+        "employer_id": employer_id
+    }
+    background_tasks.add_task(ApproveEmployerApproval().run, handler_payload)
     return {
         "status": "SUCCESS",
         "message": "employer approval done"
