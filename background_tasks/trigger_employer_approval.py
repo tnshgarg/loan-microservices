@@ -1,5 +1,8 @@
+import bson
+
 from background_tasks.background_task import BackgroundTask
 from dal.models.ops_employer_login import OpsEmployerLogins
+from dal.models.sales_users import SalesUser
 from ops.models.cognito_sign_up import CognitoSignUp
 from services.emailing_service import GmailService
 from services.html_blocks_service import HTMLBlocksService
@@ -21,9 +24,14 @@ class TriggerEmployerApproval(BackgroundTask):
             "data": cognito_sign_up_insert_res
         })
 
+        # fetch sales user email
+        sales_id = bson.ObjectId(cognito_sign_up_info.sales_id)
+        sales_user_info = SalesUser.find_one({"_id": sales_id}, {"email": 1})
+        sales_user_email = sales_user_info["email"]
+
         # send mail to tech-ops
         sender_email = "reports@unipe.money"
-        mail_to_addresses = ("prachir@unipe.money")
+        mail_to_addresses = (sales_user_email)
 
         with GmailService(sender_email=sender_email) as mailing_service:
             mailing_service.sendmail(

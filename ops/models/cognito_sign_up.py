@@ -6,6 +6,7 @@ class CognitoSignUp(BaseModel):
     # required fields
     employer_id: str = Field(alias="sub")
     company_name: str = Field(alias="custom:company_name")
+    sales_id: str = Field(alias="custom:sales_id")
 
     # other company details
     email: str = Field(default=None)
