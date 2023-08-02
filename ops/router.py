@@ -1,27 +1,30 @@
-import json
 import os
+from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 from background_tasks.approve_employer_approval import ApproveEmployerApproval
 from background_tasks.deny_employer_approval import DenyEmployerApproval
 from background_tasks.start_employer_approval import StartEmployerApproval
 from background_tasks.trigger_employer_approval import TriggerEmployerApproval
+from ops.auth import get_user
 from ops.models.cognito_sign_up import CognitoSignUp
 
-stage = os.environ["stage"]
+# Get environment variables
+STAGE = os.environ["stage"]
 
 router = APIRouter(
-    prefix=f"/{stage}-employer-approval",
+    prefix=f"/{STAGE}/ops-service/employer-approval",
     tags=["employer-approval"]
 )
 
 
 @router.get("/ping")
-def ping():
+def ping(abc: str, user: Optional[dict] = Depends(get_user)):
     return {
         "status": "success",
-        "message": "pong"
+        "message": "pong",
+        "abc": abc
     }
 
 
