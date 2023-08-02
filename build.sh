@@ -1,1 +1,1 @@
-docker build -f ./media-processing.Dockerfile ./ -t media-processing
+docker build -f ./kyc_service.Dockerfile ./ -t kyc-service

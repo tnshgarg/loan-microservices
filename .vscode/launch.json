@@ -5,11 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flask: Run Server",
+            "name": "Uvicorn: Run KYC Service",
             "type": "python",
             "request": "launch",
-            "module": "flask",
-            "args": ["--app","manage.py","run"],
+            "module": "uvicorn",
+            "args": [
+                "kyc_service.main:app",
+                "--reload",
+                "--port",
+                "5000"
+            ],
             "envFile": "${workspaceFolder}/.env",
             "console": "integratedTerminal",
             "jinja": true,
