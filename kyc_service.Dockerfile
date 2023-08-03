@@ -16,4 +16,4 @@ RUN pip install -r /usr/src/app/requirements.txt
 COPY . /usr/src/app
 
 # run gunicorn
-CMD uvicorn 
+CMD uvicorn --host 0.0.0.0 --port 80 kyc_service.main:app

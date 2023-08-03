@@ -31,7 +31,7 @@ def start_db():
     DBManager.init(Config.STAGE)
 
 
-@app.get("/{stage}/kyc-service/health")
+@app.get("/health")
 async def ping(stage):
     return {"status": 200, "stage": stage}
 
