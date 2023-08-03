@@ -7,12 +7,12 @@ from fastapi import (APIRouter, BackgroundTasks, Depends, FastAPI, File, Form,
                      UploadFile)
 from typing_extensions import Annotated
 
-from background_tasks.approve_employer_approval import ApproveEmployerApproval
-from background_tasks.deny_employer_approval import DenyEmployerApproval
+from background_tasks.final_employer_approval import FinalEmployerApproval
 from background_tasks.send_for_final_approval import SendForFinalApproval
 from background_tasks.trigger_employer_approval import TriggerEmployerApproval
 from ops.auth import get_user
 from ops.forms.employer_approval_form import get_employer_approval_form
+from ops.forms.final_approval_form import get_final_approval_form
 from ops.models.cognito_sign_up import CognitoSignUp
 
 # Get environment variables
@@ -67,30 +67,21 @@ def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id
     }
 
 
-# GET endpoint to display approve or deny button
-
-# POST endpoint to actually approve/deny (submit of second form)
-
-
 @router.get("/approve")
-def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: str):
-    handler_payload = {
-        "employer_id": employer_id
-    }
-    background_tasks.add_task(ApproveEmployerApproval().run, handler_payload)
-    return {
-        "status": "SUCCESS",
-        "message": "employer approval done"
-    }
+def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: str, user: Optional[dict] = Depends(get_user)):
+
+    return get_final_approval_form(employer_id)
 
 
-@router.get("/deny")
-def deny_employer_approval(background_tasks: BackgroundTasks, employer_id: str):
+@router.post("/approve-submit")
+def submit_final_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], approve_or_deny: Annotated[str, Form()]):
     handler_payload = {
-        "employer_id": employer_id
+        "employer_id": employer_id,
+        "approve_or_deny": approve_or_deny
     }
-    background_tasks.add_task(DenyEmployerApproval().run, handler_payload)
+    background_tasks.add_task(FinalEmployerApproval().run, handler_payload)
+
     return {
         "status": "SUCCESS",
-        "message": "employer approval denied"
+        "message": "final employer approval submitted"
     }

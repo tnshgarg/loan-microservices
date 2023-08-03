@@ -2,18 +2,21 @@ from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 
 
-class ApproveEmployerApproval(BackgroundTask):
+class FinalEmployerApproval(BackgroundTask):
 
     def run(self, payload):
         # check typecasting
         employer_id: str = payload["employer_id"]
+        approve_or_deny: str = payload["approve_or_deny"]
+
+        is_approved = True if approve_or_deny == "approve" else False
 
         # update in db
         employer_update_result = Employer.update_one({
             "_id": employer_id
         }, {
             "$set": {
-                "approved": True
+                "approved": is_approved
             }
         }, upsert=True)
 
