@@ -1,10 +1,7 @@
-from __future__ import annotations
-
 import os
 from typing import List, Optional
 
-from fastapi import (APIRouter, BackgroundTasks, Depends, FastAPI, File, Form,
-                     UploadFile)
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
 from typing_extensions import Annotated
 
 from background_tasks.final_employer_approval import FinalEmployerApproval
