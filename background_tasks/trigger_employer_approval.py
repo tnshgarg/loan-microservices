@@ -48,7 +48,7 @@ class TriggerEmployerApproval(BackgroundTask):
                          cognito_sign_up_info.model_dump()),
                     ],
                     [
-                        ("Send for Approval",
+                        ("Add Extra Details and Send For Approval",
                          f"{self.ops_microservice_url}/start?employer_id={employer_id}",
                          "SkyBlue")
                     ]

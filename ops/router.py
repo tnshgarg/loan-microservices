@@ -1,13 +1,18 @@
-import os
-from typing import Optional
+from __future__ import annotations
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+import os
+from typing import List, Optional
+
+from fastapi import (APIRouter, BackgroundTasks, Depends, FastAPI, File, Form,
+                     UploadFile)
+from typing_extensions import Annotated
 
 from background_tasks.approve_employer_approval import ApproveEmployerApproval
 from background_tasks.deny_employer_approval import DenyEmployerApproval
-from background_tasks.start_employer_approval import StartEmployerApproval
+from background_tasks.send_for_final_approval import SendForFinalApproval
 from background_tasks.trigger_employer_approval import TriggerEmployerApproval
 from ops.auth import get_user
+from ops.forms.employer_approval_form import get_employer_approval_form
 from ops.models.cognito_sign_up import CognitoSignUp
 
 # Get environment variables
@@ -42,15 +47,29 @@ def trigger_employer_approval(background_tasks: BackgroundTasks, cognito_sign_up
 
 
 @router.get("/start")
-def start_employer_approval(background_tasks: BackgroundTasks, employer_id: str):
+def start_employer_approval(background_tasks: BackgroundTasks, employer_id: str, user: Optional[dict] = Depends(get_user)):
+
+    return get_employer_approval_form(employer_id)
+
+
+@router.post("/start-submit")
+def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], notes: Annotated[str, Form()], files: List[UploadFile]):
     handler_payload = {
-        "employer_id": employer_id
+        "employer_id": employer_id,
+        "notes": notes,
+        "files": files
     }
-    background_tasks.add_task(StartEmployerApproval().run, handler_payload)
+    background_tasks.add_task(SendForFinalApproval().run, handler_payload)
+
     return {
         "status": "SUCCESS",
-        "message": "employer approval started"
+        "message": "employer approval form submitted"
     }
+
+
+# GET endpoint to display approve or deny button
+
+# POST endpoint to actually approve/deny (submit of second form)
 
 
 @router.get("/approve")

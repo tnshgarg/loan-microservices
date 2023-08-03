@@ -1,10 +1,10 @@
 from background_tasks.background_task import BackgroundTask
 from dal.models.ops_employer_login import OpsEmployerLogins
-from services.emailing_service import GmailService
+from services.emailing_service import FileAttachment, GmailService
 from services.html_blocks_service import HTMLBlocksService
 
 
-class StartEmployerApproval(BackgroundTask):
+class SendForFinalApproval(BackgroundTask):
 
     def run(self, payload):
         # check typecasting
@@ -20,6 +20,11 @@ class StartEmployerApproval(BackgroundTask):
         sender_email = "reports@unipe.money"
         mail_to_addresses = ("prachir@unipe.money")
 
+        # extract extra fields from payload
+        notes = payload["notes"]
+        files = [FileAttachment(name=current_file.filename, data_binary=current_file.file.read(
+        )) for current_file in payload["files"]]
+
         with GmailService(sender_email=sender_email) as mailing_service:
             mailing_service.sendmail(
                 from_name=f"Employer Approval Process",
@@ -33,14 +38,14 @@ class StartEmployerApproval(BackgroundTask):
                     [
                         ("Employer Information Received",
                          ops_employer_login_info),
+                        ("Additional Notes by RM",
+                         notes),
                     ],
                     [
-                        ("Approve",
+                        ("Approve or Deny",
                          f"{self.ops_microservice_url}/approve?employer_id={employer_id}",
-                         "Green"),
-                        ("Deny",
-                         f"{self.ops_microservice_url}/deny?employer_id={employer_id}",
-                         "Red")
+                         "SkyBlue")
                     ]
-                )
+                ),
+                files=files
             )
