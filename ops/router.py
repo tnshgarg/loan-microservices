@@ -10,6 +10,7 @@ from background_tasks.trigger_employer_approval import TriggerEmployerApproval
 from ops.auth import get_user
 from ops.forms.employer_approval_form import get_employer_approval_form
 from ops.forms.final_approval_form import get_final_approval_form
+from ops.forms.form_submit_response import get_form_submit_response
 from ops.models.cognito_sign_up import CognitoSignUp
 from ops.utils.privilege_level import is_sales_user_privileged
 
@@ -59,10 +60,7 @@ def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id
     }
     background_tasks.add_task(SendForFinalApproval().run, handler_payload)
 
-    return {
-        "status": "SUCCESS",
-        "message": "employer approval form submitted"
-    }
+    return get_form_submit_response("Employer Approval Form Submitted Successfully")
 
 
 @router.get("/approve")
@@ -75,10 +73,7 @@ def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: st
 def submit_final_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], approve_or_deny: Annotated[str, Form()], user: Optional[dict] = Depends(get_user)):
     user_email = user["email"]
     if not is_sales_user_privileged(user_email):
-        return {
-            "status": "FAILED",
-            "message": "not authorized to approve"
-        }
+        return get_form_submit_response("Not Authorized to Approve Employer")
 
     handler_payload = {
         "employer_id": employer_id,
@@ -86,7 +81,4 @@ def submit_final_approval_form(background_tasks: BackgroundTasks, employer_id: A
     }
     background_tasks.add_task(FinalEmployerApproval().run, handler_payload)
 
-    return {
-        "status": "SUCCESS",
-        "message": "final employer approval submitted"
-    }
+    return get_form_submit_response("Final Employer Approval Submitted Successfully")
