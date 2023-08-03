@@ -11,6 +11,7 @@ from ops.auth import get_user
 from ops.forms.employer_approval_form import get_employer_approval_form
 from ops.forms.final_approval_form import get_final_approval_form
 from ops.models.cognito_sign_up import CognitoSignUp
+from ops.utils.privilege_level import is_sales_user_privileged
 
 # Get environment variables
 STAGE = os.environ["stage"]
@@ -50,7 +51,7 @@ def start_employer_approval(background_tasks: BackgroundTasks, employer_id: str,
 
 
 @router.post("/start-submit")
-def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], notes: Annotated[str, Form()], files: List[UploadFile]):
+def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], notes: Annotated[str, Form()], files: List[UploadFile], user: Optional[dict] = Depends(get_user)):
     handler_payload = {
         "employer_id": employer_id,
         "notes": notes,
@@ -71,7 +72,14 @@ def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: st
 
 
 @router.post("/approve-submit")
-def submit_final_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], approve_or_deny: Annotated[str, Form()]):
+def submit_final_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], approve_or_deny: Annotated[str, Form()], user: Optional[dict] = Depends(get_user)):
+    user_email = user["email"]
+    if not is_sales_user_privileged(user_email):
+        return {
+            "status": "FAILED",
+            "message": "not authorized to approve"
+        }
+
     handler_payload = {
         "employer_id": employer_id,
         "approve_or_deny": approve_or_deny
