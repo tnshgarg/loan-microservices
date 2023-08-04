@@ -1,4 +1,5 @@
 from background_tasks.background_task import BackgroundTask
+from dal.models.employer import Employer
 from dal.models.ops_employer_login import OpsEmployerLogins
 from services.emailing_service import FileAttachment, GmailService
 from services.html_blocks_service import HTMLBlocksService
@@ -15,6 +16,24 @@ class SendForFinalApproval(BackgroundTask):
         ops_employer_login_info = OpsEmployerLogins.find_one(
             {"employer_id": employer_id}, {"_id": 0})
         company_name = ops_employer_login_info["company_name"]
+
+        # set approval stage as pending in employers collection
+        employer_update_result = Employer.update_one({
+            "_id": employer_id
+        }, {
+            "$set": {
+                "approvalStage": Employer.ApprovalStage.PENDING
+            }
+        }, upsert=True)
+
+        self.logger.info("Employer Updated", extra={
+            "data": {
+                "employer_update_result": {
+                    "upserted_id": employer_update_result.upserted_id,
+                    "matched_count": employer_update_result.matched_count
+                }
+            }
+        })
 
         # send mail to tech-ops
         sender_email = "reports@unipe.money"

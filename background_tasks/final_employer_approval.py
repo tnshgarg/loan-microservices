@@ -9,14 +9,14 @@ class FinalEmployerApproval(BackgroundTask):
         employer_id: str = payload["employer_id"]
         approve_or_deny: str = payload["approve_or_deny"]
 
-        is_approved = True if approve_or_deny == "approve" else False
+        approval_stage = Employer.ApprovalStage.APPROVED if approve_or_deny == "approve" else Employer.ApprovalStage.PENDING
 
         # update in db
         employer_update_result = Employer.update_one({
             "_id": employer_id
         }, {
             "$set": {
-                "approved": is_approved
+                "approvalStage": approval_stage
             }
         }, upsert=True)
 
