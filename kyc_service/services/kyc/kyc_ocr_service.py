@@ -9,14 +9,16 @@ from fastapi import Depends
 from dal.models.employees import Employee
 from dal.models.government_ids import GovernmentIds
 from dal.utils import db_txn
+from kyc_service.config import Config
 from kyc_service.dependencies.kyc import gdrive_upload_service, gridlines_api, s3_upload_service
 from kyc_service.services.kyc.gridlines import GridlinesApi
 from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
+from kyc_service.services.storage.uploads.media_upload_service import MediaUploadService
 from kyc_service.services.storage.uploads.s3_upload_service import S3UploadService
 
 
-class KYCOCRService:
+class KYCOCRService(MediaUploadService):
 
     def __init__(self,
                  unipe_employee_id: bson.ObjectId,
@@ -26,74 +28,26 @@ class KYCOCRService:
                  s3_upload_service: S3UploadService,
                  google_sheets_service: GoogleSheetsService
                  ) -> None:
-        self.unipe_employee_id = unipe_employee_id
-        self.sales_user_id = sales_user_id
-        self.gdrive_upload_service = gdrive_upload_service
-        self.s3_upload_service = s3_upload_service
+        super().__init__(
+            unipe_employee_id,
+            sales_user_id,
+            gdrive_upload_service,
+            s3_upload_service,
+            google_sheets_service
+        )
         self.gridlines_api = gridlines_api
-        self.google_sheets_service = google_sheets_service
-        now = datetime.now()
-        self.ts_prefix = now.strftime("%Y_%m_%d_%H_%M")
-        self.ts_datetime = now.strftime("%Y-%m-%d %H:%M:%S")
-        self.employee_doc = Employee.find_one({"_id": unipe_employee_id})
-        self.common_columns = [self.ts_datetime, self.employee_doc['mobile'], self.employee_doc['employeeName'],
-                               str(self.sales_user_id)]
-
-    @staticmethod
-    def _parse_extension(content_type):
-        ctypes = content_type.split(";")
-        mime = ctypes[0]
-        extension = mime.split("/")[1]
-        return extension
-
-    def _upload_image(self, form_file, filename):
-        file_extension = self._parse_extension(form_file.content_type)
-        drive_upload_response = self.gdrive_upload_service.upload_file(
-            str(self.unipe_employee_id),
-            f"{self.ts_prefix}_{filename}.{file_extension}",
-            mime_type=form_file.content_type,
-            fd=form_file.file,
-            description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
-        )
-        self.s3_upload_service.upload(
-            key=f"{self.unipe_employee_id}/{self.ts_prefix}_{filename}.{file_extension}",
-            fd=form_file.file
-        )
-        return drive_upload_response["webViewLink"]
-
-    def _upload_text(self, text, filename):
-        dummy_file = io.StringIO(text)
-        drive_upload_response = self.gdrive_upload_service.upload_file(
-            str(self.unipe_employee_id),
-            f"{self.ts_prefix}_{filename}.txt",
-            mime_type="text/plain",
-            fd=dummy_file,
-            description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
-        )
-        self.s3_upload_service.upload(
-            key=f"{self.unipe_employee_id}/{self.ts_prefix}_{filename}.txt",
-            fd=dummy_file
-        )
-        return drive_upload_response["webViewLink"]
-
-    def _update_tracking_google_sheet(self, entries):
-        folder_url = self.gdrive_upload_service.get_employee_root_url(
-            str(self.unipe_employee_id))
-        sheet_rows = [self.common_columns + entry + [folder_url]
-                      for entry in entries]
-        self.google_sheets_service.append_entries(sheet_rows)
 
     @db_txn
     def perform_aadhaar_kyc(self, front_image, back_image, signature):
-        aadhar_front_drive_url = self._upload_image(
+        aadhar_front_drive_url = self._upload_media(
             form_file=front_image,
             filename="aadhaar_front"
         )
-        aadhar_back_drive_url = self._upload_image(
+        aadhar_back_drive_url = self._upload_media(
             form_file=back_image,
             filename="aadhaar_back"
         )
-        signature_drive_url = self._upload_image(
+        signature_drive_url = self._upload_media(
             form_file=signature,
             filename="signature_employee"
         )
@@ -139,11 +93,11 @@ class KYCOCRService:
 
     @db_txn
     def perform_user_verification(self, user_photo, user_idphoto):
-        user_photo_drive_url = self._upload_image(
+        user_photo_drive_url = self._upload_media(
             form_file=user_photo,
             filename="user_photo"
         )
-        user_id_photo_drive_url = self._upload_image(
+        user_id_photo_drive_url = self._upload_media(
             form_file=user_idphoto,
             filename="user_idphoto"
         )

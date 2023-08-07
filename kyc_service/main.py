@@ -15,6 +15,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:3000",
+    "https://qa.d3qo0i0wip0527.amplifyapp.com"
 ]
 
 app.add_middleware(
@@ -31,9 +32,9 @@ def start_db():
     DBManager.init(Config.STAGE)
 
 
-@app.get("/health")
-async def ping(stage):
-    return {"status": 200, "stage": stage}
+@app.get("/ping")
+async def ping():
+    return {"status": 200, "stage": Config.STAGE}
 
 app.include_router(
     aadhaar_ocr_router,
