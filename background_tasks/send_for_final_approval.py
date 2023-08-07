@@ -1,3 +1,6 @@
+import json
+import os
+
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from dal.models.ops_employer_login import OpsEmployerLogins
@@ -37,7 +40,11 @@ class SendForFinalApproval(BackgroundTask):
 
         # send mail to tech-ops
         sender_email = "reports@unipe.money"
-        mail_to_addresses = ("prachir@unipe.money")
+
+        # fetch addresses to mail to
+        ops_final_approvers = json.loads(
+            os.environ.get("ops_final_approvers", "{}"))
+        mail_to_addresses = list(ops_final_approvers.values())
 
         # extract extra fields from payload
         notes = payload["notes"]
