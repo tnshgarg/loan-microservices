@@ -34,8 +34,16 @@ def get_employer_approval_form(employer_id):
                 </div>
                 <hr>
                 <div class="form-group mt-3">
-                    <label class="mr-2">Upload Files</label>
-                    <input type="file" name="files" multiple>
+                    <label class="mr-2">Upload Agreement</label>
+                    <input type="file" name="agreement" required="required">
+                </div>
+                <div class="form-group mt-3">
+                    <label class="mr-2">Upload PAN</label>
+                    <input type="file" name="pan" required="required">
+                </div>
+                <div class="form-group mt-3">
+                    <label class="mr-2">Upload GST</label>
+                    <input type="file" name="gst" required="required">
                 </div>
                 <hr>
                 <input type="hidden" name="employer_id" value={employer_id}>
