@@ -8,6 +8,7 @@ from .auth import create_access_token, create_refresh_token, valid_client
 from .config import Config
 from .schemas.auth import TokenSchema
 from .api.kyc.aadhaar_ocr import router as aadhaar_ocr_router
+from .api.ewa.video_otp import router as video_otp_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -38,6 +39,10 @@ async def ping():
 
 app.include_router(
     aadhaar_ocr_router,
+    prefix="/{stage}/kyc-service"
+)
+app.include_router(
+    video_otp_router,
     prefix="/{stage}/kyc-service"
 )
 

@@ -2,6 +2,7 @@
 
 import bson
 from dal.models.auth_video_otp import VideoOTP
+from dal.models.offer import Offers
 from dal.utils import db_txn
 from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
@@ -10,7 +11,7 @@ from kyc_service.services.storage.uploads.s3_upload_service import S3UploadServi
 from random import randint
 
 
-class KYCOCRService(MediaUploadService):
+class VideoOtpService(MediaUploadService):
 
     def __init__(self,
                  unipe_employee_id: bson.ObjectId,
@@ -54,9 +55,27 @@ class KYCOCRService(MediaUploadService):
 
         return generated_otp
 
-    def speech_to_text(self, file):
-        pass
-
     @db_txn
     def verify_otp(self, uploaded_video, offer_id):
-        self._upload_media(uploaded_video, f"video_otp_{offer_id}")
+        video_otp_doc = VideoOTP.find_one({
+            "unipeEmployeeId": self.unipe_employee_id,
+            "status": VideoOTP.Stage.PENDING,
+            "offerId": offer_id,
+        })
+        otp = video_otp_doc["otp"]
+        web_url = self._upload_media(
+            uploaded_video, f"video_otp_{offer_id}_[{otp}]")
+        VideoOTP.update_one({
+            "unipeEmployeeId": self.unipe_employee_id,
+            "status": VideoOTP.Stage.PENDING,
+            "offerId": offer_id,
+        }, {"$set": {
+            "status": VideoOTP.Stage.SUBMITTED,
+            "link": web_url
+        }})
+        Offers.update_one({
+            "_id": offer_id
+        }, {"$set": {
+            "videoOtpLink": web_url
+        }})
+        return web_url
