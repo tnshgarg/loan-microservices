@@ -19,6 +19,22 @@
             "console": "integratedTerminal",
             "jinja": true,
             "justMyCode": true
+        },
+        {
+            "name": "Uvicorn: Run Ops Service",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "ops.main:employer_approval_app",
+                "--reload",
+                "--port",
+                "5000"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+            "console": "integratedTerminal",
+            "jinja": true,
+            "justMyCode": true
         }
     ]
 }
