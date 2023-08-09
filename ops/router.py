@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
 from typing_extensions import Annotated
@@ -24,16 +24,18 @@ router = APIRouter(
 
 
 @router.get("/ping")
-def ping(abc: str, user: Optional[dict] = Depends(get_user)):
+def ping(abc: str,
+         user: Optional[dict] = Depends(get_user)):
     return {
         "status": "success",
         "message": "pong",
-        "abc": abc
+        "abc": abc,
     }
 
 
 @router.post("/trigger")
-def trigger_employer_approval(background_tasks: BackgroundTasks, cognito_sign_up_info: CognitoSignUp):
+def trigger_employer_approval(background_tasks: BackgroundTasks,
+                              cognito_sign_up_info: CognitoSignUp):
     handler_payload = {
         "cognito_sign_up_info": cognito_sign_up_info
     }
@@ -46,17 +48,25 @@ def trigger_employer_approval(background_tasks: BackgroundTasks, cognito_sign_up
 
 
 @router.get("/start")
-def start_employer_approval(background_tasks: BackgroundTasks, employer_id: str, user: Optional[dict] = Depends(get_user)):
+def start_employer_approval(background_tasks: BackgroundTasks,
+                            employer_id: str,
+                            user: Optional[dict] = Depends(get_user)):
 
     return get_employer_approval_form(employer_id)
 
 
 @router.post("/start-submit")
-def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], notes: Annotated[str, Form()], files: List[UploadFile], user: Optional[dict] = Depends(get_user)):
+def submit_employer_approval_form(background_tasks: BackgroundTasks,
+                                  employer_id: Annotated[str, Form()],
+                                  notes: Annotated[str, Form()],
+                                  agreement: UploadFile,
+                                  pan: UploadFile,
+                                  gst: UploadFile,
+                                  user: Optional[dict] = Depends(get_user)):
     handler_payload = {
         "employer_id": employer_id,
         "notes": notes,
-        "files": files
+        "files": [agreement, pan, gst]
     }
     background_tasks.add_task(SendForFinalApproval().run, handler_payload)
 
@@ -69,7 +79,10 @@ def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: st
 
 
 @router.post("/approve-submit")
-def submit_final_approval_form(background_tasks: BackgroundTasks, employer_id: Annotated[str, Form()], approve_or_deny: Annotated[str, Form()], user: Optional[dict] = Depends(get_user)):
+def submit_final_approval_form(background_tasks: BackgroundTasks,
+                               employer_id: Annotated[str, Form()],
+                               approve_or_deny: Annotated[str, Form()],
+                               user: Optional[dict] = Depends(get_user)):
     user_email = user["email"]
     if not is_sales_user_privileged(user_email):
         return get_form_submit_response("Not Authorized to Approve Employer")
