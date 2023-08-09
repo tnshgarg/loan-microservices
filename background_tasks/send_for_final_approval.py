@@ -4,8 +4,8 @@ import os
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from dal.models.ops_employer_login import OpsEmployerLogins
-from services.emailing_service import FileAttachment, GmailService
-from services.html_blocks_service import HTMLBlocksService
+from services.comms.emailing_service import FileAttachment, GmailService
+from services.comms.html_blocks_service import HTMLBlocksService
 
 
 class SendForFinalApproval(BackgroundTask):
