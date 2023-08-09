@@ -9,7 +9,7 @@ class FinalEmployerApproval(BackgroundTask):
         employer_id: str = payload["employer_id"]
         approve_or_deny: str = payload["approve_or_deny"]
 
-        approval_stage = Employer.ApprovalStage.APPROVED if approve_or_deny == "approve" else Employer.ApprovalStage.PENDING
+        approval_stage = Employer.ApprovalStage.APPROVED if approve_or_deny == "approve" else Employer.ApprovalStage.DENIED
 
         # update in db
         employer_update_result = Employer.update_one({

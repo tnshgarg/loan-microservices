@@ -65,7 +65,6 @@ def submit_employer_approval_form(background_tasks: BackgroundTasks, employer_id
 
 @router.get("/approve")
 def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: str, user: Optional[dict] = Depends(get_user)):
-
     return get_final_approval_form(employer_id)
 
 
