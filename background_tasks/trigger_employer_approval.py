@@ -31,7 +31,7 @@ class TriggerEmployerApproval(BackgroundTask):
 
         # send mail to tech-ops
         sender_email = "reports@unipe.money"
-        mail_to_addresses = (sales_user_email)
+        mail_to_addresses = (sales_user_email,)
 
         with GmailService(sender_email=sender_email) as mailing_service:
             mailing_service.sendmail(
