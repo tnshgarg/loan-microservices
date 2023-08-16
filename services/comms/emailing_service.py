@@ -48,7 +48,8 @@ class GmailService:
         message = MIMEMultipart('alternative')
         message["Subject"] = subject
         message["From"] = from_name
-        message["To"] = to_name
+        message["To"] = to_name if to_name else ",".join(
+            map(lambda addr: f" <{addr}>", to_addresses))
         message.attach(MIMEText(message_text, 'plain'))
         html_text = message_text+"\n"
         for html_block in html_blocks:

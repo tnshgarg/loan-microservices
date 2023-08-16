@@ -53,8 +53,7 @@ class SendForFinalApproval(BackgroundTask):
 
         with GmailService(sender_email=sender_email) as mailing_service:
             mailing_service.sendmail(
-                from_name=f"Employer Approval Process",
-                to_name=f"Unipe Team",
+                from_name="Employer Approval Process",
                 to_addresses=mail_to_addresses,
                 subject=f'''[{employer_id_trimmed}] "{company_name}" Employer Approval Process''',
                 message_text=f"""
