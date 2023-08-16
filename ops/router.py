@@ -15,7 +15,7 @@ from ops.models.cognito_sign_up import CognitoSignUp
 from ops.utils.privilege_level import is_sales_user_privileged
 
 # Get environment variables
-STAGE = os.environ["stage"]
+STAGE = os.environ["STAGE"]
 
 router = APIRouter(
     prefix=f"/{STAGE}/ops-service/employer-approval",
@@ -24,12 +24,10 @@ router = APIRouter(
 
 
 @router.get("/ping")
-def ping(abc: str,
-         user: Optional[dict] = Depends(get_user)):
+def ping():
     return {
         "status": "success",
         "message": "pong",
-        "abc": abc,
     }
 
 

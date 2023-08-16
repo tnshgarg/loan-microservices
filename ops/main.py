@@ -19,13 +19,21 @@ employer_approval_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 @employer_approval_app.on_event("startup")
 def startup_db_client():
-    stage = os.environ["stage"]
+    stage = os.environ["STAGE"]
     DBManager.init(stage=stage)
 
 
 @employer_approval_app.on_event("shutdown")
 def shutdown_db_client():
     DBManager.terminate()
+
+
+@employer_approval_app.get("/ping")
+def ping():
+    return {
+        "status": "success",
+        "message": "pong",
+    }
 
 
 employer_approval_app.include_router(auth_router)

@@ -11,7 +11,7 @@ from starlette.responses import RedirectResponse
 # Get environment variables
 GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
 GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
-STAGE = os.environ["stage"]
+STAGE = os.environ["STAGE"]
 
 # Set up OAuth
 config_data = {'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID,
@@ -30,12 +30,16 @@ auth_router = APIRouter(
     tags=["auth"]
 )
 
-# Try to get the logged in user
-
 
 async def get_user(request: Request) -> Optional[dict]:
+    """
+        Fetches the logged in User
+    """
     user = request.session.get('user')
     internal_redirect_uri = str(request.url)
+    if "local" not in internal_redirect_uri:
+        """if local is not present in url, then this is happening on ecr which requires all requests to be https"""
+        internal_redirect_uri = "https" + internal_redirect_uri[4:]
     if user is not None:
         return user
     else:
@@ -54,6 +58,9 @@ async def get_user(request: Request) -> Optional[dict]:
 async def login(request: Request):
     # Redirect Google OAuth back to our application
     redirect_uri = str(request.url).replace("login", "auth").split("?")[0]
+    if "local" not in redirect_uri:
+        """if local is not present in url, then this is happening on ecr which requires all requests to be https"""
+        redirect_uri = "https" + redirect_uri[4:]
     internal_redirect_uri = request.query_params["internal_redirect_uri"]
 
     return await oauth.google.authorize_redirect(request, redirect_uri, state=internal_redirect_uri)

@@ -43,7 +43,7 @@ class SendForFinalApproval(BackgroundTask):
 
         # fetch addresses to mail to
         ops_final_approvers = json.loads(
-            os.environ.get("ops_final_approvers", "{}"))
+            os.environ.get("OPS_FINAL_APPROVERS", "{}"))
         mail_to_addresses = list(ops_final_approvers.values())
 
         # extract extra fields from payload

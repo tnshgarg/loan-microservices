@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from ops.utils.ops_employer_login import \
     get_all_pending_ops_employer_login_info
 from ops.utils.urls import get_ops_microservice_url
-from services.html_blocks_service import HTMLBlocksService
+from services.comms.html_blocks_service import HTMLBlocksService
 
 
 def get_single_approval_form(ops_employer_login_info, ops_microservice_url):
@@ -57,7 +57,8 @@ def get_final_approval_form():
     html_content = f'''
         <head>
             <title>Final Employer Approval</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
         </head>
         <div class="col-md-6 offset-md-3 mt-5">
             <h1>Final Employer Approval</h1>
