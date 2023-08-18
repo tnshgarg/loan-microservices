@@ -56,7 +56,7 @@ class VideoOtpService(MediaUploadService):
         return generated_otp
 
     @db_txn
-    def verify_otp(self, uploaded_video, offer_id):
+    def verify_otp(self, uploaded_video, offer_id, sales_user_id):
         video_otp_doc = VideoOTP.find_one({
             "unipeEmployeeId": self.unipe_employee_id,
             "status": VideoOTP.Stage.PENDING,
@@ -76,6 +76,8 @@ class VideoOtpService(MediaUploadService):
         Offers.update_one({
             "_id": offer_id
         }, {"$set": {
-            "videoOtpLink": web_url
+            "verifier_sales_id": sales_user_id,
+            "videoOtpLink": web_url,
+            "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(self.unipe_employee_id))
         }})
         return web_url

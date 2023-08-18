@@ -43,6 +43,7 @@ async def verify_ewa_otp(
         google_sheets_service=None
     ).verify_otp(
         uploaded_video=video_otp,
-        offer_id=bson.ObjectId(offer_id)
+        offer_id=bson.ObjectId(offer_id),
+        sales_user_id=user.sales_user_id
     )
     return {"success": "true"}

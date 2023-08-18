@@ -5,7 +5,7 @@ import io
 import json
 from typing import Annotated
 import bson
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from dal.models.employees import Employee
 from dal.models.government_ids import GovernmentIds
 from dal.utils import db_txn
@@ -37,6 +37,16 @@ class KYCOCRService(MediaUploadService):
         )
         self.gridlines_api = gridlines_api
 
+    def validate_aadhaar_doc(aadhaar):
+        expected_fields = [
+            "document_id",
+            "address",
+            "name",
+            "date_of_birth",
+            "gender"
+        ]
+        return all([aadhaar.get(field) for field in expected_fields])
+
     @db_txn
     def perform_aadhaar_kyc(self, front_image, back_image, signature):
         aadhar_front_drive_url = self._upload_media(
@@ -55,6 +65,7 @@ class KYCOCRService(MediaUploadService):
             front_image.file)
         back_ocr_status, back_ocr = self.gridlines_api.aadhaar_ocr(
             back_image.file)
+
         front_ocr_doc = front_ocr.get("data", {}).get(
             "ocr_data", {}).get("document", {})
         if "year_of_birth" in front_ocr_doc:
@@ -62,11 +73,22 @@ class KYCOCRService(MediaUploadService):
 
         back_ocr_doc = back_ocr.get("data", {}).get(
             "ocr_data", {}).get("document", {})
+        if front_ocr_status != 200 or back_ocr_status != 200 or front_ocr["data"]["code"] != "1014" or back_ocr["data"]["code"] != "1014":
+            raise HTTPException(
+                status_code=400,
+                detail="Error Reading Aadhaar Details click photo again"
+            )
         self._upload_text(json.dumps(front_ocr, indent=4),
                           "gridlines_ocr_aadhaar_front")
         self._upload_text(json.dumps(back_ocr, indent=4),
                           "gridlines_ocr_aadhaar_back")
         front_ocr_doc["address"] = back_ocr_doc["address"]
+
+        if not self.valid_aadhaar_doc(front_ocr_doc):
+            raise HTTPException(
+                status_code=400,
+                detail="Missing fields click photo again"
+            )
 
         self._update_tracking_google_sheet([
             ['aadhaar_front', 'SUCCESS', aadhar_front_drive_url],
