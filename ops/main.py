@@ -20,7 +20,7 @@ employer_approval_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 @employer_approval_app.on_event("startup")
 def startup_db_client():
     stage = os.environ["STAGE"]
-    DBManager.init(stage=stage)
+    DBManager.init(stage=stage, asset="ops-service")
 
 
 @employer_approval_app.on_event("shutdown")

@@ -37,6 +37,7 @@ class KYCOCRService(MediaUploadService):
         )
         self.gridlines_api = gridlines_api
 
+    @staticmethod
     def validate_aadhaar_doc(aadhaar):
         expected_fields = [
             "document_id",
@@ -84,7 +85,7 @@ class KYCOCRService(MediaUploadService):
                           "gridlines_ocr_aadhaar_back")
         front_ocr_doc["address"] = back_ocr_doc["address"]
 
-        if not self.valid_aadhaar_doc(front_ocr_doc):
+        if not self.validate_aadhaar_doc(front_ocr_doc):
             raise HTTPException(
                 status_code=400,
                 detail="Missing fields click photo again"
@@ -136,6 +137,7 @@ class KYCOCRService(MediaUploadService):
             },
             update={
                 "$set": {
+                    "sales_user_id": self.sales_user_id,
                     "data.photo_base64": b64encode(user_photo.file.read()).decode(),
                     "verifyStatus": "INPROGRESS_CONFIRMATION",
                     "verifyMsg": "User Photos Uploaded",

@@ -5,12 +5,9 @@ from kyc_service.services.kyc.gridlines import GridlinesApi
 from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 from kyc_service.services.storage.uploads.s3_upload_service import S3UploadService
-
+from cachetools import cached, TTLCache
 
 GRIDLINES_API = None
-GDRIVE_UPLOAD_SERVICE = None
-S3_UPLOAD_SERVICE = None
-GOOLGE_SHEETS_SERVICE = None
 
 
 def gridlines_api():
@@ -21,22 +18,16 @@ def gridlines_api():
     return GRIDLINES_API
 
 
+@cached(cache=TTLCache(maxsize=32, ttl=300))
 def gdrive_upload_service():
-    global GDRIVE_UPLOAD_SERVICE
-    if GDRIVE_UPLOAD_SERVICE is None:
-        GDRIVE_UPLOAD_SERVICE = DriveUploadService()
-    return GDRIVE_UPLOAD_SERVICE
+    return DriveUploadService()
 
 
+@cached(cache=TTLCache(maxsize=32, ttl=300))
 def s3_upload_service():
-    global S3_UPLOAD_SERVICE
-    if S3_UPLOAD_SERVICE is None:
-        S3_UPLOAD_SERVICE = S3UploadService(Config.BUCKET)
-    return S3_UPLOAD_SERVICE
+    return S3UploadService(Config.BUCKET)
 
 
+@cached(cache=TTLCache(maxsize=32, ttl=300))
 def google_sheets_service():
-    global GOOLGE_SHEETS_SERVICE
-    if GOOLGE_SHEETS_SERVICE is None:
-        GOOLGE_SHEETS_SERVICE = GoogleSheetsService()
-    return GOOLGE_SHEETS_SERVICE
+    return GoogleSheetsService()

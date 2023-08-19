@@ -80,4 +80,7 @@ class VideoOtpService(MediaUploadService):
             "videoOtpLink": web_url,
             "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(self.unipe_employee_id))
         }})
+        self._update_tracking_google_sheet([
+            [f'video_otp_{offer_id}', 'SUCCESS', web_url],
+        ])
         return web_url
