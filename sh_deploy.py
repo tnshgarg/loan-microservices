@@ -1,5 +1,6 @@
 import argparse
 from subprocess import call
+from datetime import date
 
 
 def main():
@@ -14,6 +15,8 @@ def main():
                         help="flag to determine wether to push image to ecr")
     parser.add_argument("-f", "--full", action="store_true",
                         help="full deployment of build + push")
+    parser.add_argument("-P", "--prod", action="store_true",
+                        help="create a prod build for the given image")
 
     args = parser.parse_args()
 
@@ -25,9 +28,12 @@ def main():
             shell=True
         )
     if args.push or args.full:
+        tag_name = "latest"
+        if args.prod:
+            tag_name = f"prod-{date.today()}"
         call(f"""aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 802027775118.dkr.ecr.ap-south-1.amazonaws.com
-        docker tag {app_name}-service:latest 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:latest
-        docker push 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:latest
+        docker tag {app_name}-service:latest 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:{tag_name}
+        docker push 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:{tag_name}
         """, shell=True)
 
 

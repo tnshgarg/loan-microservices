@@ -6,6 +6,7 @@ from kyc_service.dependencies.kyc import gdrive_upload_service, google_sheets_se
 
 from kyc_service.schemas.auth import TokenPayload
 from kyc_service.services.ewa_otp.ewa_otp_service import VideoOtpService
+from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 from kyc_service.services.storage.uploads.s3_upload_service import S3UploadService
 
@@ -33,6 +34,7 @@ async def verify_ewa_otp(
     video_otp: Annotated[UploadFile, File()],
     gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)],
     s3_upload_service: Annotated[S3UploadService, Depends(s3_upload_service)],
+    google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)],
     user: Annotated[TokenPayload, Depends(get_current_session)]
 ):
     VideoOtpService(
@@ -40,7 +42,7 @@ async def verify_ewa_otp(
         sales_user_id=user.sales_user_id,
         gdrive_upload_service=gdrive_upload_service,
         s3_upload_service=s3_upload_service,
-        google_sheets_service=None
+        google_sheets_service=google_sheets_service
     ).verify_otp(
         uploaded_video=video_otp,
         offer_id=bson.ObjectId(offer_id),
