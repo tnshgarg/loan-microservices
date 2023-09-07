@@ -1,3 +1,4 @@
+import os 
 from dal.models.employees import Employee
 from fastapi import HTTPResponseException
 from services.otp.gupshup.gupshup_otp_service import GupshupOtpService
@@ -9,7 +10,7 @@ from services.otp.sales_user.sales_user_otp_service import SalesUserVerification
 MOCK_PHONES = [str(i) * 10 for i in range(1, 10)]
 
 
-class OTPController(Controller):
+class LoginOtpService():
 
     def _get_otp_service(self) -> MobileVerificationService:
         provider = self.event["body-json"].get("provider", "routemobile")
@@ -38,23 +39,14 @@ class OTPController(Controller):
             }
         }, upsert=False)
 
-    def _handle_post(self, category: str):
-        self.logger.info("OTPController ", extra={
-            "data": {"msg": "_handle_post"}
-        })
-        if category == "generate-otp":
-            return self._handle_generate_otp()
-        elif category == "verify-otp":
-            return self._handle_verify_otp()
-
     def _handle_generate_otp(self):
         payload = self._parse_body(MobileGenerateOtpPayload)
         otp_service = self._get_otp_service()
         return otp_service.generate_otp(payload)
 
     def _handle_verify_otp(self):
-        constants = Constants(self.event)
+        jwt_secret = os.environ["jwt_secret"]
         payload = self._parse_body(MobileVerifyOtpPayload)
         self._store_version_header(payload.mobile_number)
         otp_service = self._get_otp_service()
-        return otp_service.verify_otp(payload, constants.jwt_secret)
+        return otp_service.verify_otp(payload, jwt_secret)
