@@ -14,3 +14,11 @@ class TokenPayload(BaseModel):
     exp: int = None
     sales_user_id: Any = None
     client_id: str = None
+
+class GenerateOtpPayload(BaseModel):
+    mobile_number: str
+    provider: str
+
+class VerifyOtpPayload(BaseModel):
+    mobile_number: str = None
+    provider: str = None

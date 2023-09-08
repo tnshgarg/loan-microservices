@@ -2,7 +2,7 @@
 import json
 import os
 
-from services.otp.route_mobile.route_mobile_api import RouteMobileApi
+from .route_mobile_api import RouteMobileApi
 
 
 class RouteMobileApiMock(RouteMobileApi):

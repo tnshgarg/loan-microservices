@@ -1,19 +1,19 @@
 import json
 import os
 import requests
-from exceptions import HTTPResponseException
-from services.otp.mobile_verification_service import MobileVerificationService
-from config import UnipeConfig
+from fastapi import HTTPException as HTTPResponseException
+from kyc_service.services.otp.mobile_verification_service import MobileVerificationService
+from kyc_service.config import Config
 
 
 class SalesUserVerificationService(MobileVerificationService):
 
     def __init__(self, logger, stage, use_mock=False) -> None:
         super().__init__()
-        if UnipeConfig.ASSET != UnipeConfig.SALES_APP_ASSET:
+        if Config.ASSET != Config.SALES_APP_ASSET:
             raise HTTPResponseException(
                 status_code=404,
-                message="User Not Found"
+                detail="User Not Found"
             )
 
         self.logger = logger
@@ -46,7 +46,7 @@ class SalesUserVerificationService(MobileVerificationService):
             })
             raise HTTPResponseException(
                 status_code=400,
-                message=str(e)
+                detail=str(e)
             )
 
     def verify_otp(self, payload, secret):
@@ -70,7 +70,7 @@ class SalesUserVerificationService(MobileVerificationService):
                 if token is None:
                     raise HTTPResponseException(
                         status_code=404,
-                        message="Mobile Number not found"
+                        detail="Mobile Number not found"
                     )
 
                 return {
@@ -94,5 +94,5 @@ class SalesUserVerificationService(MobileVerificationService):
             })
             raise HTTPResponseException(
                 status_code=400,
-                message=str(e)
+                detail=str(e)
             )

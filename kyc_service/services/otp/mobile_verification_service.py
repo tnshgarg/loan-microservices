@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import jwt
 from dal.models.employees import Employee
 
-from services.otp.payloads import MobileGenerateOtpPayload, MobileVerifyOtpPayload
+from .payloads import MobileGenerateOtpPayload, MobileVerifyOtpPayload
 
 
 class MobileVerificationService(abc.ABC):

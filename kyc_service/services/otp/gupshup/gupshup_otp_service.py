@@ -1,7 +1,7 @@
-from exceptions import HTTPResponseException
-from services.otp.gupshup.gupshup_api import GupshupApi
-from services.otp.gupshup.gupshup_api_mock import GupshupApiMock
-from services.otp.mobile_verification_service import MobileVerificationService
+from fastapi import HTTPException as HTTPResponseException
+from .gupshup_api import GupshupApi
+from .gupshup_api_mock import GupshupApiMock
+from kyc_service.services.otp.mobile_verification_service import MobileVerificationService
 
 
 class GupshupOtpService(MobileVerificationService):
@@ -32,7 +32,7 @@ class GupshupOtpService(MobileVerificationService):
             self.logger.info("mobile_generate_otp_res", extra={
                 "data": mobile_generate_otp_response
             })
-            return mobile_generate_otp_response.get("response", {})
+            return mobile_generate_otp_response
         except Exception as e:
             self.logger.info("mobile_generate_otp_res", extra={
                 "data": {
@@ -42,7 +42,7 @@ class GupshupOtpService(MobileVerificationService):
             })
             raise HTTPResponseException(
                 status_code=400,
-                message=str(e)
+                detail=str(e)
             )
 
     def verify_otp(self, payload, secret):
@@ -59,7 +59,7 @@ class GupshupOtpService(MobileVerificationService):
                 if token is None:
                     raise HTTPResponseException(
                         status_code=404,
-                        message="Mobile Number not found"
+                        detail="Mobile Number not found"
                     )
 
                 mobile_verify_otp_response["response"]["token"] = token
@@ -84,5 +84,5 @@ class GupshupOtpService(MobileVerificationService):
             })
             raise HTTPResponseException(
                 status_code=400,
-                message=str(e)
+                detail=str(e)
             )

@@ -1,7 +1,7 @@
-from exceptions import HTTPResponseException
-from services.otp.mobile_verification_service import MobileVerificationService
-from services.otp.route_mobile.route_mobile_api import RouteMobileApi
-from services.otp.route_mobile.route_mobile_api_mock import RouteMobileApiMock
+from fastapi import HTTPException as HTTPResponseException
+from kyc_service.services.otp.mobile_verification_service import MobileVerificationService
+from .route_mobile_api import RouteMobileApi
+from .route_mobile_api_mock import RouteMobileApiMock
 
 
 class RouteMobileOtpService(MobileVerificationService):
@@ -46,7 +46,7 @@ class RouteMobileOtpService(MobileVerificationService):
             })
             raise HTTPResponseException(
                 status_code=400,
-                message=str(e)
+                detail=str(e)
             )
 
     def verify_otp(self, payload, secret):
@@ -63,7 +63,7 @@ class RouteMobileOtpService(MobileVerificationService):
                 if token is None:
                     raise HTTPResponseException(
                         status_code=404,
-                        message="Mobile Number not found"
+                        detail="Mobile Number not found"
                     )
 
                 mobile_verify_otp_response["token"] = token
@@ -86,5 +86,5 @@ class RouteMobileOtpService(MobileVerificationService):
             })
             raise HTTPResponseException(
                 status_code=400,
-                message=str(e)
+                detail=str(e)
             )

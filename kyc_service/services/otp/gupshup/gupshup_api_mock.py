@@ -2,7 +2,7 @@
 import json
 import os
 
-from services.otp.gupshup.gupshup_api import GupshupApi
+from .gupshup_api import GupshupApi
 
 
 class GupshupApiMock(GupshupApi):

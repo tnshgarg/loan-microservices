@@ -5,30 +5,27 @@ import requests
 from kyc_service.dependencies.auth import get_current_session
 from kyc_service.schemas.auth import TokenPayload
 from kyc_service.services.otp.login_otp_service import LoginOtpService
-
+from kyc_service.schemas.auth import GenerateOtpPayload, VerifyOtpPayload
 
 router = APIRouter()
 
 
-@router.get("/aadhaar")
+@router.get("/")
 async def get_aadhaar():
     return {"foo": "bar"}
 
 
-@router.post("/generate-otp")
-async def generate_otp(
-    front_image: Annotated[UploadFile, File()],
-    back_image: Annotated[UploadFile, File()],
-    signature: Annotated[UploadFile, File()],
-    gridlines_api: Annotated[GridlinesApi, Depends(gridlines_api)],
-    gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)],
-    s3_upload_service: Annotated[DriveUploadService, Depends(s3_upload_service)],
-    google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)],
-    user: Annotated[TokenPayload, Depends(get_current_session)]
-):
+@router.post("/generate-otp/")
+async def generate_otp(otp_payload: GenerateOtpPayload):
     login_service = LoginOtpService()
-    login_service._handle_generate_otp()
+    generate_otp_response = login_service._handle_generate_otp(otp_payload)
+    return generate_otp_response
 
-    return {"foo": "bar"}
+
+@router.post("/verify-otp/")
+async def generate_otp(otp_payload: VerifyOtpPayload):
+    login_service = LoginOtpService()
+    verify_otp_response = login_service._handle_verify_otp(otp_payload)
+    return verify_otp_response
 
 
