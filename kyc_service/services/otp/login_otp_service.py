@@ -4,7 +4,6 @@ from kyc_service.config import Config
 from fastapi import HTTPException as HTTPResponseException
 from .gupshup.gupshup_otp_service import GupshupOtpService
 from .mobile_verification_service import MobileVerificationService
-from .payloads import MobileGenerateOtpPayload, MobileVerifyOtpPayload
 from .route_mobile.route_mobile_otp_service import RouteMobileOtpService
 from .sales_user.sales_user_otp_service import SalesUserVerificationService
 from dal.logger import get_app_logger

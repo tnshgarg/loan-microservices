@@ -40,7 +40,7 @@ class MobileVerificationService(abc.ABC):
         if employee is None:
             return None, None
         employee_details = {
-            "unipeEmployeeId": employee["_id"],
+            "unipeEmployeeId": str(employee["_id"]),
             "name": employee.get("employeeName"),
             "verified": employee.get("verified"),
             "onboarded": employee.get("onboarded")

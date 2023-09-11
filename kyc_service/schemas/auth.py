@@ -21,4 +21,5 @@ class GenerateOtpPayload(BaseModel):
 
 class VerifyOtpPayload(BaseModel):
     mobile_number: str = None
+    otp : str = None
     provider: str = None
