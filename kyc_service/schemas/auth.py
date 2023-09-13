@@ -18,8 +18,10 @@ class TokenPayload(BaseModel):
 class GenerateOtpPayload(BaseModel):
     mobile_number: str
     provider: str
+    offer_id: str
 
 class VerifyOtpPayload(BaseModel):
     mobile_number: str = None
     otp : str = None
-    provider: str = None
+    provider: str = None,
+    offer_id: str = None

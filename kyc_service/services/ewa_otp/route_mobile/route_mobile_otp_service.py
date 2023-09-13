@@ -1,8 +1,11 @@
 from fastapi import HTTPException as HTTPResponseException
-from kyc_service.services.otp.mobile_verification_service import MobileVerificationService
+from kyc_service.services.ewa_otp.mobile_verification_service import MobileVerificationService
 from .route_mobile_api import RouteMobileApi
 from .route_mobile_api_mock import RouteMobileApiMock
-
+from dal.models.offer import Offers
+from dal.models.ewa_otp import EwaOTP
+from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
+from dal.utils import db_txn
 
 class RouteMobileOtpService(MobileVerificationService):
 
@@ -10,13 +13,13 @@ class RouteMobileOtpService(MobileVerificationService):
         super().__init__()
         self.logger = logger
         self.stage = stage
-
+        self.gdrive_upload_service = DriveUploadService(logger)
         if use_mock:
             self.route_mobile_api = RouteMobileApiMock(logger)
         else:
             self.route_mobile_api = RouteMobileApi(logger)
-
-    def generate_otp(self, payload):
+    @db_txn
+    def generate_otp(self, payload, user):
         try:
             if not self.is_mobile_registered(payload.mobile_number):
                 return {
@@ -33,6 +36,22 @@ class RouteMobileOtpService(MobileVerificationService):
 
             if mobile_generate_otp_response["response"]["status"] == "success":
                 mobile_generate_otp_response["status"] = 200
+                EwaOTP.update(
+                {
+                    "unipeEmployeeId": user["unipe_employee_id"],
+                    "status": EwaOTP.Stage.PENDING
+                },
+                {
+                    "$set": {
+                        "status": EwaOTP.Stage.EXPIRED
+                    }
+                }
+                )
+                EwaOTP.insert_one({
+                    "unipeEmployeeId": user["unipe_employee_id"],
+                    "status": EwaOTP.Stage.PENDING,
+                    "offerId": user["offer_id"],
+                })
             else:
                 raise Exception("Some Problem generating error")
 
@@ -48,8 +67,9 @@ class RouteMobileOtpService(MobileVerificationService):
                 status_code=400,
                 detail=str(e)
             )
-
-    def verify_otp(self, payload, secret):
+    
+    @db_txn
+    def verify_otp(self, payload, user):
         try:
             mobile_verify_otp_response_raw = self.route_mobile_api.verify_otp(
                 mobile_number=payload.mobile_number,
@@ -58,18 +78,21 @@ class RouteMobileOtpService(MobileVerificationService):
             mobile_verify_otp_response = mobile_verify_otp_response_raw.get(
                 "response")
             if mobile_verify_otp_response.get("status") == "success":
-                token, employee_details = self.generate_jwt_token(
-                    mobile_verify_otp_response["phone"][-10:], secret)
-                if token is None:
-                    raise HTTPResponseException(
-                        status_code=404,
-                        detail="Mobile Number not found"
-                    )
-
-                mobile_verify_otp_response["token"] = token
-                mobile_verify_otp_response["employeeDetails"] = employee_details
                 mobile_verify_otp_response["status"] = 200
-            elif mobile_verify_otp_response["code"] == "103":
+
+                EwaOTP.update_one({
+                    "unipeEmployeeId": user["unipe_employee_id"],
+                    "status": EwaOTP.Stage.PENDING,
+                    "offerId": user["offer_id"],
+                }, {"$set": {
+                    "status": EwaOTP.Stage.SUBMITTED,
+                }})
+                # Offers.update_one({
+                #     "_id": user["offer_id"],
+                # }, {"$set": {
+                #     "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(user["unipe_employee_id"]))
+                # }})
+            elif mobile_verify_otp_response["code"] == "103": 
                 mobile_verify_otp_response["status"] = 406
             else:
                 mobile_verify_otp_response["status"] = 400

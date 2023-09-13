@@ -5,7 +5,7 @@ from kyc_service.dependencies.auth import get_current_session
 from kyc_service.dependencies.kyc import gdrive_upload_service, google_sheets_service, s3_upload_service
 
 from kyc_service.schemas.auth import TokenPayload
-from kyc_service.services.ewa_otp.ewa_otp_service import VideoOtpService
+from kyc_service.services.ewa_video_otp.ewa_otp_service import VideoOtpService
 from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 from kyc_service.services.storage.uploads.s3_upload_service import S3UploadService
