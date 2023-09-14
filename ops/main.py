@@ -6,7 +6,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from dal.models.db_manager import DBManager
 from ops.auth import auth_router
-from ops.router import router
+from ops.routers.employer_approval_router import employer_approval_router
+from ops.routers.employer_emails_router import employer_emails_router
 
 # Get environment variables
 FASTAPI_HOST = os.environ["fastapi_host"]
@@ -37,7 +38,8 @@ def ping():
 
 
 employer_approval_app.include_router(auth_router)
-employer_approval_app.include_router(router)
+employer_approval_app.include_router(employer_approval_router)
+employer_approval_app.include_router(employer_emails_router)
 
 
 if __name__ == "__main__":
