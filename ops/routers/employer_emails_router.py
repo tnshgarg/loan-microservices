@@ -2,6 +2,7 @@ import os
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
 
+from ops.api_key_auth import get_api_key
 from ops.models.employer_info import EmployerInfo
 
 # Get environment variables
@@ -22,7 +23,9 @@ def ping():
 
 
 @employer_emails_router.post("/repayments")
-def send_email_for_pending_repayments(background_tasks: BackgroundTasks, employer_info: EmployerInfo):
+def send_email_for_pending_repayments(background_tasks: BackgroundTasks,
+                                      employer_info: EmployerInfo,
+                                      api_key: str = Depends(get_api_key)):
     # handler_payload = {
     #     "cognito_sign_up_info": cognito_sign_up_info
     # }
