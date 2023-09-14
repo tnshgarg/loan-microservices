@@ -11,14 +11,14 @@ router = APIRouter()
 
 @router.post("/generate-otp/")
 async def generate_otp(otp_payload: GenerateOtpPayload):
-    user={"unipe_employee_id" : bson.ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb"), "sales_user_id": bson.ObjectId("cccccccccccccccccccccccc"), "offer_id": bson.ObjectId("dddddddddddddddddddddddd")}
+    user={"unipe_employee_id" : bson.ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb")}
     ewa_service = EwaOtpService()._handle_generate_otp(otp_payload, user)
     return ewa_service
 
 
 @router.post("/verify-otp/")
 async def generate_otp(otp_payload: VerifyOtpPayload):
-    user={"unipe_employee_id" : bson.ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb"), "sales_user_id": bson.ObjectId("cccccccccccccccccccccccc"), "offer_id": bson.ObjectId("dddddddddddddddddddddddd")}
+    user={"unipe_employee_id" : bson.ObjectId("bbbbbbbbbbbbbbbbbbbbbbbb")}
     ewa_service = EwaOtpService()
     verify_otp_response = ewa_service._handle_verify_otp(otp_payload, user)
     return verify_otp_response

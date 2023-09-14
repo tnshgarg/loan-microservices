@@ -50,7 +50,7 @@ class RouteMobileOtpService(MobileVerificationService):
                 EwaOTP.insert_one({
                     "unipeEmployeeId": user["unipe_employee_id"],
                     "status": EwaOTP.Stage.PENDING,
-                    "offerId": user["offer_id"],
+                    "offerId": payload["offer_id"],
                 })
             else:
                 raise Exception("Some Problem generating error")
@@ -83,7 +83,7 @@ class RouteMobileOtpService(MobileVerificationService):
                 EwaOTP.update_one({
                     "unipeEmployeeId": user["unipe_employee_id"],
                     "status": EwaOTP.Stage.PENDING,
-                    "offerId": user["offer_id"],
+                    "offerId": payload["offer_id"],
                 }, {"$set": {
                     "status": EwaOTP.Stage.SUBMITTED,
                 }})
