@@ -1,10 +1,10 @@
 import bson
 from fastapi import APIRouter, File, Form, UploadFile, Depends
 from typing import Annotated
-from kyc_service.dependencies.auth import get_current_session
+from kyc_service.dependencies.auth import get_sales_current_session
 from kyc_service.dependencies.kyc import gdrive_upload_service, google_sheets_service, s3_upload_service
 
-from kyc_service.schemas.auth import TokenPayload
+from kyc_service.schemas.auth import SalesTokenPayload
 from kyc_service.services.ewa_video_otp.ewa_otp_service import VideoOtpService
 from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
@@ -16,7 +16,7 @@ router = APIRouter()
 @router.post("/generate-ewa-otp")
 async def generate_ewa_otp(
     offer_id: Annotated[str, Form()],
-    user: Annotated[TokenPayload, Depends(get_current_session)]
+    user: Annotated[SalesTokenPayload, Depends(get_sales_current_session)]
 ):
     generated_otp = VideoOtpService(
         unipe_employee_id=user.unipe_employee_id,
@@ -35,7 +35,7 @@ async def verify_ewa_otp(
     gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)],
     s3_upload_service: Annotated[S3UploadService, Depends(s3_upload_service)],
     google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)],
-    user: Annotated[TokenPayload, Depends(get_current_session)]
+    user: Annotated[SalesTokenPayload, Depends(get_sales_current_session)]
 ):
     VideoOtpService(
         unipe_employee_id=user.unipe_employee_id,

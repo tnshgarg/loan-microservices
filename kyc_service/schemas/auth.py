@@ -9,12 +9,19 @@ class TokenSchema(BaseModel):
     refresh_token: str
 
 
-class TokenPayload(BaseModel):
+class SalesTokenPayload(BaseModel):
     unipe_employee_id: Any = None
     exp: int = None
     sales_user_id: Any = None
     client_id: str = None
+    type: str = None
 
+
+class TokenPayload(BaseModel):
+    unipe_employee_id: Any = None
+    exp: int = None
+    client_id: str = None
+    type: str = None
 class GenerateOtpPayload(BaseModel):
     mobile_number: str
     provider: str

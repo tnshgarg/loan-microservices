@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, UploadFile, Depends
 import base64
 import requests
-from kyc_service.dependencies.auth import get_current_session
+from kyc_service.dependencies.auth import get_sales_current_session
 from kyc_service.dependencies.kyc import gdrive_upload_service, google_sheets_service, gridlines_api, s3_upload_service
 from kyc_service.schemas.auth import TokenPayload
 
@@ -29,7 +29,7 @@ async def upload_aadhaar(
     gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)],
     s3_upload_service: Annotated[DriveUploadService, Depends(s3_upload_service)],
     google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)],
-    user: Annotated[TokenPayload, Depends(get_current_session)]
+    user: Annotated[TokenPayload, Depends(get_sales_current_session)]
 ):
     kyc_service = KYCOCRService(
         user.unipe_employee_id,
@@ -51,7 +51,7 @@ async def upload_user_photos(user_photo: Annotated[UploadFile, File()],
                              gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)],
                              s3_upload_service: Annotated[S3UploadService, Depends(s3_upload_service)],
                              google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)],
-                             user: Annotated[TokenPayload, Depends(get_current_session)]):
+                             user: Annotated[TokenPayload, Depends(get_sales_current_session)]):
     kyc_service = KYCOCRService(
         user.unipe_employee_id,
         user.sales_user_id,

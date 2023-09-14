@@ -38,7 +38,7 @@ class RouteMobileOtpService(MobileVerificationService):
                 mobile_generate_otp_response["status"] = 200
                 EwaOTP.update(
                 {
-                    "unipeEmployeeId": user["unipe_employee_id"],
+                    "unipeEmployeeId": user.unipe_employee_id,
                     "status": EwaOTP.Stage.PENDING
                 },
                 {
@@ -48,9 +48,9 @@ class RouteMobileOtpService(MobileVerificationService):
                 }
                 )
                 EwaOTP.insert_one({
-                    "unipeEmployeeId": user["unipe_employee_id"],
+                    "unipeEmployeeId": user.unipe_employee_id,
                     "status": EwaOTP.Stage.PENDING,
-                    "offerId": payload["offer_id"],
+                    "offerId": payload.offer_id,
                 })
             else:
                 raise Exception("Some Problem generating error")
@@ -81,16 +81,16 @@ class RouteMobileOtpService(MobileVerificationService):
                 mobile_verify_otp_response["status"] = 200
 
                 EwaOTP.update_one({
-                    "unipeEmployeeId": user["unipe_employee_id"],
+                    "unipeEmployeeId": user.unipe_employee_id,
                     "status": EwaOTP.Stage.PENDING,
-                    "offerId": payload["offer_id"],
+                    "offerId": payload.offer_id,
                 }, {"$set": {
                     "status": EwaOTP.Stage.SUBMITTED,
                 }})
                 # Offers.update_one({
                 #     "_id": user["offer_id"],
                 # }, {"$set": {
-                #     "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(user["unipe_employee_id"]))
+                #     "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(user.unipe_employee_id))
                 # }})
             elif mobile_verify_otp_response["code"] == "103": 
                 mobile_verify_otp_response["status"] = 406

@@ -61,24 +61,40 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid Client"
         )
-
-    sales_user = SalesUser.find_one({"hashed_pw": form_data.password})
     employee = Employee.find_one({"mobile": form_data.username})
-    if employee is None or sales_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Can't Locate User"
-        )
-
-    return {
-        "access_token": create_access_token(
-            unipe_employee_id=str(employee["_id"]),
-            sales_user_id=str(sales_user["_id"]),
-            client_id=form_data.client_id
-        ),
-        "refresh_token": create_refresh_token(
-            unipe_employee_id=str(employee["_id"]),
-            sales_user_id=str(sales_user["_id"]),
-            client_id=form_data.client_id
-        ),
-    }
+    if employee["asset"] == "sales":
+        sales_user = SalesUser.find_one({"hashed_pw": form_data.password})
+        if employee is None or sales_user is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can't Locate User"
+            )
+        return {
+            "access_token": create_access_token(
+                unipe_employee_id=str(employee["_id"]),
+                sales_user_id=str(sales_user["_id"]),
+                client_id=form_data.client_id
+            ),
+            "refresh_token": create_refresh_token(
+                unipe_employee_id=str(employee["_id"]),
+                sales_user_id=str(sales_user["_id"]),
+                client_id=form_data.client_id
+            ),
+        }
+    else:
+         if employee is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can't Locate User"
+            )
+         return {
+            "access_token": create_access_token(
+                unipe_employee_id=str(employee["_id"]),
+                client_id=form_data.client_id
+            ),
+            "refresh_token": create_refresh_token(
+                unipe_employee_id=str(employee["_id"]),
+                client_id=form_data.client_id
+            ),
+        }
+   
