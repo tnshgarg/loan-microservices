@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field
 
+# add date field as well , get from async-jobs
 
-class EmployerInfo(BaseModel):
+
+class EmployerEmailPayload(BaseModel):
 
     # required fields
     employer_id: str = Field(alias="employerId")
