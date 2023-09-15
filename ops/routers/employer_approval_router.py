@@ -4,9 +4,12 @@ from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
 from typing_extensions import Annotated
 
-from background_tasks.final_employer_approval import FinalEmployerApproval
-from background_tasks.send_for_final_approval import SendForFinalApproval
-from background_tasks.trigger_employer_approval import TriggerEmployerApproval
+from background_tasks.employer_approval.final_employer_approval import \
+    FinalEmployerApproval
+from background_tasks.employer_approval.send_for_final_approval import \
+    SendForFinalApproval
+from background_tasks.employer_approval.trigger_employer_approval import \
+    TriggerEmployerApproval
 from ops.auth import get_user
 from ops.forms.employer_approval_form import get_employer_approval_form
 from ops.forms.final_approval_form import get_final_approval_form
