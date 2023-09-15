@@ -8,7 +8,7 @@ from starlette.status import HTTP_403_FORBIDDEN
 OPS_MICROSERVICE_API_KEY = os.environ["OPS_MICROSERVICE_API_KEY"]
 
 api_key_header = APIKeyHeader(
-    name="ops-microservice-api-key", auto_error=False)
+    name="x-api-key", auto_error=False)
 
 
 async def get_api_key(api_key: str = Security(api_key_header)):
