@@ -16,4 +16,4 @@ RUN pip install -r /usr/src/app/requirements.txt
 COPY . /usr/src/app
 
 # run gunicorn
-CMD uvicorn --host 0.0.0.0 --port 80 ops.main:employer_approval_app
+CMD uvicorn --host 0.0.0.0 --port 80 ops.main:employer_app

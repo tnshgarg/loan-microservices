@@ -43,5 +43,5 @@ employer_app.include_router(employer_emails_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:employer_approval_app", host=FASTAPI_HOST,
+    uvicorn.run("main:employer_app", host=FASTAPI_HOST,
                 port=5000, log_level="info", reload=True)
