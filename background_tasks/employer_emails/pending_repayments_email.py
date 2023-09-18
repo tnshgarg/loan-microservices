@@ -37,7 +37,7 @@ class PendingRepaymentsEmail(BackgroundTask):
         # TODO : fetch sm email
         # TODO :fetch rm email
         # fetch internal email
-        # unipe_internal_email = "employer-mails@unipe.money"
+        # unipe_internal_email = "qa-mails@unipe.money"
         # mail_to_addresses.append(unipe_internal_email)
 
         # create email attachment
