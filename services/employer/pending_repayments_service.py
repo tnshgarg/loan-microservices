@@ -121,6 +121,7 @@ class EmployerPendingRepaymentsService:
             {
                 "$project": {
                     "_id": 0,
+                    "employerEmployeeId": "$employment.employerEmployeeId",
                     "name": "$employee.employeeName",
                     "number": "$employee.mobile",
                     "email": "$employee.email",
@@ -130,8 +131,7 @@ class EmployerPendingRepaymentsService:
                     "utrNumber": "$disbursement.bankReferenceNumber",
                     "offerAvailedDate": "$offer.availedAt",
                     "amountCreditedDate": "$offer.disbursedAt",
-                    "dueDate": "$dueDate",
-                    "employerEmployeeId": "$employment.employerEmployeeId"
+                    "dueDate": "$dueDate"
                 }
             }
         ]
