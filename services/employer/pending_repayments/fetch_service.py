@@ -4,7 +4,7 @@ from dal.models.repayment import Repayments
 from ops.models.employer_email_payload import EmployerEmailPayload
 
 
-class EmployerPendingRepaymentsService:
+class EmployerPendingRepaymentsFetchService:
 
     def __init__(self, employer_info: EmployerEmailPayload) -> None:
         self.employer_info = employer_info
@@ -128,6 +128,7 @@ class EmployerPendingRepaymentsService:
                     "bankAccountNumber": "$bankAccount.data.accountNumber",
                     "ifscCode": "$bankAccount.data.ifsc",
                     "loanAmount": "$disbursement.loanAmount",
+                    "paidAmount": "$paidAmount",
                     "utrNumber": "$disbursement.bankReferenceNumber",
                     "offerAvailedDate": "$offer.availedAt",
                     "amountCreditedDate": "$offer.disbursedAt",
