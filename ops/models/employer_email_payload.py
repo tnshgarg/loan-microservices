@@ -10,6 +10,11 @@ class RequestDate(BaseModel):
     month: int
     day: int
 
+    # return formatted date
+    def get_date_string(self):
+        date_string = f"{self.day}/{self.month}/{self.year}"
+        return date_string
+
 
 class EmployerEmailPayload(BaseModel):
 
