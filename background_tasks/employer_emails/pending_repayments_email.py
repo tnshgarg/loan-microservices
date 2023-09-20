@@ -1,9 +1,13 @@
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from ops.models.employer_email_payload import EmployerEmailPayload
+from ops.templates.repayment_reminder_template import \
+    get_repayment_reminder_template
 from services.comms.emailing_service import FileAttachment, GmailService
-from services.employer.pending_repayments_service import \
-    EmployerPendingRepaymentsService
+from services.employer.pending_repayments.fetch_service import \
+    EmployerPendingRepaymentsFetchService
+from services.employer.pending_repayments.summary_service import \
+    EmployerPendingRepaymentsSummaryService
 
 
 class PendingRepaymentsEmail(BackgroundTask):
@@ -13,12 +17,19 @@ class PendingRepaymentsEmail(BackgroundTask):
         employer_info: EmployerEmailPayload = payload["employer_info"]
 
         # get pending repayments dataframe
-        pending_repayments_df = EmployerPendingRepaymentsService(
+        pending_repayments_df = EmployerPendingRepaymentsFetchService(
             employer_info).fetch_pending_repayments()
 
         # check if no pending repayments
         if pending_repayments_df is None:
             return
+
+        # get pending repayments summary
+        pending_repayments_summary = EmployerPendingRepaymentsSummaryService(
+            employer_info, pending_repayments_df).fetch_pending_repayments_summary()
+
+        # get request date string
+        request_date_string = employer_info.request_date.get_date_string()
 
         # send mail to tech-ops
         sender_email = "reports@unipe.money"
@@ -43,18 +54,21 @@ class PendingRepaymentsEmail(BackgroundTask):
         # create email attachment
         pending_repayments_csv = pending_repayments_df.to_csv(index=False)
         files = [FileAttachment(
-            name="pending_repayments_data.csv",  # suggest name
+            # suggest name
+            name=f"pending_repayments_data_{request_date_string}.csv",
             data_binary=pending_repayments_csv
         )]
+
+        # get mail HTML template
+        mail_html_content = get_repayment_reminder_template(
+            pending_repayments_summary)
 
         # send email to stakeholders
         with GmailService(sender_email=sender_email) as mailing_service:
             mailing_service.sendmail(
                 from_name="Employer Notifications",  # suggest name
                 to_addresses=mail_to_addresses,
-                subject=f'''Upcoming Pending Repayments Notification ''',  # add date
-                message_text=f"""
-                        Attached is the list of pending repayments
-                    """,
-                files=files
+                subject=f'''Upcoming Auto-deduction of Unipe Repayments on {request_date_string}''',
+                files=files,
+                html_blocks=[mail_html_content]
             )
