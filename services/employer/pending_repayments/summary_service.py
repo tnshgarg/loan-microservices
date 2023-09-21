@@ -45,14 +45,23 @@ class EmployerPendingRepaymentsSummaryService:
         }
         return repayment_account_details
 
+    def _convert_column_date_format(self, df, columns):
+        for column in columns:
+            df[column] = df[column].dt.strftime(
+                "%d/%m/%Y")
+        return
+
     def _get_summary_df(self):
         summary_columns = ["employerEmployeeId", "bankAccountNumber",
                            "loanAmount", "utrNumber", "amountCreditedDate", "dueDate"]
         new_summary_columns = ["Employee ID", "Bank Account Number",
                                "Loan Amount", "UTR Number", "Amount Credited Date", "Due Date"]
 
-        summary_df = self.pending_repayments_df[summary_columns]
+        summary_df = self.pending_repayments_df[summary_columns].copy()
         summary_df.columns = new_summary_columns
+
+        self._convert_column_date_format(
+            df=summary_df, columns=["Amount Credited Date", "Due Date"])
 
         return summary_df
 
