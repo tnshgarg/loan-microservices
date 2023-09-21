@@ -353,7 +353,7 @@ def get_repayment_reminder_template(pending_repayments_summary):
         <td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:30px;">
         <div style="color:#101112;direction:ltr;font-family:'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;font-size:14px;font-weight:400;letter-spacing:0px;line-height:150%;text-align:left;mso-line-height-alt:21px;">
         <p style="margin: 0; margin-bottom: 16px;">For ease of access and future reference, we have also attached a CSV file containing the same data.<br/><br/>Please process the repayment at the earliest. If you've already made the payment or if there are any discrepancies in the details provided, do reach out to us immediately.<br/><br/>Thank you for your prompt attention to this matter. Let's keep ensuring timely financial solutions for our employees!</p>
-        <p style="margin: 0;">Warm regards,<br/><br/>{{{{Sender's Name}}}}<br/>{{{{Role/Position}}}}<br/>Unipe.Money</p>
+        <p style="margin: 0;">Warm regards,<br/><br/>Customer Support Team<br/>Unipe.Money</p>
         </div>
         </td>
         </tr>
