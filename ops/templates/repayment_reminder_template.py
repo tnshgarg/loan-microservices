@@ -37,11 +37,11 @@ def get_table_html(summary_df: pd.DataFrame):
             border_radius_dynamic_value = "0 15px 15px"
 
         table_row_html = f'''
-                <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-{i+4}" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f9f9f9;" width="100%">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-{i+4}" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 600px;" width="100%">
                 <tbody>
                 <tr>
                 <td>
-                <table align="center" border="0" cellpadding="0" cellspacing="0" class="row-content" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; border-bottom: {border_bottom_dynamic_value} solid #cad7d0; border-left: 1px solid #cad7d0; border-radius: 0 {border_radius_dynamic_value}; border-right: 1px solid #cad7d0; border-top: 0 solid #cad7d0; color: #000; width: 600px; margin: 0 auto;" width="600">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" class="row-content" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; border-bottom: {border_bottom_dynamic_value} solid #cad7d0; border-left: 1px solid #cad7d0; border-radius: 0 {border_radius_dynamic_value}; border-right: 1px solid #cad7d0; border-top: 0 solid #cad7d0; color: #000; width: 540px; margin: 0 auto;" width="600">
                 <tbody>
                 <tr>
                 {row_cells_html}
@@ -247,11 +247,11 @@ def get_repayment_reminder_template(pending_repayments_summary):
         </tr>
         </tbody>
         </table>
-        <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-3" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f9f9f9;" width="100%">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-3" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 600px;" width="100%">
         <tbody>
         <tr>
         <td>
-        <table align="center" border="0" cellpadding="0" cellspacing="0" class="row-content" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #e9f7f2; border-bottom: 1px solid #cad7d0; border-left: 1px solid #cad7d0; border-radius: 15px 15px 0 0; border-right: 1px solid #cad7d0; border-top: 1px solid #cad7d0; color: #000; width: 600px; margin: 0 auto;" width="600">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" class="row-content" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #e9f7f2; border-bottom: 1px solid #cad7d0; border-left: 1px solid #cad7d0; border-radius: 15px 15px 0 0; border-right: 1px solid #cad7d0; border-top: 1px solid #cad7d0; color: #000; width: 540px; margin: 0 auto;" width="600">
         <tbody>
         <tr>
         <td class="column column-1" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 5px; vertical-align: middle; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="16.666666666666668%">
