@@ -1,8 +1,8 @@
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from ops.models.employer_email_payload import EmployerEmailPayload
-from ops.templates.repayment_reminder_template import \
-    get_repayment_reminder_template
+from ops.templates.repayments_reminder.deduction_at_source import \
+    get_repayments_deduction_at_source_template
 from services.comms.emailing_service import FileAttachment, GmailService
 from services.employer.pending_repayments.fetch_service import \
     EmployerPendingRepaymentsFetchService
@@ -60,7 +60,7 @@ class PendingRepaymentsEmail(BackgroundTask):
         )]
 
         # get mail HTML template
-        mail_html_content = get_repayment_reminder_template(
+        mail_html_content = get_repayments_deduction_at_source_template(
             pending_repayments_summary)
 
         # send email to stakeholders
@@ -68,7 +68,7 @@ class PendingRepaymentsEmail(BackgroundTask):
             mailing_service.sendmail(
                 from_name="Employer Notifications",  # suggest name
                 to_addresses=mail_to_addresses,
-                subject=f'''Upcoming Auto-deduction of Unipe Repayments on {request_date_string}''',
+                subject=f'''Unipe Repayment Alert: Action Required by {request_date_string}''',
                 files=files,
                 html_blocks=[mail_html_content]
             )
