@@ -220,7 +220,7 @@ def get_repayment_reminder_template(pending_repayments_summary):
         <li style="text-align: left;"><strong>Total Due Amount</strong>: ₹{total_due_amount}</li>
         <li style="text-align: left;"><strong>Due Date</strong>: {due_date}</li>
         </ul>
-        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">Failure to settle this amount by the specified date will incur a penalty of ₹{{{{xyz}}}} and an added interest rate of {{{{x}}}}% per month.</p>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">Failure to settle this amount by the specified date will incur a penalty of ₹250 per employee per day or an added interest rate of 5% per month, whichever is higher.</p>
         <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 18px;"> </p>
         <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>Please note</strong>:</p>
         <ul style="list-style-type: circle; line-height: 1.5; mso-line-height-alt: 21px; font-size: 14px;">
