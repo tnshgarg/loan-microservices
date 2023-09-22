@@ -1,9 +1,12 @@
 import json
 import os
 
+import bson
+
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from dal.models.ops_employer_login import OpsEmployerLogins
+from dal.models.sales_users import SalesUser
 from services.comms.emailing_service import FileAttachment, GmailService
 from services.comms.html_blocks_service import HTMLBlocksService
 
@@ -19,6 +22,12 @@ class SendForFinalApproval(BackgroundTask):
         ops_employer_login_info = OpsEmployerLogins.find_one(
             {"employer_id": employer_id}, {"_id": 0})
         company_name = ops_employer_login_info["company_name"]
+
+        # fetch sales user details from db
+        sales_user_id = bson.ObjectId(ops_employer_login_info["sales_id"])
+        sales_user_info = SalesUser.find_one(
+            {"_id": sales_user_id}, {"hashed_pw": 0}
+        )
 
         # set approval stage as pending in employers collection
         employer_update_result = Employer.update_one({
@@ -63,6 +72,8 @@ class SendForFinalApproval(BackgroundTask):
                     [
                         ("Employer Information Received",
                          ops_employer_login_info),
+                        ("Sales User Information",
+                         sales_user_info),
                         ("Additional Notes by RM",
                          notes),
                     ],
