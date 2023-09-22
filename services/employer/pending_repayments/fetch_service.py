@@ -153,3 +153,23 @@ class EmployerPendingRepaymentsFetchService:
             return None
 
         return pending_repayments_df
+
+    @staticmethod
+    def fetch_csv_columns_map():
+        csv_columns_map = {
+            "_id": 0,
+            "employerEmployeeId": "Employer Employee ID",
+            "name": "Name",
+            "number": "Number",
+            "email": "Email",
+            "bankAccountNumber": "Bank Account Number",
+            "ifscCode": "IFSC Code",
+            "loanAmount": "Loan Amount",
+            "paidAmount": "Paid Amount",
+            "utrNumber": "UTR Number",
+            "offerAvailedDate": "Offer Availed Date",
+            "amountCreditedDate": "Amount Credited Date",
+            "dueDate": "Due Date"
+        }
+
+        return csv_columns_map

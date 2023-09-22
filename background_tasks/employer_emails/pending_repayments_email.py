@@ -1,6 +1,8 @@
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from ops.models.employer_email_payload import EmployerEmailPayload
+from ops.templates.repayments_reminder.auto_deductions import \
+    get_repayments_auto_deductions_template
 from ops.templates.repayments_reminder.deduction_at_source import \
     get_repayments_deduction_at_source_template
 from services.comms.emailing_service import FileAttachment, GmailService
@@ -52,6 +54,9 @@ class PendingRepaymentsEmail(BackgroundTask):
         # mail_to_addresses.append(unipe_internal_email)
 
         # create email attachment
+        csv_columns_map = EmployerPendingRepaymentsFetchService.fetch_csv_columns_map()
+        pending_repayments_df = pending_repayments_df.rename(
+            columns=csv_columns_map)
         pending_repayments_csv = pending_repayments_df.to_csv(index=False)
         files = [FileAttachment(
             # suggest name
