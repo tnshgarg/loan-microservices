@@ -8,6 +8,8 @@ from ops.templates.repayments_reminder.deduction_at_source import \
 from services.comms.emailing_service import FileAttachment, GmailService
 from services.employer.pending_repayments.fetch_service import \
     EmployerPendingRepaymentsFetchService
+from services.employer.pending_repayments.related_email_ids_service import \
+    RelatedEmailIDsService
 from services.employer.pending_repayments.summary_service import \
     EmployerPendingRepaymentsSummaryService
 
@@ -37,21 +39,8 @@ class PendingRepaymentsEmail(BackgroundTask):
         sender_email = "reports@unipe.money"
 
         # fetch addresses to mail to
-        mail_to_addresses = []
-        # fetch registrar email
-        employer_find_res = Employer.find_one(
-            {
-                "_id": employer_info.employer_id
-            }
-        )
-        employer_registrar_email = employer_find_res.get(
-            "registrar", {}).get("email")
-        mail_to_addresses.append(employer_registrar_email)
-        # TODO : fetch sm email
-        # TODO :fetch rm email
-        # fetch internal email
-        # unipe_internal_email = "qa-mails@unipe.money"
-        # mail_to_addresses.append(unipe_internal_email)
+        mail_to_addresses = RelatedEmailIDsService(
+            employer_info).fetch_related_email_ids()
 
         # create email attachment
         csv_columns_map = EmployerPendingRepaymentsFetchService.fetch_csv_columns_map()
