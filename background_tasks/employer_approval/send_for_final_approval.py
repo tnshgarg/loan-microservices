@@ -26,7 +26,14 @@ class SendForFinalApproval(BackgroundTask):
         # fetch sales user details from db
         sales_user_id = bson.ObjectId(ops_employer_login_info["sales_id"])
         sales_user_info = SalesUser.find_one(
-            {"_id": sales_user_id}, {"hashed_pw": 0}
+            {
+                "_id": sales_user_id
+            },
+            {
+                "_id": 0,
+                "name": 1,
+                "email": 1
+            }
         )
 
         # set approval stage as pending in employers collection
