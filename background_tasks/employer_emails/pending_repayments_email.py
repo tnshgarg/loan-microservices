@@ -1,9 +1,9 @@
 from background_tasks.background_task import BackgroundTask
 from dal.models.employer import Employer
 from ops.models.employer_email_payload import EmployerEmailPayload
-from ops.templates.repayments_reminder.auto_deduction import \
+from ops.templates.repayments_reminder.html_content.auto_deduction import \
     get_repayments_auto_deduction_template
-from ops.templates.repayments_reminder.deduction_at_source import \
+from ops.templates.repayments_reminder.html_content.deduction_at_source import \
     get_repayments_deduction_at_source_template
 from services.comms.emailing_service import FileAttachment, GmailService
 from services.employer.pending_repayments.fetch_service import \
