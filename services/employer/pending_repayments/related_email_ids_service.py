@@ -46,10 +46,12 @@ class RelatedEmailIDsService:
             registrar_email = employer_res.get("registrarEmail")
             sales_users_email = employer_res.get("salesUsersEmail")
 
-            related_email_ids.append(registrar_email)
-            related_email_ids += sales_users_email
+            # comment these out
+            # related_email_ids.append(registrar_email)
+            # related_email_ids += sales_users_email
 
-        unipe_internal_email = "qa-mails@unipe.money"
+        # rename to prod mails
+        unipe_internal_email = "prod-mails@unipe.money"
         related_email_ids.append(unipe_internal_email)
 
         return related_email_ids
