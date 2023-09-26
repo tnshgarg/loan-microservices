@@ -1,7 +1,7 @@
 from ops.templates.repayments_reminder.components import get_table_html
 
 
-def get_repayments_auto_deductions_template(pending_repayments_summary):
+def get_repayments_auto_deduction_template(pending_repayments_summary):
     company_name = pending_repayments_summary.get("company_name")
     total_due_amount = pending_repayments_summary.get("total_due_amount")
     due_date = pending_repayments_summary.get("due_date")
