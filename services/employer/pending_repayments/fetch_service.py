@@ -1,12 +1,12 @@
 import pandas as pd
 
 from dal.models.repayment import Repayments
-from ops.models.employer_email_payload import EmployerEmailPayload
+from ops.models.employer_email_payload import RepaymentsEmployerEmailPayload
 
 
 class EmployerPendingRepaymentsFetchService:
 
-    def __init__(self, employer_info: EmployerEmailPayload) -> None:
+    def __init__(self, employer_info: RepaymentsEmployerEmailPayload) -> None:
         self.employer_info = employer_info
 
     def _cursor_to_dataframe(self, cursor):

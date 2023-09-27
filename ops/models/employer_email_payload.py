@@ -16,7 +16,7 @@ class RequestDate(BaseModel):
         return date_string
 
 
-class EmployerEmailPayload(BaseModel):
+class RepaymentsEmployerEmailPayload(BaseModel):
 
     # required fields
     employer_id: str = Field(alias="employerId")
