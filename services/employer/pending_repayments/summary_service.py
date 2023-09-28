@@ -33,7 +33,10 @@ class EmployerPendingRepaymentsSummaryService:
             "pId": self.employer_info.employer_id,
             "uType": "collectionAccount"
         })
+        if bank_account_find_res is None:
+            return {}
         bank_account_data = bank_account_find_res.get("data", {})
+
         beneficiary_name = bank_account_data.get("accountHolderName")
         account_number = bank_account_data.get("accountNumber")
         ifsc = bank_account_data.get("ifsc")
