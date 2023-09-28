@@ -10,6 +10,7 @@ ENV PYTHONUNBUFFERED 1
 
 # add and install requirements
 COPY ./ops/requirements.txt /usr/src/app/requirements.txt
+RUN apk --no-cache add musl-dev linux-headers g++
 RUN pip install -r /usr/src/app/requirements.txt
 
 # add app
