@@ -1,21 +1,20 @@
 from background_tasks.background_task import BackgroundTask
-from ops.models.employer_email_payload import RepaymentsEmployerEmailPayload
+from ops.models.employer_email_payload import EmployerRepaymentsEmailPayload
 from services.comms.emailing_service import FileAttachment, GmailService
 from services.employer.pending_repayments.email_template_service import \
     EmailTemplateService
 from services.employer.pending_repayments.fetch_service import \
     EmployerPendingRepaymentsFetchService
-from services.employer.pending_repayments.related_email_ids_service import \
-    RelatedEmailIDsService
 from services.employer.pending_repayments.summary_service import \
     EmployerPendingRepaymentsSummaryService
+from services.employer.related_email_ids_service import RelatedEmailIDsService
 
 
 class PendingRepaymentsEmail(BackgroundTask):
 
     def run(self, payload):
         # check typecasting
-        employer_info: RepaymentsEmployerEmailPayload = payload["employer_info"]
+        employer_info: EmployerRepaymentsEmailPayload = payload["employer_info"]
 
         # get pending repayments dataframe
         pending_repayments_df = EmployerPendingRepaymentsFetchService(

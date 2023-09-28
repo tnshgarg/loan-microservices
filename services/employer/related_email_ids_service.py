@@ -1,10 +1,13 @@
+from typing import Union
+
 from dal.models.employer import Employer
-from ops.models.employer_email_payload import RepaymentsEmployerEmailPayload
+from ops.models.employer_email_payload import (
+    EmployerDisbursementsEmailPayload, EmployerRepaymentsEmailPayload)
 
 
 class RelatedEmailIDsService:
 
-    def __init__(self, employer_info: RepaymentsEmployerEmailPayload) -> None:
+    def __init__(self, employer_info: Union[EmployerRepaymentsEmailPayload, EmployerDisbursementsEmailPayload]) -> None:
         self.employer_info = employer_info
 
     def _get_aggregation_pipeline(self):
@@ -51,7 +54,7 @@ class RelatedEmailIDsService:
             # related_email_ids += sales_users_email
 
         # rename to prod mails
-        unipe_internal_email = "prachir@unipe.money"
+        unipe_internal_email = "prod-mails@unipe.money"
         related_email_ids.append(unipe_internal_email)
 
         return related_email_ids
