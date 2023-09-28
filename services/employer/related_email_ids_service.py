@@ -54,7 +54,7 @@ class RelatedEmailIDsService:
             # related_email_ids += sales_users_email
 
         # rename to prod mails
-        unipe_internal_email = "prod-mails@unipe.money"
+        unipe_internal_email = "prod-repayment-reminder@unipe.money"
         related_email_ids.append(unipe_internal_email)
 
         return related_email_ids

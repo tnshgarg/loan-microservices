@@ -1,7 +1,11 @@
 <body>
-    <form action="http://localhost:8000/dev/kyc-service/aadhaar" enctype="multipart/form-data" method="post">
-        <input name="front_image" type="file">
-        <input name="back_image" type="file">
-        <input type="submit">
-    </form>
+  <form
+    action="http://127.0.0.1:5000/dev/user-upload-service"
+    enctype="multipart/form-data"
+    method="post"
+  >
+    <input name="user_story" type="file" />
+    <!-- <input name="back_image" type="file" /> -->
+    <input type="submit" />
+  </form>
 </body>
