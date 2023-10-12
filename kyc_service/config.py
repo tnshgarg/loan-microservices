@@ -22,6 +22,7 @@ class Config:
     MOBILE_APP_ASSET = "mobile-iota"
     WEBAPP_APP_ASSET = "web"
     SALES_APP_MAX_LIMIT = 10000
+    KARZA_API_KEY=os.getenv("KARZA_API_KEY")
 class SlackWebhooks:
     DEV_CHANNEL = os.environ.get("SLACK_DEV_CHANNEL")
     GITHUB_ACTIONS = os.environ.get("SLACK_GITHUB_ACTIONS")
