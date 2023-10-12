@@ -3,9 +3,9 @@ import abc
 from dal.models.employees import Employee
 
 from .payloads import MobileGenerateOtpPayload, MobileVerifyOtpPayload
+from kyc_service.services.storage.uploads.media_upload_service import MediaUploadService
 
-
-class MobileVerificationService(abc.ABC):
+class MobileVerificationService(abc.ABC, MediaUploadService):
     """
     Interface to be used for creating payment services
     """

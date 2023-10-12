@@ -6,14 +6,27 @@ from dal.models.offer import Offers
 from dal.models.ewa_otp import EwaOTP
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 from dal.utils import db_txn
-
+from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsService
+from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
+from kyc_service.services.storage.uploads.s3_upload_service import S3UploadService
+import bson
 class RouteMobileOtpService(MobileVerificationService):
 
-    def __init__(self, logger, stage, use_mock=False) -> None:
-        super().__init__()
+    def __init__(self, logger, stage,
+                 unipe_employee_id: bson.ObjectId,
+                 sales_user_id: bson.ObjectId,
+                 gdrive_upload_service: DriveUploadService,
+                 s3_upload_service: S3UploadService,
+                 google_sheets_service: GoogleSheetsService, use_mock=False) -> None:
+        super().__init__(
+            unipe_employee_id,
+            sales_user_id,
+            gdrive_upload_service,
+            s3_upload_service,
+            google_sheets_service
+        )
         self.logger = logger
         self.stage = stage
-        self.gdrive_upload_service = DriveUploadService(logger)
         if use_mock:
             self.route_mobile_api = RouteMobileApiMock(logger)
         else:
@@ -87,11 +100,9 @@ class RouteMobileOtpService(MobileVerificationService):
                 }, {"$set": {
                     "status": EwaOTP.Stage.SUBMITTED,
                 }})
-                # Offers.update_one({
-                #     "_id": user["offer_id"],
-                # }, {"$set": {
-                #     "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(user.unipe_employee_id))
-                # }})
+                self._update_tracking_google_sheet([
+                    [f'ewa_otp_{payload.offer_id}', 'SUCCESS'],
+                ])
             elif mobile_verify_otp_response["code"] == "103": 
                 mobile_verify_otp_response["status"] = 406
             else:
