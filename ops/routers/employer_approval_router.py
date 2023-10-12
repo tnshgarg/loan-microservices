@@ -4,9 +4,12 @@ from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
 from typing_extensions import Annotated
 
-from background_tasks.final_employer_approval import FinalEmployerApproval
-from background_tasks.send_for_final_approval import SendForFinalApproval
-from background_tasks.trigger_employer_approval import TriggerEmployerApproval
+from background_tasks.employer_approval.final_employer_approval import \
+    FinalEmployerApproval
+from background_tasks.employer_approval.send_for_final_approval import \
+    SendForFinalApproval
+from background_tasks.employer_approval.trigger_employer_approval import \
+    TriggerEmployerApproval
 from ops.auth import get_user
 from ops.forms.employer_approval_form import get_employer_approval_form
 from ops.forms.final_approval_form import get_final_approval_form
@@ -17,13 +20,13 @@ from ops.utils.privilege_level import is_sales_user_privileged
 # Get environment variables
 STAGE = os.environ["STAGE"]
 
-router = APIRouter(
+employer_approval_router = APIRouter(
     prefix=f"/{STAGE}/ops-service/employer-approval",
     tags=["employer-approval"]
 )
 
 
-@router.get("/ping")
+@employer_approval_router.get("/ping")
 def ping():
     return {
         "status": "success",
@@ -31,7 +34,7 @@ def ping():
     }
 
 
-@router.post("/trigger")
+@employer_approval_router.post("/trigger")
 def trigger_employer_approval(background_tasks: BackgroundTasks,
                               cognito_sign_up_info: CognitoSignUp):
     handler_payload = {
@@ -45,7 +48,7 @@ def trigger_employer_approval(background_tasks: BackgroundTasks,
     }
 
 
-@router.get("/start")
+@employer_approval_router.get("/start")
 def start_employer_approval(background_tasks: BackgroundTasks,
                             employer_id: str,
                             user: Optional[dict] = Depends(get_user)):
@@ -53,7 +56,7 @@ def start_employer_approval(background_tasks: BackgroundTasks,
     return get_employer_approval_form(employer_id)
 
 
-@router.post("/start-submit")
+@employer_approval_router.post("/start-submit")
 def submit_employer_approval_form(background_tasks: BackgroundTasks,
                                   employer_id: Annotated[str, Form()],
                                   notes: Annotated[str, Form()],
@@ -71,12 +74,12 @@ def submit_employer_approval_form(background_tasks: BackgroundTasks,
     return get_form_submit_response("Employer Approval Form Submitted Successfully")
 
 
-@router.get("/approve")
+@employer_approval_router.get("/approve")
 def approve_employer_approval(background_tasks: BackgroundTasks, employer_id: str, user: Optional[dict] = Depends(get_user)):
     return get_final_approval_form()
 
 
-@router.post("/approve-submit")
+@employer_approval_router.post("/approve-submit")
 def submit_final_approval_form(background_tasks: BackgroundTasks,
                                employer_id: Annotated[str, Form()],
                                approve_or_deny: Annotated[str, Form()],
