@@ -22,6 +22,10 @@ class Config:
     MOBILE_APP_ASSET = "mobile-iota"
     WEBAPP_APP_ASSET = "web"
     SALES_APP_MAX_LIMIT = 10000
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+
+
 class SlackWebhooks:
     DEV_CHANNEL = os.environ.get("SLACK_DEV_CHANNEL")
     GITHUB_ACTIONS = os.environ.get("SLACK_GITHUB_ACTIONS")

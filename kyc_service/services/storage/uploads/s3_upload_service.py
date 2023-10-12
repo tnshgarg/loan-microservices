@@ -13,7 +13,11 @@ class S3UploadService:
         self.bucket_name = bucket
 
     def upload(self, key, fd) -> (bool, str | None):
-        s3_client = boto3.client('s3')
+        s3_client = boto3.client(
+            's3',
+            aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY
+        )
         try:
             fd.seek(0)
             response = s3_client.put_object(
@@ -25,4 +29,10 @@ class S3UploadService:
         except ClientError as e:
             logging.error(e)
             return (False, None)
-        return (True, CLOUDFRONT_URL + Config.STAGE + "/" + key)
+        if self.bucket_name == "dev-unipe-campaign-assets":
+            """
+            TECHDEBT: magic constant
+            this bucket is the only one currently exposed over the given cloudfront URL
+            """
+            return (True, CLOUDFRONT_URL + Config.STAGE + "/" + key)
+        return (True, None)
