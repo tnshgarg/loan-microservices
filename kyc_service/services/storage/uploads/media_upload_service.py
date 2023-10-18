@@ -76,7 +76,7 @@ class MediaUploadService:
         return drive_upload_response["webViewLink"], asset_url
 
     def _update_tracking_google_sheet(self, entries):
-        folder_url = self.gdrive_upload_service.get_employee_root_url(
+        folder_url = self.gdrive_upload_service.get_child_folder_root_url(
             str(self.unipe_employee_id))
         sheet_rows = [self.common_columns + entry + [folder_url]
                       for entry in entries]

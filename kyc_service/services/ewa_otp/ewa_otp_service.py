@@ -1,4 +1,4 @@
-import os 
+import os
 from dal.models.employees import Employee
 from kyc_service.config import Config
 from fastapi import HTTPException as HTTPResponseException
@@ -14,9 +14,7 @@ MOCK_PHONES = [str(i) * 10 for i in range(1, 10)]
 class EwaOtpService():
 
     def __init__(self):
-        self.stage = os.environ["STAGE"]
-        self.logger = get_app_logger("ops-microservice", self.stage)
-        self.ops_microservice_url = os.environ["OPS_MICROSERVICE_URL"]
+        pass
 
     def _get_otp_service(self, payload, user) -> MobileVerificationService:
         if payload.provider is None or payload.provider not in ('gupshup', 'routemobile'):
@@ -28,9 +26,9 @@ class EwaOtpService():
         if payload.provider == "gupshup":
             return GupshupOtpService(self.logger, Config.STAGE, use_mock)
         else:
-            return RouteMobileOtpService(self.logger, Config.STAGE,unipe_employee_id=user.unipe_employee_id,sales_user_id=None,  gdrive_upload_service=gdrive_upload_service,
-        s3_upload_service=s3_upload_service,
-        google_sheets_service=google_sheets_service ,use_mock= use_mock)
+            return RouteMobileOtpService(self.logger, Config.STAGE, unipe_employee_id=user.unipe_employee_id, sales_user_id=None,  gdrive_upload_service=gdrive_upload_service,
+                                         s3_upload_service=s3_upload_service,
+                                         google_sheets_service=google_sheets_service, use_mock=use_mock)
 
     def _handle_generate_otp(self, payload, user):
         otp_service = self._get_otp_service(payload, user)
