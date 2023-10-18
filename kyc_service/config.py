@@ -22,12 +22,16 @@ class Config:
     MOBILE_APP_ASSET = "mobile-iota"
     WEBAPP_APP_ASSET = "web"
     SALES_APP_MAX_LIMIT = 10000
+
+    KARZA = json.loads(os.getenv("KARZA", {}))
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+
     APOLLO_CREDENTIALS = json.loads(os.getenv("APOLLO_CREDENTIALS", "{}"))
     GDRIVE_LOANS_BASE_FOLDERID = os.getenv('GDRIVE_LOANS_BASE_FOLDERID')
     LOANS_BUCKET = os.getenv('LOANS_BUCKET')
     LOANS_GOOGLE_SHEET = os.getenv('LOANS_GOOGLE_SHEET')
+    LOANS_GDRIVE_BASE_FOLDER_ID = os.getenv("LOANS_GDRIVE_BASE_FOLDER_ID")
 
 
 class SlackWebhooks:
