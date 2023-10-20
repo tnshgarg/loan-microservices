@@ -73,9 +73,9 @@ class LivenessService(MediaUploadService):
             "_id": self.unipe_employee_id
         }, {
             "$set": {
-                "liveness": liveness_check_result.get("result"),
+                "liveness": liveness_check_result,
                 "profile_pic": {
-                    "liveness_pic_drive_url": liveness_pic_drive_url, "liveness_pic_aws_url":  liveness_pic_aws_url
+                    "drive_url": liveness_pic_drive_url, "aws_url":  liveness_pic_aws_url
                 }
             }
         }, upsert=True)

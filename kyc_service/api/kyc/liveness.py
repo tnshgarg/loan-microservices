@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, File, UploadFile, Depends
+from fastapi import APIRouter, File, HTTPException, UploadFile, Depends, status
 from kyc_service.dependencies.auth import get_sales_current_session
 from kyc_service.dependencies.kyc import gdrive_upload_service, loans_gdrive_upload_service, s3_upload_service, google_sheets_service
 from kyc_service.schemas.auth import TokenPayload
@@ -32,4 +32,7 @@ async def upload_profile_pic(
     if liveness_check_result == "SUCCESS":
         return {"status": 200, "message": "Liveness check successful"}
     else:
-        return {"status": 400, "message": liveness_check_result}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=liveness_check_result
+        )
