@@ -33,7 +33,7 @@ class EwaDocumentUploadService(MediaUploadService):
                 )
 
     def _upload_media(self, fd, filename, extension, mime):
-        idx_filename = f"{self.ts_prefix}_{filename}.{extension}",
+        idx_filename = f"{self.ts_prefix}_{filename}.{extension}"
         drive_upload_response = self.gdrive_upload_service.upload_file(
             child_folder_name=str(self.offer_id),
             name=idx_filename,

@@ -36,8 +36,10 @@ class ApolloOauthService:
                 self.client_secret)
         )
         if token_response.status_code == 200:
-            self.token = token_response.json()["access_token"]
-            self.token_expiry = 123
+            token_details = token_response.json()
+            self.token = token_details["access_token"]
+            self.token_expiry = datetime.now(
+            ) + timedelta(seconds=token_details["expires_in"])
             return self.token
         return None
 

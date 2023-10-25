@@ -11,6 +11,7 @@ from kyc_service.services.ewa.ewa_document_upload_service import EwaDocumentUplo
 
 @dataclass
 class ApolloUploadResponse:
+    partner_tag: str
     drive_link: str
     s3_path: str
     apollo_key: str
@@ -28,21 +29,31 @@ class ApolloDocumentUploadsService(EwaDocumentUploadService):
         self.partner_loan_id = partner_loan_id
         self.apollo_api = ApolloAPI()
 
-    def _upload_media(self, fd, apollo_document: ApolloDocument, partner_tag: ApolloPartnerTag) -> ApolloUploadResponse:
+    def _upload_media(self, fd, apollo_document: ApolloDocument, partner_tag: str, loan_id=None) -> ApolloUploadResponse:
         drive_link, s3_key = super()._upload_media(
             fd,
-            apollo_document.filename,
+            apollo_document.name,
             apollo_document.extension,
             apollo_document.mime_type
         )
+        if loan_id is None:
+            loan_id = self.partner_loan_id
+
+        if apollo_document.internal:
+            return ApolloUploadResponse(
+                partner_tag,
+                drive_link,
+                s3_key,
+                None
+            )
         document_link = self.apollo_api.get_document_upload_link(
             partner_tag=partner_tag,
-            partner_loan_id=self.partner_loan_id,
+            partner_loan_id=loan_id,
             document_key=apollo_document.upload_key
         )
         fd.seek(0)
         upload_res = requests.put(
-            url=document_link["signed_url"],
+            url=document_link["pre_signed_url"],
             data=fd,
             headers={
                 "Content-Type": apollo_document.mime_type,
@@ -52,7 +63,8 @@ class ApolloDocumentUploadsService(EwaDocumentUploadService):
         if upload_res.status_code != 200:
             raise Exception("Document Upload Failed")
         return ApolloUploadResponse(
+            partner_tag,
             drive_link,
             s3_key,
-            document_link["path"]
+            document_link["document_s3_path"]
         )

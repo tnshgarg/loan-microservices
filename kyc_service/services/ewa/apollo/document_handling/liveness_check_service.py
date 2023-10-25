@@ -15,12 +15,12 @@ class LivenessCheckService:
 
     def generate_document(self) -> BytesIO:
         liveness_check_bytes = json.dumps(
-            self.profile["liveness_check"]).encode()
+            self.profile["liveness"]).encode()
         return BytesIO(liveness_check_bytes)
 
     def get_selfie(self) -> BytesIO:
         r = requests.get(
-            url=self.profile["profilePhotoUrl"],
+            url=self.profile["profile_pic"]["aws_url"],
             allow_redirects=True
         )
         if r.status_code == 200:

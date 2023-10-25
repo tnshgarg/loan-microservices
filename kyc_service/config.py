@@ -23,7 +23,7 @@ class Config:
     WEBAPP_APP_ASSET = "web"
     SALES_APP_MAX_LIMIT = 10000
 
-    KARZA = json.loads(os.getenv("KARZA", {}))
+    KARZA = json.loads(os.getenv("KARZA_CREDENTIALS", "{}"))
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 
@@ -32,6 +32,7 @@ class Config:
     LOANS_BUCKET = os.getenv('LOANS_BUCKET')
     LOANS_GOOGLE_SHEET = os.getenv('LOANS_GOOGLE_SHEET')
     LOANS_GDRIVE_BASE_FOLDER_ID = os.getenv("LOANS_GDRIVE_BASE_FOLDER_ID")
+    APOLLO_LOAN_APPLICATION_HOOK = os.getenv("APOLLO_LOAN_APPLICATION_HOOK")
 
 
 class SlackWebhooks:

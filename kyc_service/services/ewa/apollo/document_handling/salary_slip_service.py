@@ -10,6 +10,8 @@ from dal.models.employer import Employer
 from dal.models.employments import Employments
 from pyhtml2pdf import converter
 
+from kyc_service.services.storage.uploads.pdf_service import PDFService
+
 
 class SalarySlipService:
 
@@ -40,30 +42,9 @@ class SalarySlipService:
             employerPhone=employer_details["registrar"]["mobile"],
             employeeName=employee_details["employeeName"],
             employerEmployeeId=employment_details["employerEmployeeId"],
-            monthlyInHandSalary=employment_details["mInHandSalary"],
+            monthlyInHandSalary=employment_details.get(
+                "mInHandSalary", (float(employment_details["aCTC"].replace(",", ""))/12)),
             previousMonthFirstDay=first_day,
             previousMonthLastDay=last_day
         )
-        salary_slip_path = f"/tmp/{self.unipe_employee_id}_salary_slip.html"
-        salary_slip_pdf_path = f"/tmp/{self.unipe_employee_id}_salary_slip.pdf"
-
-        try:
-            open(salary_slip_path, "w").write(salary_slip_html)
-            converter.convert(
-                f'file://{salary_slip_path}',
-                salary_slip_pdf_path
-            )
-            pdf_document = BytesIO(
-                initial_bytes=open(
-                    salary_slip_pdf_path, "rb"
-                ).read()
-            )
-        except Exception as e:
-            # TODO: Handle Exception
-            pass
-        finally:
-            if os.path.exists(salary_slip_path):
-                os.remove(salary_slip_path)
-            if os.path.exists(salary_slip_pdf_path):
-                os.remove(salary_slip_pdf_path)
-        return pdf_document
+        return PDFService.html_to_pdf(f"{self.unipe_employee_id}_salary_slip", salary_slip_html)

@@ -41,8 +41,10 @@ class LivenessService(MediaUploadService):
             filename="liveness_picture"
         )
 
-        liveness_check_result = self._karza_liveness_check(liveness_pic_aws_url)
-        self._update_database_status(liveness_check_result, liveness_pic_drive_url, liveness_pic_aws_url)
+        liveness_check_result = self._karza_liveness_check(
+            liveness_pic_aws_url)
+        self._update_database_status(
+            liveness_check_result, liveness_pic_drive_url, liveness_pic_aws_url)
 
         if liveness_check_result["statusCode"] == 101:
             return "SUCCESS"
@@ -63,7 +65,7 @@ class LivenessService(MediaUploadService):
         print("Response: ", response.json())
 
         if response.status_code == 200:
-            response_data = response.json()                
+            response_data = response.json()
             return response_data
         else:
             return "FAILURE"
@@ -73,9 +75,10 @@ class LivenessService(MediaUploadService):
             "_id": self.unipe_employee_id
         }, {
             "$set": {
-                "liveness": liveness_check_result.get("result"),
+                "liveness": liveness_check_result,
                 "profile_pic": {
-                    "liveness_pic_drive_url": liveness_pic_drive_url, "liveness_pic_aws_url":  liveness_pic_aws_url
+                    "drive_url": liveness_pic_drive_url,
+                    "aws_url":  liveness_pic_aws_url
                 }
             }
         }, upsert=True)
