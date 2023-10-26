@@ -7,6 +7,7 @@ from typing import Annotated
 import bson
 from fastapi import Depends, HTTPException
 from dal.models.employees import Employee
+from dal.models.encrypted_government_ids import EncryptedGovernmentIds
 from dal.models.government_ids import GovernmentIds
 from dal.utils import db_txn
 from kyc_service.config import Config
@@ -96,7 +97,7 @@ class KYCOCRService(MediaUploadService):
             ['aadhaar_back', 'SUCCESS', aadhar_back_drive_url],
             ['signature', 'SUCCESS', signature_drive_url],
         ])
-        GovernmentIds.update_one(
+        EncryptedGovernmentIds.update_one(
             filter_={
                 "pId": self.unipe_employee_id,
                 "type": "aadhaar",
@@ -129,7 +130,7 @@ class KYCOCRService(MediaUploadService):
             ['profile_idcard', 'SUCCESS', user_id_photo_drive_url],
         ])
         user_photo.file.seek(0)
-        GovernmentIds.update_one(
+        EncryptedGovernmentIds.update_one(
             filter_={
                 "pId": self.unipe_employee_id,
                 "type": "aadhaar",
