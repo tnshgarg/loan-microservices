@@ -51,15 +51,15 @@ class KYCOCRService(MediaUploadService):
 
     @db_txn
     def perform_aadhaar_kyc(self, front_image, back_image, signature):
-        aadhar_front_drive_url = self._upload_media(
+        aadhar_front_drive_url, _ = self._upload_media(
             form_file=front_image,
             filename="aadhaar_front"
         )
-        aadhar_back_drive_url = self._upload_media(
+        aadhar_back_drive_url, _ = self._upload_media(
             form_file=back_image,
             filename="aadhaar_back"
         )
-        signature_drive_url = self._upload_media(
+        signature_drive_url, _ = self._upload_media(
             form_file=signature,
             filename="signature_employee"
         )
