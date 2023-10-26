@@ -55,7 +55,7 @@ class MediaUploadService:
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
         )
         status, asset_url = self.s3_upload_service.upload(
-            key=f"{self.unipe_employee_aadhaarViewLink}",
+            key=f"/kyc-service/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.{file_extension}",
             fd=form_file.file
         )
         return drive_upload_response["webViewLink"], asset_url
