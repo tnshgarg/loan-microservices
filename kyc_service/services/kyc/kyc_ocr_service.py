@@ -117,11 +117,11 @@ class KYCOCRService(MediaUploadService):
 
     @db_txn
     def perform_user_verification(self, user_photo, user_idphoto):
-        user_photo_drive_url = self._upload_media(
+        user_photo_drive_url, _ = self._upload_media(
             form_file=user_photo,
             filename="user_photo"
         )
-        user_id_photo_drive_url = self._upload_media(
+        user_id_photo_drive_url, _ = self._upload_media(
             form_file=user_idphoto,
             filename="user_idphoto"
         )
