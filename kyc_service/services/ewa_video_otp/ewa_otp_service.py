@@ -63,7 +63,7 @@ class VideoOtpService(MediaUploadService):
             "offerId": offer_id,
         })
         otp = video_otp_doc["otp"]
-        web_url = self._upload_media(
+        web_url, _ = self._upload_media(
             uploaded_video, f"video_otp_{offer_id}_[{otp}]")
         VideoOTP.update_one({
             "unipeEmployeeId": self.unipe_employee_id,
