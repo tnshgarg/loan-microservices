@@ -34,6 +34,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             unipe_employee_id,
             offer_id
         )
+        self.current_disbursement_id = self.loan_application["data"]["nextDisbursementLoanId"]
         super().__init__(
             unipe_employee_id,
             loan_application_id,
@@ -61,7 +62,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
                 {"_id": self.loan_application_id},
                 {
                     "$set": {
-                        f"data.documentUrls.disbursements.{self.offer_id}.{document.name}": upload_response.apollo_key,
+                        f"data.documentUrls.disbursements.{self.current_disbursement_id}.{document.name}": upload_response.apollo_key,
                         f"uploads.disbursements.{self.offer_id}.s3.{document.name}": upload_response.s3_path,
                         f"uploads.disbursements.{self.offer_id}.drive.{document.name}": upload_response.drive_link
                     }
@@ -72,7 +73,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         fd.seek(0)
         loan_id = None
         if partner_tag == ApolloPartnerTag.DISBURSEMENT:
-            loan_id = self.loan_application["data"]["nextDisbursementLoanId"]
+            loan_id = self.current_disbursement_id
         document_upload_response = self._upload_media(
             fd=fd,
             apollo_document=apollo_document,
@@ -236,4 +237,8 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             fd=signed_addendup_fd,
             apollo_document=ApolloDocumentList.SIGNED_ADDENDUM,
             partner_tag=ApolloPartnerTag.DISBURSEMENT
+        )
+        self.apollo_loan_application_hook.post_event(
+            action=ApolloLoanApplicationHook.Action.DISBURSEMENT,
+            status=ApolloLoanApplicationHook.Status.DOCUMENTS_UPLOADED
         )
