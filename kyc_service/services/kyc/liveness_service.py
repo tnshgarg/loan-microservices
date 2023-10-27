@@ -77,9 +77,8 @@ class LivenessService(MediaUploadService):
             "$set": {
                 "liveness": liveness_check_result,
                 "profile_pic": {
-                    "drive_url": liveness_pic_drive_url,
-                    "aws_url":  liveness_pic_aws_url
+                    "aws_url":  liveness_pic_aws_url,
+                    "drive_url": liveness_pic_drive_url
                 }
             }
         }, upsert=True)
-        pass
