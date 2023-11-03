@@ -11,10 +11,11 @@ from kyc_service.dependencies.kyc import gdrive_upload_service, google_sheets_se
 MOCK_PHONES = [str(i) * 10 for i in range(1, 10)]
 
 
-class EwaOtpService():
+class EwaOtpService:
 
     def __init__(self):
-        pass
+        self.logger = get_app_logger(
+            app_name="ewa-otp-service", stage=Config.STAGE)
 
     def _get_otp_service(self, payload, user) -> MobileVerificationService:
         if payload.provider is None or payload.provider not in ('gupshup', 'routemobile'):

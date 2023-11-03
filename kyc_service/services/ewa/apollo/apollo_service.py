@@ -3,6 +3,7 @@
 import io
 from bson import ObjectId
 import requests
+from dal.models.disbursement import Disbursements
 from dal.models.encrypted_government_ids import EncryptedGovernmentIds
 from dal.models.government_ids import GovernmentIds
 from dal.models.loan_applications import LoanApplications
@@ -238,6 +239,13 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             apollo_document=ApolloDocumentList.SIGNED_ADDENDUM,
             partner_tag=ApolloPartnerTag.DISBURSEMENT
         )
+        Disbursements.update_one({
+            "offerId": self.offer_id
+        }, {
+            "$set": {
+                "externalDisbursementId": self.current_disbursement_id
+            }
+        })
         self.apollo_loan_application_hook.post_event(
             action=ApolloLoanApplicationHook.Action.DISBURSEMENT,
             status=ApolloLoanApplicationHook.Status.DOCUMENTS_UPLOADED

@@ -11,7 +11,8 @@ ENV PYTHONUNBUFFERED 1
 # add and install requirements
 COPY ./kyc_service/requirements.txt /usr/src/app/requirements.txt
 RUN pip install -r /usr/src/app/requirements.txt
-
+RUN apk update && apk add --no-cache chromium chromium-chromedriver
+RUN ln -s /usr/bin/chromium /usr/bin/google-chrome
 # add app
 COPY . /usr/src/app
 

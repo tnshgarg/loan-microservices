@@ -2,6 +2,8 @@ from io import BytesIO
 import os
 from PyPDF2 import PdfWriter, PdfReader
 from pyhtml2pdf import converter
+from dal.logger import get_app_logger
+from kyc_service.util import app_logger
 
 
 class PDFService:
@@ -26,7 +28,8 @@ class PDFService:
             open(html_file_path, "w").write(html)
             converter.convert(
                 f'file://{html_file_path}',
-                pdf_file_path
+                pdf_file_path,
+                install_driver=False
             )
             pdf_document = BytesIO(
                 initial_bytes=open(
@@ -35,8 +38,7 @@ class PDFService:
             )
             return pdf_document
         except Exception as e:
-            # TODO: Handle Exception
-            pass
+            app_logger.error(msg="Error while printing file", exc_info=e)
         finally:
             if os.path.exists(html_file_path):
                 os.remove(html_file_path)
