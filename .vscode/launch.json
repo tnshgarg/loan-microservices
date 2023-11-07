@@ -51,6 +51,19 @@
       "console": "integratedTerminal",
       "jinja": true,
       "justMyCode": true
+    },
+    {
+      "name": "Uvicorn: Run Starlette Employer Service",
+      "type": "python",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/employer_approval_startlette",
+      "module": "uvicorn",
+      "args": ["starlette_employer_approval:app", "--reload", "--port", "8000"],
+      "envFile": "${workspaceFolder}/employer_approval_startlette/.env",
+      "console": "integratedTerminal",
+      "jinja": true,
+      "justMyCode": true,
+      "python": "${workspaceFolder}/employer_approval_startlette/starlette_env/bin/python"
     }
   ]
 }
