@@ -2,7 +2,6 @@ from providers.auth_provider import MyAuthProvider
 from models.Starlette_Employers import StarletteEmployers
 from mongoengine import connect
 
-from starlette_admin.contrib.mongoengine import ModelView
 from starlette_admin.contrib.mongoengine import Admin
 
 from starlette.applications import Starlette
@@ -13,9 +12,11 @@ from starlette.middleware import Middleware
 from starlette.staticfiles import StaticFiles
 from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.config import Config
-# from starlette_admin.actions import row_action
 from config import config
 from authlib.integrations.starlette_client import OAuth
+from views.employer_approval_view import EmployerApprovalView
+
+from starlette.responses import RedirectResponse
 
 """Initialize Middlewares"""
 middleware = [
@@ -57,6 +58,8 @@ app.state.mongodb_db = db
 app.add_middleware(SessionMiddleware, secret_key=config.secret)
 
 """Routes"""
+
+
 @app.route('/{stage}/ops-service/auth', name="auth")
 async def auth(request):
     token = await oauth.google.authorize_access_token(request)
@@ -83,10 +86,8 @@ admin = Admin(
 
 
 """Employer Approval View"""
-admin.add_view(
-    ModelView(StarletteEmployers,
-              label="Employer Approval", icon="fa fa-users")
-)
+admin.add_view(EmployerApprovalView(StarletteEmployers,
+               label="Employer Approval", icon="fa fa-users"))
 
 
 """Mount All The Views"""

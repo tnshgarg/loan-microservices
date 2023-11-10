@@ -2,25 +2,33 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette_admin.auth import AdminUser, AuthProvider
 from starlette_admin.base import BaseAdmin
-from starlette.responses import  RedirectResponse
+from starlette.responses import RedirectResponse
 
 from starlette.config import Config
 from authlib.integrations.starlette_client import OAuth
+
+
+from models.sales_users import SalesUsers
 
 users = {
     "tanish@unipe.money": {
         "name": "Administrator",
         "avatar": "avatar.svg",
-        "roles": ["read", "create", "edit", "delete", "action_make_published"],
-        "password": "123456"
+        "roles": ["read", "create", "edit", "delete", "view"],
     },
-    "subadmin": {
+    "admin": {
         "name": "John Doe",
         "avatar": "avatar.svg",
-        "roles": ["read", "create", "edit", "action_make_published"],
-        "password": "123456"
+        "roles": ["read", "create", "edit", "update_details", "approve_employer", "delete", "view"],
     },
     "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"], "password": "123456"},
+
+}
+
+actions_for_roles = {
+    'admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
+    'rm': ["view", "edit", "upload_details"],
+    'sm': ["view"],
 }
 
 googleConfig = Config('.env')
@@ -35,21 +43,32 @@ oauth.register(
     }
 )
 
+
 class MyAuthProvider(AuthProvider):
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
         redirect_uri = request.url_for('auth', stage="dev")
         return await oauth.google.authorize_redirect(request, redirect_uri, state=request.query_params["next"])
-    
+
     async def is_authenticated(self, request) -> bool:
-        if request.session.get("username", None) in users:
-            request.state.user = users.get(request.session["username"])
-            return True
+        username = request.session.get("username", None)
+        if username:
+            user = SalesUsers.objects(email=str(username)).first()
+            print("user: ", user)
+            if user:
+                user_data = {
+                    "name": username,
+                    "roles": user["type"],
+                    "avatar": None,
+                }
+                request.state.user = user_data
+                return True
 
         return False
 
     def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Retrieve current user
+
         photo_url = None
         if user["avatar"] is not None:
             photo_url = request.url_for("static", path=user["avatar"])
@@ -58,4 +77,3 @@ class MyAuthProvider(AuthProvider):
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()
         return RedirectResponse(url='/{stage}/ops-service')
-   

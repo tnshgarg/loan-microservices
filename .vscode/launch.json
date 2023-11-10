@@ -9,12 +9,7 @@
       "type": "python",
       "request": "launch",
       "module": "uvicorn",
-      "args": [
-        "kyc_service.main:app",
-        "--reload",
-        "--port",
-        "5000"
-      ],
+      "args": ["kyc_service.main:app", "--reload", "--port", "5000"],
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
       "jinja": true,
@@ -25,12 +20,7 @@
       "type": "python",
       "request": "launch",
       "module": "uvicorn",
-      "args": [
-        "ops.main:employer_approval_app",
-        "--reload",
-        "--port",
-        "5000"
-      ],
+      "args": ["ops.main:employer_approval_app", "--reload", "--port", "5000"],
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
       "jinja": true,
@@ -41,12 +31,7 @@
       "type": "python",
       "request": "launch",
       "module": "uvicorn",
-      "args": [
-        "story_upload_service.main:app",
-        "--reload",
-        "--port",
-        "5000"
-      ],
+      "args": ["story_upload_service.main:app", "--reload", "--port", "5000"],
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
       "jinja": true,
@@ -62,7 +47,7 @@
       "envFile": "${workspaceFolder}/employer_approval_startlette/.env",
       "console": "integratedTerminal",
       "jinja": true,
-      "justMyCode": true,
+      "justMyCode": false,
       "python": "${workspaceFolder}/employer_approval_startlette/starlette_env/bin/python"
     }
   ]
