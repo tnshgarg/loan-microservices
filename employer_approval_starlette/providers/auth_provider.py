@@ -1,14 +1,11 @@
+from authlib.integrations.starlette_client import OAuth
+from starlette.config import Config
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import RedirectResponse, Response
 from starlette_admin.auth import AdminUser, AuthProvider
 from starlette_admin.base import BaseAdmin
-from starlette.responses import RedirectResponse
 
-from starlette.config import Config
-from authlib.integrations.starlette_client import OAuth
-
-
-from models.sales_users import SalesUsers
+from dal.models.sales_users import SalesUser
 
 users = {
     "tanish@unipe.money": {
@@ -53,8 +50,7 @@ class MyAuthProvider(AuthProvider):
     async def is_authenticated(self, request) -> bool:
         username = request.session.get("username", None)
         if username:
-            user = SalesUsers.objects(email=str(username)).first()
-            print("user: ", user)
+            user = SalesUser.find_one({"email": str(username)})
             if user:
                 user_data = {
                     "name": username,

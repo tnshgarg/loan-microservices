@@ -82,7 +82,7 @@ target/
 profile_default/
 ipython_config.py
 
-employer_approval_startlette/starlette_env
+employer_approval_starlette/starlette_env
 employer_approval/
 
 pyenv
