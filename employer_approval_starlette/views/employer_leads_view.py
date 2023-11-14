@@ -1,5 +1,6 @@
 from typing import Any, Dict, Iterable, List, Optional, Union
 
+import bson
 from starlette.requests import Request
 from starlette_admin import BaseModelView, StringField
 
@@ -22,8 +23,8 @@ class EmployerLeadsView(BaseModelView):
 
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
         filter_ = {}
-        if where is not None:
-            filter_ = where
+        # if where is not None:
+        #     filter_ = where
         employer_leads_res = EmployerLeads.find(filter_)
         return len(list(employer_leads_res))
 
@@ -48,3 +49,31 @@ class EmployerLeadsView(BaseModelView):
         # if limit > 0:
         #     return values[skip: skip + limit]
         # return values[skip:]
+
+    async def find_by_pk(self, request: Request, pk):
+        employer_leads_res = EmployerLeads.find_one({"_id": bson.ObjectId(pk)})
+        return DictToObj(employer_leads_res)
+
+    async def create(self, request: Request, data: Dict):
+        employer_leads_insert_res = EmployerLeads.insert_one(data)
+        inserted_id = employer_leads_insert_res.inserted_id
+        data["_id"] = inserted_id
+        return DictToObj(data)
+
+    async def edit(self, request: Request, pk, data: Dict):
+        employer_leads_update_res = EmployerLeads.update_one(
+            filter_={"_id": bson.ObjectId(pk)},
+            update={"$set": data}
+        )
+        data["_id"] = pk
+        return DictToObj(data)
+
+    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+        object_ids_to_delete = [bson.ObjectId(pk) for pk in pks]
+        employer_leads_delete_res = EmployerLeads.delete({
+            "_id": {
+                "$in": object_ids_to_delete
+            }
+        })
+        deleted_document_count = employer_leads_delete_res.deleted_count
+        return deleted_document_count
