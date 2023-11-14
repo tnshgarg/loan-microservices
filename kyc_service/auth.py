@@ -7,7 +7,10 @@ from kyc_service.config import Config
 
 
 def create_access_token(unipe_employee_id: str, client_id: str, sales_user_id: str = None) -> str:
-    expires_delta = datetime.utcnow() + timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    expiry_minutes = Config.ACCESS_TOKEN_EXPIRE_MINUTES
+    if client_id == "mobile-iota":
+        expiry_minutes = Config.IOTA_ACCESS_TOKEN_EXPIRE_MINUTES
+    expires_delta = datetime.utcnow() + timedelta(minutes=expiry_minutes)
     if sales_user_id is None:
         to_encode = {
             "exp": expires_delta,
@@ -61,9 +64,11 @@ def decode_token(token: str):
         algorithms=[Config.JWT_ALGORITHM]
     )
     if decoded_token["type"] == "employee":
-        decoded_token["unipe_employee_id"] = bson.ObjectId(decoded_token["sub"])
+        decoded_token["unipe_employee_id"] = bson.ObjectId(
+            decoded_token["sub"])
     else:
-        decoded_token["unipe_employee_id"] = bson.ObjectId(decoded_token["sub"])
+        decoded_token["unipe_employee_id"] = bson.ObjectId(
+            decoded_token["sub"])
         decoded_token["sales_user_id"] = bson.ObjectId(
             decoded_token["sales_user_id"])
     return decoded_token

@@ -18,12 +18,14 @@ class S3UploadService:
             region_name="ap-south-1"
         )
 
-    def get_presigned_url(self, key, expiration=300) -> str:
+    def get_presigned_url(self, key, expiration=300, use_stage=True) -> str:
+        if use_stage:
+            key = Config.STAGE + "/" + key
         return self.s3_client.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': self.bucket_name,
-                'Key': Config.STAGE + "/" + key
+                'Key': key
             },
             ExpiresIn=expiration
         )

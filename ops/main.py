@@ -11,7 +11,7 @@ from ops.routers.employer_emails_router import employer_emails_router
 
 # Get environment variables
 FASTAPI_HOST = os.environ["fastapi_host"]
-SECRET_KEY = os.environ["SECRET_KEY"]
+SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 
 # App Initialization
 employer_app = FastAPI()
@@ -40,8 +40,3 @@ def ping():
 employer_app.include_router(auth_router)
 employer_app.include_router(employer_approval_router)
 employer_app.include_router(employer_emails_router)
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:employer_app", host=FASTAPI_HOST,
-                port=5000, log_level="info", reload=True)

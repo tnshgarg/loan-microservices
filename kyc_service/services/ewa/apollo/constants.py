@@ -22,8 +22,10 @@ class ApolloDocument:
 
 
 class ApolloPartnerTag:
-    LOC = "UEC"
-    DISBURSEMENT = "UED"
+    LOC_PERSONAL = "UEC"
+    DISBURSEMENT_PERSONAL = "UED"
+    LOC_COMMERCIAL = "UFC"
+    DISBURSEMENT_COMMERCIAL = "UFD"
 
 
 ApolloDocumentLevel = ApolloPartnerTag
@@ -51,3 +53,12 @@ class ApolloDocumentList:
         "generated_addendum", "pdf", MimeType.PDF, internal=True)
     COMBINED_LA_ADDENDUM = ApolloDocument("la_and_addendum",
                                           "pdf", MimeType.PDF, internal=True)
+
+    LIST_OF_DIRECTORS = ApolloDocument(
+        "list_of_directors", "pdf", MimeType.PDF)
+    GST_CERTIFICATE = ApolloDocument("gst_certificate", "pdf", MimeType.PDF)
+    COMMERCIAL_CRIFF = ApolloDocument("crif", "pdf", MimeType.PDF)
+    INCORPORATION_CERTIFICATE = ApolloDocument(
+        "certificate_of_incorporation", "pdf", MimeType.PDF)
+    BANK_STATEMENT = ApolloDocument(
+        "bank_statement", "pdf", MimeType.PDF)

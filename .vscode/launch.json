@@ -5,40 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Uvicorn: Run KYC Service",
+      "name": "Uvicorn: Microservices",
       "type": "python",
       "request": "launch",
       "module": "uvicorn",
       "args": [
-        "kyc_service.main:app",
+        "main:app",
         "--reload",
         "--port",
         "5000",
         "--host",
         "0.0.0.0"
       ],
-      "envFile": "${workspaceFolder}/.env",
-      "console": "integratedTerminal",
-      "jinja": true,
-      "justMyCode": true
-    },
-    {
-      "name": "Uvicorn: Run Ops Service",
-      "type": "python",
-      "request": "launch",
-      "module": "uvicorn",
-      "args": ["ops.main:employer_approval_app", "--reload", "--port", "5000"],
-      "envFile": "${workspaceFolder}/.env",
-      "console": "integratedTerminal",
-      "jinja": true,
-      "justMyCode": true
-    },
-    {
-      "name": "Uvicorn: User Upload Service",
-      "type": "python",
-      "request": "launch",
-      "module": "uvicorn",
-      "args": ["story_upload_service.main:app", "--reload", "--port", "5000"],
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
       "jinja": true,

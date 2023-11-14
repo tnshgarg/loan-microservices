@@ -45,7 +45,7 @@ class MediaUploadService:
         extension = mime.split("/")[1]
         return extension
 
-    def _upload_media(self, form_file, filename):
+    def _upload_media(self, form_file, filename, s3_path_prefix="kyc_service"):
         file_extension = self._parse_extension(form_file.content_type)
         drive_upload_response = self.gdrive_upload_service.upload_file(
             str(self.unipe_employee_id),
@@ -55,11 +55,10 @@ class MediaUploadService:
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
         )
         status, asset_url = self.s3_upload_service.upload(
-            key=f"kyc-service/profile-pic/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.png",
+            key=f"{s3_path_prefix}/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.png",
             fd=form_file.file
         )
         return drive_upload_response["webViewLink"], asset_url
-        # return status, asset_url
 
     def _upload_text(self, text, filename):
         dummy_file = io.StringIO(text)

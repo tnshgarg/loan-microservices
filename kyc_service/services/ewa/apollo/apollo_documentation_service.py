@@ -35,7 +35,8 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             unipe_employee_id,
             offer_id
         )
-        self.current_disbursement_id = self.loan_application["data"]["nextDisbursementLoanId"]
+        self.current_disbursement_id = self.loan_application["data"].get(
+            "nextDisbursementLoanId")
         super().__init__(
             unipe_employee_id,
             loan_application_id,
@@ -45,7 +46,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
 
     def _add_file_to_application(self, document: ApolloDocument, upload_response: ApolloUploadResponse):
 
-        if upload_response.partner_tag == ApolloPartnerTag.LOC:
+        if upload_response.partner_tag in [ApolloPartnerTag.LOC_PERSONAL, ApolloPartnerTag.LOC_COMMERCIAL]:
             update = {
                 f"uploads.loc.s3.{document.name}": upload_response.s3_path,
                 f"uploads.loc.drive.{document.name}": upload_response.drive_link
@@ -73,7 +74,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
     def _upload_apollo_document(self, fd, apollo_document, partner_tag):
         fd.seek(0)
         loan_id = None
-        if partner_tag == ApolloPartnerTag.DISBURSEMENT:
+        if partner_tag in [ApolloPartnerTag.DISBURSEMENT_PERSONAL, ApolloPartnerTag.DISBURSEMENT_COMMERCIAL]:
             loan_id = self.current_disbursement_id
         document_upload_response = self._upload_media(
             fd=fd,
@@ -95,7 +96,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             salary_slip_fd,
             ApolloDocumentList.SALARY_SLIP,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
 
     def _upload_aadhaar(self):
@@ -104,7 +105,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             aadhaar_fd,
             ApolloDocumentList.AADHAAR,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
 
     def _upload_pan_status(self):
@@ -113,7 +114,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             pan_status_fd,
             ApolloDocumentList.PAN,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
 
     def _upload_liveness_check(self):
@@ -122,13 +123,13 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             liveness_check_fd,
             ApolloDocumentList.LIVENESS_CHECK,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
         selfie_fd = liveness_check_service.get_selfie()
         self._upload_apollo_document(
             selfie_fd,
             ApolloDocumentList.SELFIE,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
 
     def _download_sl_kfs(self):
@@ -140,7 +141,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         return self._upload_apollo_document(
             sl_kfs_fd,
             ApolloDocumentList.SL_KFS,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
 
     def _generate_agreement(self):
@@ -150,7 +151,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             loan_agreement_fd,
             ApolloDocumentList.LOAN_AGREEMENT,
-            ApolloPartnerTag.LOC
+            ApolloPartnerTag.LOC_PERSONAL
         )
         return loan_agreement_fd
 
@@ -161,7 +162,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             addendum_fd,
             ApolloDocumentList.ADDENDUM,
-            ApolloPartnerTag.DISBURSEMENT
+            ApolloPartnerTag.DISBURSEMENT_PERSONAL
         )
         return addendum_fd
 
@@ -173,7 +174,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         return self._upload_apollo_document(
             combined_pdf_fd,
             ApolloDocumentList.COMBINED_LA_ADDENDUM,
-            ApolloPartnerTag.DISBURSEMENT
+            ApolloPartnerTag.DISBURSEMENT_PERSONAL
         )
 
     def upload_loan_documents(self):
@@ -213,7 +214,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             fd=signed_sl_kfs_fd,
             apollo_document=ApolloDocumentList.SIGNED_SL_KFS,
-            partner_tag=ApolloPartnerTag.LOC
+            partner_tag=ApolloPartnerTag.LOC_PERSONAL
         )
         loan_agreement_url = self.s3_upload_service.get_presigned_url(
             self.loan_application["uploads"]["loc"]["s3"][ApolloDocumentList.LOAN_AGREEMENT.name])
@@ -223,7 +224,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             fd=signed_loan_agreement_fd,
             apollo_document=ApolloDocumentList.SIGNED_LOAN_AGREEMENT,
-            partner_tag=ApolloPartnerTag.LOC
+            partner_tag=ApolloPartnerTag.LOC_PERSONAL
         )
 
     def upload_signed_addendum(self):
@@ -237,7 +238,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
         self._upload_apollo_document(
             fd=signed_addendup_fd,
             apollo_document=ApolloDocumentList.SIGNED_ADDENDUM,
-            partner_tag=ApolloPartnerTag.DISBURSEMENT
+            partner_tag=ApolloPartnerTag.DISBURSEMENT_PERSONAL
         )
         Disbursements.update_one({
             "offerId": self.offer_id

@@ -24,6 +24,7 @@ class ApolloAddendumService:
     def calculate_apr(self, tenor, loan_amount, processing_fees):
         disbursed_amount = loan_amount - processing_fees
         apr = (100 * processing_fees/disbursed_amount) * (365 / tenor)
+        return apr
 
     def generate_document(self) -> BytesIO:
         addendum_template = open("templates/html/ewa/apollo/addendum.html")
@@ -51,7 +52,7 @@ class ApolloAddendumService:
             self.offer_doc["loanAmount"],
             processingFees=processing_fees,
             loanAmount=self.offer_doc["loanAmount"],
-            APR=APR,
+            APR="{:.02f} %".format(APR),
             repaymentDate=self.offer_doc["dueDate"].strftime("%d/%m/%Y"),
             tenor=tenor,
             bankAccountNumber=self.customer_info["bank_account_number"],
