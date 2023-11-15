@@ -38,25 +38,25 @@ oauth.register(
 
 
 """Main App"""
-app = Starlette(
+admin_app = Starlette(
     routes=[
-        Route("/{stage}/ops-service", lambda r: HTMLResponse(
-            '<a href="/dev/ops-service/admin">Login to Employer Approval Portal</a>')),
+        Route("/", lambda r: HTMLResponse(
+            '<a href="/qa/ops-admin/admin">Login to Employer Approval Portal</a>')),
         Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
 
 
-app.add_middleware(SessionMiddleware, secret_key=config.secret)
+admin_app.add_middleware(SessionMiddleware, secret_key=config.secret)
 
 
-@app.on_event("startup")
+@admin_app.on_event("startup")
 def startup_db_client():
     stage = os.environ["STAGE"]
     DBManager.init(stage=stage, asset="employer-approval-service")
 
 
-@app.on_event("shutdown")
+@admin_app.on_event("shutdown")
 def shutdown_db_client():
     DBManager.terminate()
 
@@ -64,7 +64,7 @@ def shutdown_db_client():
 """Routes"""
 
 
-@app.route('/{stage}/ops-service/auth', name="auth")
+@admin_app.route('/auth', name="auth")
 async def auth(request):
     token = await oauth.google.authorize_access_token(request)
     user = token.get('userinfo')
@@ -79,7 +79,7 @@ async def auth(request):
 """Initialize Admin Dashboard App"""
 admin = Admin(
     "Unipe Employer Dashboard",
-    base_url="/dev/ops-service/admin",
+    base_url="/admin",
     logo_url="https://static.wixstatic.com/media/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png/v1/fill/w_400,h_80,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png",
     login_logo_url="https://static.wixstatic.com/media/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png/v1/fill/w_400,h_80,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png",
     auth_provider=MyAuthProvider(),
@@ -88,7 +88,6 @@ admin = Admin(
 
 
 """Add Admin Views Here admin.add_view"""
-admin.add_view(EmployerLeadsView)
 admin.add_view(
     EmployerApprovalView(
         StarletteEmployers,
@@ -96,12 +95,14 @@ admin.add_view(
         icon="fa fa-users"
     )
 )
+admin.add_view(EmployerLeadsView)
+
 
 """Mount All The Views"""
-admin.mount_to(app)
+admin.mount_to(admin_app)
 
 
 """Run the Server"""
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(admin_app, host="127.0.0.1", port=8000)

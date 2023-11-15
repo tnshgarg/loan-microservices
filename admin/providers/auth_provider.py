@@ -44,7 +44,7 @@ oauth.register(
 class MyAuthProvider(AuthProvider):
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
-        redirect_uri = request.url_for('auth', stage="dev")
+        redirect_uri = request.url_for('auth')
         return await oauth.google.authorize_redirect(request, redirect_uri, state=request.query_params["next"])
 
     async def is_authenticated(self, request) -> bool:

@@ -5,9 +5,8 @@ from dal.models.db_manager import DBManager
 from kyc_service.config import Config
 from kyc_service.main import app as kyc_app
 from ops.main import employer_app
-
+from admin.main import admin_app
 app = FastAPI()
-
 
 origins = [
     "http://localhost:3000",
@@ -40,7 +39,9 @@ def shutdown_db_client():
 async def ping():
     return {"status": 200, "stage": Config.STAGE}
 
+app.mount(f"/{Config.STAGE}/ops-admin", admin_app)
+app.mount(f"/{Config.STAGE}/ops-service", employer_app)
 app.mount("/", kyc_app)
-app.mount("/", employer_app)
+
 
 print(app)

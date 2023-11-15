@@ -21,17 +21,22 @@ class EmployerLeadsView(BaseModelView):
         StringField("pan")
     ]
 
+    class Meta:
+        model = EmployerLeads
+
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
         filter_ = {}
         # if where is not None:
         #     filter_ = where
-        employer_leads_res = EmployerLeads.find(filter_)
+        employer_leads_res = self.Meta.model.find(filter_)
         return len(list(employer_leads_res))
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-        employer_leads_res = EmployerLeads.find({})
+        employer_leads_res = self.Meta.model.find({})
+        employer_leads_res.skip(skip).limit(limit)
+        order_by
         find_all_res = []
         for employer_lead in employer_leads_res:
             find_all_res.append(DictToObj(employer_lead))

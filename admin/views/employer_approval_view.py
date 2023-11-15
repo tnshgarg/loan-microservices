@@ -1,3 +1,12 @@
+from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
+from kyc_service.services.storage.uploads.media_upload_service import MediaUploadService
+from typing import Any, Coroutine, Dict, List, Optional, Sequence, Union
+from starlette.datastructures import FormData
+from starlette.requests import Request
+from starlette_admin._types import RowActionsDisplayType
+from starlette_admin.actions import row_action
+from starlette_admin.exceptions import ActionFailed
+from starlette_admin.contrib.mongoengine import ModelView
 import sys
 import os
 import bson
@@ -7,15 +16,6 @@ grandparent_dir = os.path.dirname(os.path.dirname(current_dir))
 
 sys.path.append(grandparent_dir)
 
-from starlette_admin.contrib.mongoengine import ModelView
-from starlette_admin.exceptions import ActionFailed
-from starlette_admin.actions import row_action
-from starlette_admin._types import RowActionsDisplayType
-from starlette.requests import Request
-from starlette.datastructures import FormData
-from typing import Any
-from kyc_service.services.storage.uploads.media_upload_service import MediaUploadService
-from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 
 class EmployerUploadService(MediaUploadService):
 
@@ -24,9 +24,8 @@ class EmployerUploadService(MediaUploadService):
                  gdrive_upload_service: DriveUploadService,
                  ) -> None:
         super().__init__(None, sales_user_id, gdrive_upload_service, None, None)
-        self.sales_user_id= sales_user_id
-        self.gdrive_upload_service= gdrive_upload_service
-
+        self.sales_user_id = sales_user_id
+        self.gdrive_upload_service = gdrive_upload_service
 
     def upload_agreement(self, agreement):
         upload_agreement_drive_url = self._upload_media(
@@ -34,7 +33,6 @@ class EmployerUploadService(MediaUploadService):
             filename="agreement"
         )
         return upload_agreement_drive_url
-    
 
     def upload_pan(self, pan):
         upload_pan_drive_url = self._upload_media(
@@ -42,7 +40,6 @@ class EmployerUploadService(MediaUploadService):
             filename="pan"
         )
         return upload_pan_drive_url
-    
 
     def upload_gst(self, gst):
         upload_gst_drive_url = self._upload_media(
@@ -51,8 +48,8 @@ class EmployerUploadService(MediaUploadService):
         )
         return upload_gst_drive_url
 
-class EmployerApprovalView(ModelView):
 
+class EmployerApprovalView(ModelView):
 
     # def __init__(self,
     #              sales_user_id: bson.ObjectId,
@@ -133,12 +130,14 @@ class EmployerApprovalView(ModelView):
         # doc_employer_pan = data.get("employer-pan")
         # doc_employer_gst = data.get("employer-gst")
         print("DATA: ", data)
-        employer_upload_service =  EmployerUploadService(user, gdrive_upload_service=DriveUploadService)
-        # pan_url = self._upload_media(doc_employer_pan, f"{doc_employer_pan.filename}-{user}")
-        # pan_url = employer_upload_service.upload_pan(self, doc_employer_pan)
-        agreement_url = employer_upload_service.upload_agreement(self, doc_employer_agreement)
-        # gst_url = employer_upload_service.upload_gst(self, doc_employer_gst)
-        print("pan_url: ", pan_url)
+        # employer_upload_service = EmployerUploadService(
+        #     user, gdrive_upload_service=DriveUploadService)
+        # # pan_url = self._upload_media(doc_employer_pan, f"{doc_employer_pan.filename}-{user}")
+        # # pan_url = employer_upload_service.upload_pan(self, doc_employer_pan)
+        # agreement_url = employer_upload_service.upload_agreement(
+        #     doc_employer_agreement)
+        # # gst_url = employer_upload_service.upload_gst(self, doc_employer_gst)
+        # print("pan_url: ", pan_url)
 
         if False:
             # Display meaningfully error
