@@ -137,8 +137,8 @@ class ApolloCommercialDocumentsService(ApolloDocumentsService):
                 "$set": {
                     "stage": "AGREEMENT",
                     "documentation.agreementLinks": {
-                        "la_addendum": la_addendum_upload_response.s3_path,
-                        "sl_kfs": sl_kfs_upload_response.s3_path
+                        "Loan Agreement": la_addendum_upload_response.s3_path,
+                        "Sanction Letter and KFS": sl_kfs_upload_response.s3_path
                     },
                     "documentation.gdrive": {
                         "la_addendum": la_addendum_upload_response.drive_link,
