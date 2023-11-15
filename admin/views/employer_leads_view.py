@@ -5,7 +5,7 @@ from starlette.requests import Request
 from starlette_admin import BaseModelView, StringField
 
 from dal.models.employer_leads import EmployerLeads
-from employer_approval_starlette.utils import DictToObj
+from admin.utils import DictToObj
 
 
 class EmployerLeadsView(BaseModelView):

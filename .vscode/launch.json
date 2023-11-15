@@ -26,10 +26,9 @@
       "name": "Uvicorn: Run Starlette Employer Service",
       "type": "python",
       "request": "launch",
-      "cwd": "${workspaceFolder}/employer_approval_starlette",
       "module": "uvicorn",
       "args": [
-        "starlette_employer_approval:app",
+        "admin.starlette_employer_approval:app",
         "--reload",
         "--port",
         "8000"

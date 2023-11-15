@@ -1,8 +1,9 @@
 import os
 
 from authlib.integrations.starlette_client import OAuth
-from config import config
-from providers.auth_provider import MyAuthProvider
+from admin.config import config
+from admin.models.employers import StarletteEmployers
+from admin.providers.auth_provider import MyAuthProvider
 from starlette.applications import Starlette
 from starlette.config import Config
 from starlette.middleware import Middleware
@@ -11,9 +12,10 @@ from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette_admin.contrib.mongoengine import Admin
+from admin.views.employer_approval_view import EmployerApprovalView
 
 from dal.models.db_manager import DBManager
-from employer_approval_starlette.views.employer_leads_view import \
+from admin.views.employer_leads_view import \
     EmployerLeadsView
 
 """Initialize Middlewares"""
@@ -40,7 +42,7 @@ app = Starlette(
     routes=[
         Route("/{stage}/ops-service", lambda r: HTMLResponse(
             '<a href="/dev/ops-service/admin">Login to Employer Approval Portal</a>')),
-        Mount("/static", app=StaticFiles(directory="static"), name="static"),
+        Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
 
@@ -87,6 +89,13 @@ admin = Admin(
 
 """Add Admin Views Here admin.add_view"""
 admin.add_view(EmployerLeadsView)
+admin.add_view(
+    EmployerApprovalView(
+        StarletteEmployers,
+        label="Employer Approval",
+        icon="fa fa-users"
+    )
+)
 
 """Mount All The Views"""
 admin.mount_to(app)
