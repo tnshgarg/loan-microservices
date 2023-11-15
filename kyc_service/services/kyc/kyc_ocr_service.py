@@ -7,6 +7,7 @@ from typing import Annotated
 import bson
 from fastapi import Depends, HTTPException
 from dal.models.employees import Employee
+from dal.models.encrypted_government_ids import EncryptedGovernmentIds
 from dal.models.government_ids import GovernmentIds
 from dal.utils import db_txn
 from kyc_service.config import Config
@@ -50,15 +51,15 @@ class KYCOCRService(MediaUploadService):
 
     @db_txn
     def perform_aadhaar_kyc(self, front_image, back_image, signature):
-        aadhar_front_drive_url = self._upload_media(
+        aadhar_front_drive_url, _ = self._upload_media(
             form_file=front_image,
             filename="aadhaar_front"
         )
-        aadhar_back_drive_url = self._upload_media(
+        aadhar_back_drive_url, _ = self._upload_media(
             form_file=back_image,
             filename="aadhaar_back"
         )
-        signature_drive_url = self._upload_media(
+        signature_drive_url, _ = self._upload_media(
             form_file=signature,
             filename="signature_employee"
         )
@@ -96,7 +97,7 @@ class KYCOCRService(MediaUploadService):
             ['aadhaar_back', 'SUCCESS', aadhar_back_drive_url],
             ['signature', 'SUCCESS', signature_drive_url],
         ])
-        GovernmentIds.update_one(
+        EncryptedGovernmentIds.update_one(
             filter_={
                 "pId": self.unipe_employee_id,
                 "type": "aadhaar",
@@ -116,11 +117,11 @@ class KYCOCRService(MediaUploadService):
 
     @db_txn
     def perform_user_verification(self, user_photo, user_idphoto):
-        user_photo_drive_url = self._upload_media(
+        user_photo_drive_url, _ = self._upload_media(
             form_file=user_photo,
             filename="user_photo"
         )
-        user_id_photo_drive_url = self._upload_media(
+        user_id_photo_drive_url, _ = self._upload_media(
             form_file=user_idphoto,
             filename="user_idphoto"
         )
@@ -129,7 +130,7 @@ class KYCOCRService(MediaUploadService):
             ['profile_idcard', 'SUCCESS', user_id_photo_drive_url],
         ])
         user_photo.file.seek(0)
-        GovernmentIds.update_one(
+        EncryptedGovernmentIds.update_one(
             filter_={
                 "pId": self.unipe_employee_id,
                 "type": "aadhaar",
