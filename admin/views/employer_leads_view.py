@@ -4,8 +4,19 @@ import bson
 from starlette.requests import Request
 from starlette_admin import BaseModelView, StringField
 
-from dal.models.employer_leads import EmployerLeads
+from admin.services.bureau_fetch_service import BureauFetchService
 from admin.utils import DictToObj
+from dal.models.employer_leads import EmployerLeads
+
+
+def trigger_bureau_fetch(inserted_employer_lead_object):
+    name = inserted_employer_lead_object.name
+    mobile = inserted_employer_lead_object.mobile
+    pan = inserted_employer_lead_object.pan
+    try:
+        BureauFetchService().fetch_bureau_details(name, mobile, pan)
+    except Exception as e:
+        print("trigger_bureau_fetch_exception", str(e))
 
 
 class EmployerLeadsView(BaseModelView):
@@ -63,7 +74,16 @@ class EmployerLeadsView(BaseModelView):
         employer_leads_insert_res = EmployerLeads.insert_one(data)
         inserted_id = employer_leads_insert_res.inserted_id
         data["_id"] = inserted_id
-        return DictToObj(data)
+        inserted_employer_lead_object = DictToObj(data)
+
+        trigger_bureau_fetch(inserted_employer_lead_object)
+        return inserted_employer_lead_object
+
+    async def before_create(self, request: Request, data: Dict[str, Any], obj: Any) -> None:
+        print("before_create", obj)
+
+    async def after_create(self, request: Request, obj: Any) -> None:
+        print("after_create", obj)
 
     async def edit(self, request: Request, pk, data: Dict):
         employer_leads_update_res = EmployerLeads.update_one(
