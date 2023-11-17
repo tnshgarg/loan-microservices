@@ -1,6 +1,7 @@
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import bson
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette_admin import BaseModelView, StringField
 
@@ -16,7 +17,7 @@ def trigger_bureau_fetch(inserted_employer_lead_object):
     try:
         BureauFetchService().fetch_bureau_details(name, mobile, pan)
     except Exception as e:
-        print("trigger_bureau_fetch_exception", str(e))
+        raise HTTPException(500, str(e))
 
 
 class EmployerLeadsView(BaseModelView):
@@ -71,19 +72,19 @@ class EmployerLeadsView(BaseModelView):
         return DictToObj(employer_leads_res)
 
     async def create(self, request: Request, data: Dict):
+        sales_id = request.state.user.get("sales_id")
+        data["sales_id"] = bson.ObjectId(sales_id)
+
         employer_leads_insert_res = EmployerLeads.insert_one(data)
         inserted_id = employer_leads_insert_res.inserted_id
         data["_id"] = inserted_id
         inserted_employer_lead_object = DictToObj(data)
 
-        trigger_bureau_fetch(inserted_employer_lead_object)
+        await self.after_create(request, inserted_employer_lead_object)
         return inserted_employer_lead_object
 
-    async def before_create(self, request: Request, data: Dict[str, Any], obj: Any) -> None:
-        print("before_create", obj)
-
     async def after_create(self, request: Request, obj: Any) -> None:
-        print("after_create", obj)
+        trigger_bureau_fetch(obj)
 
     async def edit(self, request: Request, pk, data: Dict):
         employer_leads_update_res = EmployerLeads.update_one(

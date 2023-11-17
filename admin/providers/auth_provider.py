@@ -53,6 +53,7 @@ class MyAuthProvider(AuthProvider):
             user = SalesUser.find_one({"email": str(username)})
             if user:
                 user_data = {
+                    "sales_id": user["_id"],
                     "name": username,
                     "roles": user["type"],
                     "avatar": None,
