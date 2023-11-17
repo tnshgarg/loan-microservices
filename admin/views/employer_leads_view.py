@@ -35,7 +35,7 @@ def create_search_filter(sales_user, term):
             expressions.append(
                 {
                     field.name: {
-                        "$regex": term,
+                        "$regex": str(term),
                         "$options": "i"
                     }
                 }
