@@ -1,4 +1,4 @@
-from ops.templates.repayments_reminder.components import get_table_html
+from ops.templates.components import get_table_html
 
 
 def get_repayments_auto_deduction_template(pending_repayments_summary):

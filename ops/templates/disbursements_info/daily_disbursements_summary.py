@@ -1,16 +1,18 @@
 from ops.templates.components import get_table_html
 
 
-def get_repayments_deduction_at_source_template(pending_repayments_summary):
-    company_name = pending_repayments_summary.get("company_name")
-    total_due_amount = pending_repayments_summary.get("total_due_amount")
-    due_date = pending_repayments_summary.get("due_date")
-    summary_df = pending_repayments_summary.get("summary_df")
-    beneficiary_name = pending_repayments_summary.get("beneficiary_name")
-    account_number = pending_repayments_summary.get("account_number")
-    ifsc = pending_repayments_summary.get("ifsc")
+def get_daily_disbursements_summary_template(daily_disbursements_summary):
+    company_name = daily_disbursements_summary.get("company_name")
+    current_date = daily_disbursements_summary.get("current_date")
+    current_month = daily_disbursements_summary.get("current_month")
+    total_loan_amount = daily_disbursements_summary.get("total_loan_amount")
+    unique_employee_count = daily_disbursements_summary.get(
+        "unique_employee_count")
+    due_date = daily_disbursements_summary.get("due_date")
+    successful_disbursements_summary_df = daily_disbursements_summary.get(
+        "successful_disbursements_summary_df")
 
-    table_html = get_table_html(summary_df)
+    table_html = get_table_html(successful_disbursements_summary_df)
 
     html_content = f'''
         <!DOCTYPE html>
@@ -91,7 +93,7 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
                 }}
             </style>
         </head>
-        <body style="background-color: #f9f9f9; margin: 0; padding: 0; -webkit-text-size-adjust: none; text-size-adjust: none;"><div class="preheader" style="display:none;font-size:1px;color:#333333;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Repayment due by {due_date}</div>
+        <body style="background-color: #f9f9f9; margin: 0; padding: 0; -webkit-text-size-adjust: none; text-size-adjust: none;">
         <table border="0" cellpadding="0" cellspacing="0" class="nl-container" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f9f9f9;" width="100%">
         <tbody>
         <tr>
@@ -141,7 +143,7 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
         <td class="pad" style="vertical-align: middle; color: #000000; font-family: inherit; font-size: 14px; font-weight: 400; text-align: center;">
         <table align="center" cellpadding="0" cellspacing="0" class="alignment" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
         <tr>
-        <td style="vertical-align: middle; text-align: center; padding-top: 25px; padding-bottom: 25px; padding-left: 5px; padding-right: 5px;"><img align="center" class="icon" height="128" src="https://d22ss3ef1t9wna.cloudfront.net/email-assets/notification-bell-icon-3d-render-cute-cartoon-illustration-simple-yellow-bell-reminder-notice-concept-removebg-preview.png" style="display: block; height: auto; margin: 0 auto; border: 0;" width="145"/></td>
+        <td style="vertical-align: middle; text-align: center; padding-top: 25px; padding-bottom: 25px; padding-left: 5px; padding-right: 5px;"><img align="center" class="icon" height="128" src="https://d22ss3ef1t9wna.cloudfront.net/email-assets/Check_Mark_Button-removebg-preview_Copy.png" style="display: block; height: auto; margin: 0 auto; border: 0;" width="112"/></td>
         </tr>
         </table>
         </td>
@@ -154,27 +156,17 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
         <div class="" style="font-size: 12px; font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; mso-line-height-alt: 18px; color: #555555; line-height: 1.5;">
         <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">Dear {company_name},</p>
         <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 18px;"> </p>
-        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">We hope this message finds you well. As part of our commitment to transparency and smooth financial operations, we'd like to remind you of the upcoming due date for the previous withdrawal repayments.</p>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">We hope this finds you well. We're reaching out to keep you updated on the successful disbursements made to your employees.</p>
         <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 18px;"> </p>
-        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>Key Details:</strong></p>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>Summary for {current_date}:</strong></p>
         <ul style="line-height: 1.5; mso-line-height-alt: 21px; font-size: 14px;">
-        <li style="text-align: left;"><strong>Total Due Amount</strong>: ₹{total_due_amount}</li>
-        <li style="text-align: left;"><strong>Due Date</strong>: {due_date}</li>
+        <li style="text-align: left;"><strong>Total Amount Withdrawn</strong>: ₹{total_loan_amount}</li>
+        <li style="text-align: left;"><strong>Count of employees</strong>: {unique_employee_count}</li>
+        <li style="text-align: left;"><strong>Due Date for Repayment</strong>: {due_date}</li>
         </ul>
-        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">Failure to settle this amount by the specified date will incur a penalty of ₹250 per employee per day or an added interest rate of 5% per month, whichever is higher.</p>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">For a detailed breakdown, please find the disbursement data attached in the CSV file.</p>
         <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 18px;"> </p>
-        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>Please note</strong>:</p>
-        <ul style="list-style-type: circle; line-height: 1.5; mso-line-height-alt: 21px; font-size: 14px;">
-        <li style="text-align: left;">Late payments can significantly harm your credit score, resulting in difficulty accessing credit.</li>
-        <li style="text-align: left;">Late payments are reported to credit bureaus and will show up on the credit report of the borrower.</li>
-        </ul>
-        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>Repayment Account Details:</strong></p>
-        <ul style="list-style-type: square; line-height: 1.5; mso-line-height-alt: 21px; font-size: 14px;">
-        <li style="text-align: left;"><strong>Beneficiary Name</strong>: {beneficiary_name}</li>
-        <li style="text-align: left;"><strong>Account Number</strong>: {account_number}</li>
-        <li style="text-align: left;"><strong>IFSC Code</strong>: {ifsc}</li>
-        </ul>
-        <p style="margin: 0; mso-line-height-alt: 21px;"><span style="font-size:14px;">For a detailed breakdown of the amounts per employee, kindly refer to the table below:</span></p>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>📊 Table: Daily Successful Withdrawals</strong></p>
         </div>
         </div>
         </td>
@@ -188,7 +180,7 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
         </tr>
         </tbody>
         </table>
-        <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-3" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 600px;" width="100%">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" class="row row-3" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; width: 600px" width="100%">
         <tbody>
         <tr>
         <td>
@@ -289,12 +281,19 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
         <tbody>
         <tr>
         <td class="column column-1" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 5px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="100%">
-        <table border="0" cellpadding="0" cellspacing="0" class="paragraph_block block-1" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0" class="text_block block-1" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;" width="100%">
         <tr>
-        <td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:30px;">
-        <div style="color:#101112;direction:ltr;font-family:'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;font-size:14px;font-weight:400;letter-spacing:0px;line-height:150%;text-align:left;mso-line-height-alt:21px;">
-        <p style="margin: 0; margin-bottom: 16px;">For ease of access and future reference, we have also attached a CSV file containing the same data.<br/><br/>Please process the repayment at the earliest. If you've already made the payment or if there are any discrepancies in the details provided, do reach out to us immediately.<br/><br/>Thank you for your prompt attention to this matter. Let's keep ensuring timely financial solutions for our employees!</p>
-        <p style="margin: 0;">Warm regards,<br/><br/>Customer Support Team<br/>Unipe.Money</p>
+        <td class="pad" style="padding-bottom:10px;padding-left:30px;padding-right:30px;padding-top:10px;">
+        <div style="font-family: 'Trebuchet MS', Tahoma, sans-serif">
+        <div class="" style="font-size: 12px; font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; mso-line-height-alt: 18px; color: #555555; line-height: 1.5;">
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;"><strong>Attachments:</strong></p>
+        <ol style="font-size: 14px;">
+        <li style="text-align: left;">Detailed_Disbursement_{current_date}.csv (Today's detailed breakdown)</li>
+        <li style="text-align: left;">Monthly_Disbursement_Summary_{current_month}.csv (Employee-wise withdrawals for the current cycle)</li>
+        </ol>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 18px;"> </p>
+        <p style="margin: 0; font-size: 14px; text-align: left; mso-line-height-alt: 21px;">Warm regards,<br/><br/>Customer Support Team<br/><a href="https://www.unipe.money/" rel="noopener" style="text-decoration: underline; color: #7747ff;" target="_blank">Unipe.Money</a></p>
+        </div>
         </div>
         </td>
         </tr>
@@ -336,22 +335,22 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
         <table align="center" border="0" cellpadding="0" cellspacing="0" class="row-content stack" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #051365; color: #000; width: 600px; margin: 0 auto;" width="600">
         <tbody>
         <tr>
-        <td class="column column-1" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-top: 10px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="33.333333333333336%">
+        <td class="column column-1" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 10px; vertical-align: bottom; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="33.333333333333336%">
         <table border="0" cellpadding="0" cellspacing="0" class="button_block block-1" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;" width="100%">
         <tr>
         <td class="pad" style="padding-bottom:10px;padding-top:10px;text-align:center;">
-        <div align="center" class="alignment"><!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="mailto:support@unipe.money?subject=Query%20Regarding%20Repayments" style="height:36px;width:138px;v-text-anchor:middle;" arcsize="12%" strokeweight="0.75pt" strokecolor="#FFFFFF" fill="false"><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center style="color:#ffffff; font-family:'Trebuchet MS', Tahoma, sans-serif; font-size:12px"><![endif]--><a href="mailto:support@unipe.money?subject=Query%20Regarding%20Repayments" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:transparent;border-radius:4px;width:auto;border-top:1px solid #FFFFFF;font-weight:400;border-right:1px solid #FFFFFF;border-bottom:1px solid #FFFFFF;border-left:1px solid #FFFFFF;padding-top:5px;padding-bottom:5px;font-family:'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;font-size:12px;text-align:center;mso-border-alt:none;word-break:keep-all;" target="_blank"><span style="padding-left:30px;padding-right:30px;font-size:12px;display:inline-block;letter-spacing:normal;"><span style="word-break: break-word; line-height: 24px;">Get in touch</span></span></a><!--[if mso]></center></v:textbox></v:roundrect><![endif]--></div>
+        <div align="center" class="alignment"><!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="mailto:support@unipe.money?subject=Query%20Regarding%20Repayments" style="height:34px;width:131px;v-text-anchor:middle;" arcsize="12%" strokeweight="0.75pt" strokecolor="#FFFFFF" fill="false"><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center style="color:#ffffff; font-family:'Trebuchet MS', Tahoma, sans-serif; font-size:11px"><![endif]--><a href="mailto:support@unipe.money?subject=Query%20Regarding%20Repayments" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:transparent;border-radius:4px;width:auto;border-top:1px solid #FFFFFF;font-weight:400;border-right:1px solid #FFFFFF;border-bottom:1px solid #FFFFFF;border-left:1px solid #FFFFFF;padding-top:5px;padding-bottom:5px;font-family:'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;font-size:11px;text-align:center;mso-border-alt:none;word-break:keep-all;" target="_blank"><span style="padding-left:30px;padding-right:30px;font-size:11px;display:inline-block;letter-spacing:normal;"><span style="word-break: break-word; line-height: 22px;">Get in touch</span></span></a><!--[if mso]></center></v:textbox></v:roundrect><![endif]--></div>
         </td>
         </tr>
         </table>
         </td>
-        <td class="column column-2" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-top: 5px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="33.333333333333336%">
+        <td class="column column-2" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-top: 5px; vertical-align: bottom; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="33.333333333333336%">
         <table border="0" cellpadding="0" cellspacing="0" class="icons_block block-1" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;" width="100%">
         <tr>
         <td class="pad" style="vertical-align: middle; color: #000000; font-family: inherit; font-size: 14px; font-weight: 400; text-align: center;">
         <table align="center" cellpadding="0" cellspacing="0" class="alignment" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
         <tr>
-        <td style="vertical-align: middle; text-align: center; padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px;"><img align="center" class="icon" height="32" src="https://d22ss3ef1t9wna.cloudfront.net/email-assets/pin.png" style="display: block; height: auto; margin: 0 auto; border: 0;" width="26"/></td>
+        <td style="vertical-align: middle; text-align: center; padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px;"><img align="center" class="icon" height="16" src="https://d22ss3ef1t9wna.cloudfront.net/email-assets/pin.png" style="display: block; height: auto; margin: 0 auto; border: 0;" width="13"/></td>
         </tr>
         </table>
         </td>
@@ -362,18 +361,18 @@ def get_repayments_deduction_at_source_template(pending_repayments_summary):
         <td class="pad">
         <div style="font-family: 'Trebuchet MS', Tahoma, sans-serif">
         <div class="" style="font-size: 12px; font-family: 'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif; mso-line-height-alt: 14.399999999999999px; color: #ffffff; line-height: 1.2;">
-        <p style="margin: 0; font-size: 14px; text-align: center; mso-line-height-alt: 16.8px;"><span style="font-size:11px;">Address: No.32, Hesaragatta Main Road, Kumbarahalli, Bengaluru, Karnataka, 560090</span></p>
+        <p style="margin: 0; font-size: 14px; text-align: center; mso-line-height-alt: 16.8px;"><span style="font-size:10px;">Address: No.32, Hesaragatta Main Road, Kumbarahalli, Bengaluru, Karnataka, 560090</span></p>
         </div>
         </div>
         </td>
         </tr>
         </table>
         </td>
-        <td class="column column-3" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 10px; vertical-align: top; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="33.333333333333336%">
+        <td class="column column-3" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-bottom: 5px; padding-top: 10px; vertical-align: bottom; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;" width="33.333333333333336%">
         <table border="0" cellpadding="0" cellspacing="0" class="button_block block-1" role="presentation" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;" width="100%">
         <tr>
         <td class="pad" style="padding-bottom:10px;padding-top:10px;text-align:center;">
-        <div align="center" class="alignment"><!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://app.unipe.money/" style="height:36px;width:156px;v-text-anchor:middle;" arcsize="12%" strokeweight="0.75pt" strokecolor="#FFFFFF" fill="false"><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center style="color:#ffffff; font-family:'Trebuchet MS', Tahoma, sans-serif; font-size:12px"><![endif]--><a href="https://app.unipe.money/" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:transparent;border-radius:4px;width:auto;border-top:1px solid #FFFFFF;font-weight:400;border-right:1px solid #FFFFFF;border-bottom:1px solid #FFFFFF;border-left:1px solid #FFFFFF;padding-top:5px;padding-bottom:5px;font-family:'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;font-size:12px;text-align:center;mso-border-alt:none;word-break:keep-all;" target="_blank"><span style="padding-left:30px;padding-right:30px;font-size:12px;display:inline-block;letter-spacing:normal;"><span style="word-break: break-word; line-height: 24px;">Open Web App</span></span></a><!--[if mso]></center></v:textbox></v:roundrect><![endif]--></div>
+        <div align="center" class="alignment"><!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://app.unipe.money/" style="height:34px;width:149px;v-text-anchor:middle;" arcsize="12%" strokeweight="0.75pt" strokecolor="#FFFFFF" fill="false"><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center style="color:#ffffff; font-family:'Trebuchet MS', Tahoma, sans-serif; font-size:11px"><![endif]--><a href="https://app.unipe.money/" style="text-decoration:none;display:inline-block;color:#ffffff;background-color:transparent;border-radius:4px;width:auto;border-top:1px solid #FFFFFF;font-weight:400;border-right:1px solid #FFFFFF;border-bottom:1px solid #FFFFFF;border-left:1px solid #FFFFFF;padding-top:5px;padding-bottom:5px;font-family:'Montserrat', 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;font-size:11px;text-align:center;mso-border-alt:none;word-break:keep-all;" target="_blank"><span style="padding-left:30px;padding-right:30px;font-size:11px;display:inline-block;letter-spacing:normal;"><span style="word-break: break-word; line-height: 22px;">Open Web App</span></span></a><!--[if mso]></center></v:textbox></v:roundrect><![endif]--></div>
         </td>
         </tr>
         </table>

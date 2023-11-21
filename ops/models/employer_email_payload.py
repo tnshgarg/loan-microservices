@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 # add date field as well , get from async-jobs
@@ -16,8 +18,15 @@ class RequestDate(BaseModel):
         return date_string
 
 
-class EmployerEmailPayload(BaseModel):
+class EmployerRepaymentsEmailPayload(BaseModel):
 
     # required fields
     employer_id: str = Field(alias="employerId")
     request_date: RequestDate = Field(alias="requestDate")
+
+
+class EmployerDisbursementsEmailPayload(BaseModel):
+
+    # required fields
+    employer_id: str = Field(alias="employerId")
+    request_date: datetime = Field(alias="requestDate")
