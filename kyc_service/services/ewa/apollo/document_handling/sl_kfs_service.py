@@ -19,7 +19,8 @@ class ApolloSLKFSService:
             ApolloDocumentList.SL_KFS.name)
 
         if s3_key is not None:
-            download_url = self.s3_service.get_presigned_url(s3_key)
+            download_url = self.s3_service.get_presigned_url(
+                s3_key, use_stage=False)
         else:
             download_url = self.loan_application["data"]["documentsDownloadUrl"]
 

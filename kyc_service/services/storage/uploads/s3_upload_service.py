@@ -30,14 +30,15 @@ class S3UploadService:
             ExpiresIn=expiration
         )
 
-    def upload(self, key, fd) -> (bool, str | None):
-
+    def upload(self, key, fd, use_stage=True) -> (bool, str | None):
+        if use_stage:
+            key = Config.STAGE + "/" + key
         try:
             fd.seek(0)
             response = self.s3_client.put_object(
                 Body=fd.read(),
                 Bucket=self.bucket_name,
-                Key=Config.STAGE + "/" + key,
+                Key=key,
             )
             logging.info(response)
         except ClientError as e:

@@ -21,7 +21,7 @@ from ops.utils.privilege_level import is_sales_user_privileged
 STAGE = os.environ["STAGE"]
 
 employer_approval_router = APIRouter(
-    prefix=f"/{STAGE}/ops-service/employer-approval",
+    prefix=f"/employer-approval",
     tags=["employer-approval"]
 )
 

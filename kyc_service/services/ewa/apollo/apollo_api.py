@@ -80,5 +80,5 @@ class ApolloAPI:
         if response.status_code == 200:
             return response.json()
         raise ApolloApiException(
-            f"API Failure: {response.status_code}: ```{response.text}```"
+            f"API Failure({partner_tag},{partner_loan_id},{document_key}): {response.status_code}: ```{response.text}```"
         )

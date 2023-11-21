@@ -11,7 +11,7 @@ from ops.models.employer_email_payload import EmployerEmailPayload
 STAGE = os.environ["STAGE"]
 
 employer_emails_router = APIRouter(
-    prefix=f"/{STAGE}/ops-service/employer-emails",
+    prefix="/employer-emails",
     tags=["employer-emails"]
 )
 

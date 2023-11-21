@@ -46,6 +46,7 @@ class ApolloDocumentUploadsService(EwaDocumentUploadService):
                 s3_key,
                 None
             )
+        print(f"partner_tag={partner_tag}, loan_id={loan_id}")
         document_link = self.apollo_api.get_document_upload_link(
             partner_tag=partner_tag,
             partner_loan_id=loan_id,

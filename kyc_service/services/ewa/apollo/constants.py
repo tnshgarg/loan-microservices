@@ -40,11 +40,11 @@ class ApolloDocumentList:
     SALARY_SLIP = ApolloDocument("salary_slip", "pdf", MimeType.PDF)
 
     SIGNED_LOAN_AGREEMENT = ApolloDocument(
-        "loan_agreement", "pdf", MimeType.PDF, internal=True)
+        "loan_agreement", "pdf", MimeType.PDF)
     SIGNED_SL_KFS = ApolloDocument(
-        "signed_sanction_letter_and_KFS", "pdf", MimeType.PDF, internal=True)
+        "signed_sanction_letter_and_KFS", "pdf", MimeType.PDF)
     SIGNED_ADDENDUM = ApolloDocument(
-        "addendum", "pdf", MimeType.PDF, internal=True)
+        "addendum", "pdf", MimeType.PDF)
     LOAN_AGREEMENT = ApolloDocument(
         "generated_loan_agreement", "pdf", MimeType.PDF, internal=True)
     SL_KFS = ApolloDocument("sanction_letter_and_KFS",

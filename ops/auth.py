@@ -26,7 +26,6 @@ oauth.register(
 
 
 auth_router = APIRouter(
-    prefix=f"/{STAGE}/ops-service",
     tags=["auth"]
 )
 

@@ -44,10 +44,10 @@ class RouteMobileApi:
         self.otp_string = self.route_mobile_assets.get("otp_message_string")
 
     def merge_url(self, val):
-        return val + "=" + self.params[val]
+        return val[0] + "=" + val[1]
 
-    def build_querystring(self):
-        return "&".join(list(map(self.merge_url, self.params.keys())))
+    def build_querystring(self, params):
+        return "&".join(list(map(self.merge_url, params.items())))
 
     def parse_response_string(self, response_text, request_type="generate"):
         status_code_map = GENERATE_OTP_MAP if request_type == "generate" else VERIFY_OTP_MAP
@@ -63,7 +63,7 @@ class RouteMobileApi:
 
     def generate_otp(self, mobile_number: str):
         try:
-            self.params = {
+            params = {
                 "username": self.route_mobile_userid,
                 "password": self.route_mobile_password,
                 "msisdn": mobile_number,
@@ -75,7 +75,7 @@ class RouteMobileApi:
                 "source": "PYRCKT"
             }
 
-            query = "/otpgenerate?" + self.build_querystring()
+            query = "/otpgenerate?" + self.build_querystring(params)
 
             url = self.base_url+query
             self.logger.info("mobile_generate_otp_url", extra={
@@ -103,13 +103,13 @@ class RouteMobileApi:
 
     def verify_otp(self, mobile_number: str, otp: str):
         try:
-            self.params = {
+            params = {
                 "username": self.route_mobile_userid,
                 "password": self.route_mobile_password,
                 "msisdn": mobile_number,
                 "otp": otp
             }
-            query = "/checkotp?" + self.build_querystring()
+            query = "/checkotp?" + self.build_querystring(params)
             url = self.base_url+query
             self.logger.info("verify_otp_url", extra={
                 "data": {"url": url}

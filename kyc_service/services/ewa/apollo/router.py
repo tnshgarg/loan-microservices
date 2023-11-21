@@ -39,7 +39,7 @@ def upload_signed_documents(background_tasks: BackgroundTasks, apollo_loan_paylo
     )
 
 
-@apollo_ewa_router.post("/upload/signed_addendum")
+@apollo_ewa_router.post("/upload/addendum")
 def upload_addendum(background_tasks: BackgroundTasks, apollo_loan_payload: ApolloLoanPayload):
     background_tasks.add_task(
         sign_and_upload_addendum,

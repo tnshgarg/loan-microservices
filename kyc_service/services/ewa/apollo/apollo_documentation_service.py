@@ -205,21 +205,35 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             }
         )
 
+    def get_pdf_file_http(self, url):
+        content = requests.get(url).content
+        if content[-4:] == b"EOF\n":
+            content = content[:-4]+b"EOF\r\n"
+        else:
+            content = content+b'%%EOF\r\n'
+        fd = io.BytesIO(content)
+        return fd
+
     def upload_signed_loc_documents(self):
         signing_service = DocumentSigningService(self.offer)
         sl_kfs_url = self.s3_upload_service.get_presigned_url(
-            self.loan_application["uploads"]["loc"]["s3"][ApolloDocumentList.SL_KFS.name])
-        sl_kfs_fd = io.BytesIO(requests.get(sl_kfs_url).content)
+            self.loan_application["uploads"]["loc"]["s3"][ApolloDocumentList.SL_KFS.name],
+            use_stage=False
+        )
+        print("s3_url", sl_kfs_url)
+        sl_kfs_fd = self.get_pdf_file_http(sl_kfs_url)
         signed_sl_kfs_fd = signing_service.sign_pdf(sl_kfs_fd)
+
         self._upload_apollo_document(
             fd=signed_sl_kfs_fd,
             apollo_document=ApolloDocumentList.SIGNED_SL_KFS,
             partner_tag=ApolloPartnerTag.LOC_PERSONAL
         )
         loan_agreement_url = self.s3_upload_service.get_presigned_url(
-            self.loan_application["uploads"]["loc"]["s3"][ApolloDocumentList.LOAN_AGREEMENT.name])
-        loan_agreement_fd = io.BytesIO(
-            requests.get(loan_agreement_url).content)
+            self.loan_application["uploads"]["loc"]["s3"][ApolloDocumentList.LOAN_AGREEMENT.name],
+            use_stage=False
+        )
+        loan_agreement_fd = self.get_pdf_file_http(loan_agreement_url)
         signed_loan_agreement_fd = signing_service.sign_pdf(loan_agreement_fd)
         self._upload_apollo_document(
             fd=signed_loan_agreement_fd,
@@ -230,9 +244,11 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
     def upload_signed_addendum(self):
         signing_service = DocumentSigningService(self.offer)
         addendum_url = self.s3_upload_service.get_presigned_url(
-            self.loan_application["uploads"]["disbursements"][f"{self.offer_id}"]["s3"][ApolloDocumentList.ADDENDUM.name])
-        addendum_fd = io.BytesIO(
-            requests.get(addendum_url).content)
+            self.loan_application["uploads"]["disbursements"][
+                f"{self.offer_id}"]["s3"][ApolloDocumentList.ADDENDUM.name],
+            use_stage=False
+        )
+        addendum_fd = self.get_pdf_file_http(addendum_url)
 
         signed_addendup_fd = signing_service.sign_pdf(addendum_fd)
         self._upload_apollo_document(

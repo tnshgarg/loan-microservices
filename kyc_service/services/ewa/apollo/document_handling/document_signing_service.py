@@ -20,9 +20,9 @@ class DocumentSigningService:
         can.setFont("Helvetica-Bold", 20)
         can.drawString(30, 700, f"Digitally Signed by {self.borrower_name}")
         can.drawString(30, 670, f"Terms Accepted at {self.timestamp}")
-        can.drawString(30, 640, f"Device: {self.device_name}")
+        can.drawString(30, 640, f"IP Address: {self.ip_address}")
         can.drawString(30, 610, f"Device ID: {self.device_id}")
-        can.drawString(30, 580, f"IP Address: {self.ip_address}")
+        can.drawString(30, 580, f"Device: {self.device_name}")
         can.save()
 
         packet.seek(0)
@@ -36,9 +36,9 @@ class DocumentSigningService:
         can.line(30, 35, 565, 35)
         can.drawString(30, 25, f"Digitally Signed by {self.borrower_name}")
         can.drawString(300, 25, f"Terms Accepted at {self.timestamp}")
-        can.drawString(30, 15, f"Device: {self.device_name}")
+        can.drawString(30, 15, f"IP Address: {self.ip_address}")
         can.drawString(300, 15, f"Device ID: {self.device_id}")
-        can.drawString(30, 5, f"IP Address: {self.ip_address}")
+        can.drawString(30, 5, f"Device: {self.device_name}")
         can.save()
 
         # move to the beginning of the StringIO buffer
@@ -51,6 +51,7 @@ class DocumentSigningService:
     def sign_pdf(self, pdf_fd) -> io.BytesIO:
         signed_document = PdfWriter()
         pdf_fd.seek(0)
+
         document = PdfReader(pdf_fd)
         first_page = self.generate_first_page()
         footer = self.generate_footer()

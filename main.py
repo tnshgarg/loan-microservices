@@ -40,7 +40,7 @@ def shutdown_db_client():
 async def ping():
     return {"status": 200, "stage": Config.STAGE}
 
+app.mount(f"/{Config.STAGE}/ops-service", employer_app)
 app.mount("/", kyc_app)
-app.mount("/", employer_app)
 
 print(app)
