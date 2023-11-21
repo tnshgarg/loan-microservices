@@ -16,7 +16,9 @@ def main():
     parser.add_argument("-f", "--full", action="store_true",
                         help="full deployment of build + push")
     parser.add_argument("-P", "--prod", action="store_true",
-                        help="create a prod build for the given image")
+                        help="add a prod tag to for the built image")
+    parser.add_argument("-Q", "--qa", action="store_true",
+                        help="add a qa tag to for the built image")
 
     args = parser.parse_args()
 
@@ -31,10 +33,15 @@ def main():
         tag_name = "latest"
         if args.prod:
             tag_name = f"prod-{date.today()}"
+        if args.qa:
+            tag_name = f"qa-{date.today()}"
         call(f"""aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 802027775118.dkr.ecr.ap-south-1.amazonaws.com
         docker tag {app_name}-service:latest 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:{tag_name}
         docker push 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:{tag_name}
         """, shell=True)
+        print(
+            f"pushed tag: 802027775118.dkr.ecr.ap-south-1.amazonaws.com/{app_name}-service:{tag_name}"
+        )
 
 
 if __name__ == "__main__":

@@ -36,12 +36,14 @@ class DriveUploadService:
         if self.base_folder_id is None:
             self.base_folder_id = Config.GDRIVE_BASE_FOLDER_ID
 
-    def get_description(self, unipe_employee_id: str):
-        employee_doc = Employee.find_one({"_id": ObjectId(unipe_employee_id)})
+    def get_description(self, child_folder_name: str):
+        employee_doc = Employee.find_one({"_id": ObjectId(child_folder_name)})
+        if employee_doc is None:
+            return ""
         return ROOT_FOLDER_DESCRIPTION_TEMPLATE.format(**employee_doc)
 
-    def upload_file(self, unipe_employee_id, name, mime_type, fd, description=""):
-        parent_folder = self.get_or_create_employee_root(unipe_employee_id)
+    def upload_file(self, child_folder_name, name, mime_type, fd, description=""):
+        parent_folder = self.get_or_create_child_folder_root(child_folder_name)
         file_metadata = {
             'name': name,
             'parents': [parent_folder],
@@ -60,9 +62,9 @@ class DriveUploadService:
         return file_upload_response
 
     @functools.lru_cache(maxsize=512)
-    def get_or_create_employee_root(self, unipe_employee_id: str):
+    def get_or_create_child_folder_root(self, child_folder_name: str, description=None):
         file_search_response = self._drive_service.files().list(
-            q=f"mimeType='{GDRIVE_FOLDER_MIMETYPE}' and name = '{unipe_employee_id}' and '{self.base_folder_id}' in parents",
+            q=f"mimeType='{GDRIVE_FOLDER_MIMETYPE}' and name = '{child_folder_name}' and '{self.base_folder_id}' in parents",
             spaces='drive',
             fields='nextPageToken,'
             'files(id, name)'
@@ -71,25 +73,27 @@ class DriveUploadService:
         if (len(files)):
             return files[0]["id"]
         else:
-            return self.create_employee_root(unipe_employee_id)
+            return self.create_child_folder_root(child_folder_name, description)
 
-    def get_employee_root_url(self, unipe_employee_id: str):
-        return GDRIVE_FOLDER_URL_TEMPLATE.format(folder_id=self.get_or_create_employee_root(unipe_employee_id))
+    def get_child_folder_root_url(self, child_folder_name: str, description=None):
+        return GDRIVE_FOLDER_URL_TEMPLATE.format(folder_id=self.get_or_create_child_folder_root(child_folder_name, description))
 
-    def create_employee_root(self, unipe_employee_id: str):
+    def create_child_folder_root(self, child_folder_name: str, description: str):
+        if description is None:
+            description = self.get_description(child_folder_name)
         file_metadata = {
-            'name': unipe_employee_id,
+            'name': child_folder_name,
             'mimeType': GDRIVE_FOLDER_MIMETYPE,
-            'description': self.get_description(unipe_employee_id),
+            'description': description,
             'parents': [self.base_folder_id]
         }
         # pylint: disable=maybe-no-member
-        employee_folder = self._drive_service.files().create(
+        child_folder = self._drive_service.files().create(
             body=file_metadata,
             fields='id'
         ).execute()
-        folder_id = employee_folder.get('id')
+        folder_id = child_folder.get('id')
         self.logger.info(
-            f"gdrive_create_employee_root: {json.dumps({'unipeEmployeeId': unipe_employee_id, 'folder_id': folder_id})}"
+            f"gdrive_create_child_folder_root: {json.dumps({'child_folder': child_folder_name, 'folder_id': folder_id})}"
         )
         return folder_id

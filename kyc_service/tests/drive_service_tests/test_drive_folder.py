@@ -1,7 +1,7 @@
 
 import os
 from dal.models.db_manager import DBManager
-from media_processing.services.storage.uploads.drive_upload_service import DriveUploadService
+from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 
 
 def test_drive_folder_create(mocker):

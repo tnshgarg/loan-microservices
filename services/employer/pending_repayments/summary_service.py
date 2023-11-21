@@ -2,12 +2,12 @@ import pandas as pd
 
 from dal.models.bank_accounts import BankAccounts
 from dal.models.employer import Employer
-from ops.models.employer_email_payload import EmployerEmailPayload
+from ops.models.employer_email_payload import EmployerRepaymentsEmailPayload
 
 
 class EmployerPendingRepaymentsSummaryService:
 
-    def __init__(self, employer_info: EmployerEmailPayload, pending_repayments_df: pd.DataFrame) -> None:
+    def __init__(self, employer_info: EmployerRepaymentsEmailPayload, pending_repayments_df: pd.DataFrame) -> None:
         self.employer_info = employer_info
         self.pending_repayments_df = pending_repayments_df
 

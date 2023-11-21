@@ -78,7 +78,7 @@ class VideoOtpService(MediaUploadService):
         }, {"$set": {
             "verifier_sales_id": sales_user_id,
             "videoOtpLink": web_url,
-            "kycFolder": self.gdrive_upload_service.get_employee_root_url(str(self.unipe_employee_id))
+            "kycFolder": self.gdrive_upload_service.get_child_folder_root_url(str(self.unipe_employee_id))
         }})
         self._update_tracking_google_sheet([
             [f'video_otp_{offer_id}', 'SUCCESS', web_url],

@@ -1,5 +1,5 @@
 from dal.models.employer import Employer
-from ops.models.employer_email_payload import EmployerEmailPayload
+from ops.models.employer_email_payload import EmployerRepaymentsEmailPayload
 from ops.templates.repayments_reminder.auto_deduction import \
     get_repayments_auto_deduction_template
 from ops.templates.repayments_reminder.deduction_at_source import \
@@ -9,7 +9,7 @@ from services.employer.pending_repayments.utils import get_employer_ewa_type
 
 class EmailTemplateService:
 
-    def __init__(self, employer_info: EmployerEmailPayload) -> None:
+    def __init__(self, employer_info: EmployerRepaymentsEmailPayload) -> None:
         self.employer_info = employer_info
         self.employer_ewa_type = get_employer_ewa_type(
             employer_info.employer_id)

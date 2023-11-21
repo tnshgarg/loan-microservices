@@ -3,13 +3,13 @@ from typing import Annotated
 
 from fastapi import HTTPException, Header, status
 from kyc_service.auth import decode_token
-from kyc_service.schemas.auth import TokenPayload ,SalesTokenPayload
+from kyc_service.schemas.auth import TokenPayload, SalesTokenPayload
 
 
 async def get_sales_current_session(authorization: Annotated[str | None, Header()] = None) -> SalesTokenPayload:
     try:
         payload = decode_token(authorization)
-        return SalesTokenPayload.model_construct(**payload)
+        return SalesTokenPayload.construct(**payload)
     except Exception as e:
         message = str(e)
         raise HTTPException(
@@ -18,10 +18,11 @@ async def get_sales_current_session(authorization: Annotated[str | None, Header(
             headers={"WWW-Authenticate": ""},
         )
 
+
 async def get_current_session(authorization: Annotated[str | None, Header()] = None) -> TokenPayload:
     try:
         payload = decode_token(authorization)
-        return TokenPayload.model_construct(**payload)
+        return TokenPayload.construct(**payload)
     except Exception as e:
         message = str(e)
         raise HTTPException(

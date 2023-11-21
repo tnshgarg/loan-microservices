@@ -10,6 +10,8 @@ from kyc_service.services.storage.sheets.google_sheets import GoogleSheetsServic
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 from kyc_service.services.storage.uploads.s3_upload_service import S3UploadService
 import bson
+
+
 class RouteMobileOtpService(MobileVerificationService):
 
     def __init__(self, logger, stage,
@@ -31,6 +33,7 @@ class RouteMobileOtpService(MobileVerificationService):
             self.route_mobile_api = RouteMobileApiMock(logger)
         else:
             self.route_mobile_api = RouteMobileApi(logger)
+
     @db_txn
     def generate_otp(self, payload, user):
         try:
@@ -50,20 +53,20 @@ class RouteMobileOtpService(MobileVerificationService):
             if mobile_generate_otp_response["response"]["status"] == "success":
                 mobile_generate_otp_response["status"] = 200
                 EwaOTP.update(
-                {
-                    "unipeEmployeeId": user.unipe_employee_id,
-                    "status": EwaOTP.Stage.PENDING
-                },
-                {
-                    "$set": {
-                        "status": EwaOTP.Stage.EXPIRED
+                    {
+                        "unipeEmployeeId": user.unipe_employee_id,
+                        "status": EwaOTP.Stage.PENDING
+                    },
+                    {
+                        "$set": {
+                            "status": EwaOTP.Stage.EXPIRED
+                        }
                     }
-                }
                 )
                 EwaOTP.insert_one({
                     "unipeEmployeeId": user.unipe_employee_id,
                     "status": EwaOTP.Stage.PENDING,
-                    "offerId": payload.offer_id,
+                    "offerId": bson.ObjectId(payload.offer_id),
                 })
             else:
                 raise Exception("Some Problem generating error")
@@ -80,7 +83,7 @@ class RouteMobileOtpService(MobileVerificationService):
                 status_code=400,
                 detail=str(e)
             )
-    
+
     @db_txn
     def verify_otp(self, payload, user):
         try:
@@ -96,14 +99,14 @@ class RouteMobileOtpService(MobileVerificationService):
                 EwaOTP.update_one({
                     "unipeEmployeeId": user.unipe_employee_id,
                     "status": EwaOTP.Stage.PENDING,
-                    "offerId": payload.offer_id,
+                    "offerId": bson.ObjectId(payload.offer_id),
                 }, {"$set": {
                     "status": EwaOTP.Stage.SUBMITTED,
                 }})
-                self._update_tracking_google_sheet([
-                    [f'ewa_otp_{payload.offer_id}', 'SUCCESS'],
-                ])
-            elif mobile_verify_otp_response["code"] == "103": 
+                # self._update_tracking_google_sheet([
+                #     [f'ewa_otp_{payload.offer_id}', 'SUCCESS'],
+                # ])
+            elif mobile_verify_otp_response["code"] == "103":
                 mobile_verify_otp_response["status"] = 406
             else:
                 mobile_verify_otp_response["status"] = 400

@@ -24,6 +24,11 @@ def gdrive_upload_service():
 
 
 @cached(cache=TTLCache(maxsize=32, ttl=300))
+def loans_gdrive_upload_service():
+    return DriveUploadService(base_folder_id=Config.LOANS_GDRIVE_BASE_FOLDER_ID)
+
+
+@cached(cache=TTLCache(maxsize=32, ttl=300))
 def s3_upload_service():
     return S3UploadService(Config.BUCKET)
 

@@ -45,7 +45,7 @@ class MediaUploadService:
         extension = mime.split("/")[1]
         return extension
 
-    def _upload_media(self, form_file, filename):
+    def _upload_media(self, form_file, filename, s3_path_prefix="kyc_service"):
         file_extension = self._parse_extension(form_file.content_type)
         drive_upload_response = self.gdrive_upload_service.upload_file(
             str(self.unipe_employee_id),
@@ -55,7 +55,7 @@ class MediaUploadService:
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
         )
         status, asset_url = self.s3_upload_service.upload(
-            key=f"/kyc-service/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.{file_extension}",
+            key=f"{s3_path_prefix}/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.png",
             fd=form_file.file
         )
         return drive_upload_response["webViewLink"], asset_url
@@ -76,7 +76,7 @@ class MediaUploadService:
         return drive_upload_response["webViewLink"], asset_url
 
     def _update_tracking_google_sheet(self, entries):
-        folder_url = self.gdrive_upload_service.get_employee_root_url(
+        folder_url = self.gdrive_upload_service.get_child_folder_root_url(
             str(self.unipe_employee_id))
         sheet_rows = [self.common_columns + entry + [folder_url]
                       for entry in entries]
