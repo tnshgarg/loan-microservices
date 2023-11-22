@@ -111,6 +111,7 @@ class EmployerLeadsView(BaseModelView):
     async def create(self, request: Request, data: Dict):
         sales_id = request.state.user.get("sales_id")
         data["sales_id"] = bson.ObjectId(sales_id)
+        data["status"] = self.Meta.model.Status.PENDING
 
         insert_res = self.Meta.model.insert_one(data)
         inserted_id = insert_res.inserted_id

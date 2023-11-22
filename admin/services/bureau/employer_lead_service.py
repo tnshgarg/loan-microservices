@@ -5,13 +5,6 @@ from dal.models.employer_leads import EmployerLeads
 
 class EmployerLeadService:
 
-    class SummaryFields:
-        BUREAU_SCORE = "bureauScore"
-        DPD_6_MONTHS = "dpd6Months"
-        DPD_2_YEARS = "dpd2Years"
-        WRITEOFF = "writeoff"
-        FIELD_LIST = [BUREAU_SCORE, DPD_6_MONTHS, DPD_2_YEARS, WRITEOFF]
-
     def __init__(self, stage, logger) -> None:
         self.stage = stage
         self.logger = logger
@@ -69,10 +62,10 @@ class EmployerLeadService:
 
         dpd_6_months, dpd_2_years = self._fetch_dpd(report_data)
         summary = {
-            self.SummaryFields.BUREAU_SCORE: self._fetch_score(report_data),
-            self.SummaryFields.DPD_6_MONTHS: dpd_6_months,
-            self.SummaryFields.DPD_2_YEARS: dpd_2_years,
-            self.SummaryFields.WRITEOFF: self._fetch_writeoff(report_data),
+            EmployerLeads.SummaryFields.BUREAU_SCORE: self._fetch_score(report_data),
+            EmployerLeads.SummaryFields.DPD_6_MONTHS: dpd_6_months,
+            EmployerLeads.SummaryFields.DPD_2_YEARS: dpd_2_years,
+            EmployerLeads.SummaryFields.WRITEOFF: self._fetch_writeoff(report_data),
         }
         self.update_lead_summary(pan, summary)
 
@@ -86,14 +79,17 @@ class EmployerLeadService:
                 projection={
                     "_id": 0,
                     **{
-                        summary_field: 1 for summary_field in self.SummaryFields.FIELD_LIST
+                        summary_field: 1 for summary_field in EmployerLeads.SummaryFields.FIELD_LIST
                     }
                 }
             )
         EmployerLeads.update(
             filter_=filter_,
             update={
-                "$set": summary
+                "$set": {
+                    **summary,
+                    "status": EmployerLeads.Status.SUCCESS
+                }
             },
             upsert=False
         )
