@@ -5,7 +5,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette_admin import BaseModelView, StringField
 
-from admin.services.bureau_fetch_service import BureauFetchService
+from admin.services.bureau.bureau_fetch_service import BureauFetchService
 from admin.utils import DictToObj
 from dal.models.employer_leads import EmployerLeads
 from dal.models.sales_users import SalesUser
@@ -46,11 +46,14 @@ def create_search_filter(sales_user, term):
 
 def create_sorter(order_by):
     sorter = []
-    if order_by is not None:
+    if len(order_by):
         for field_info in order_by:
             field, order = field_info.split(maxsplit=1)
             direction = 1 if order == "asc" else -1
             sorter.append((field, direction))
+    else:
+        sorter.append(("$natural", -1))
+
     return sorter
 
 
@@ -61,11 +64,24 @@ class EmployerLeadsView(BaseModelView):
     icon = "fa fa-id-card"
     pk_attr = "_id"
     fields = [
-        StringField("_id", exclude_from_list=True),
+        StringField("_id"),
         StringField("name"),
         StringField("mobile"),
-        StringField("pan")
+        StringField("pan"),
+        StringField("bureauScore", label="Bureau Score"),
+        StringField("dpd6Months", label="DPD 6 Months"),
+        StringField("dpd2Years", label="DPD 2 Years"),
+        StringField("writeoff"),
+        StringField("settlement"),
+        StringField("remarks"),
+        StringField("employerLevel", label="Employer Level"),
+        # add status field, try badge with tooltip
+        StringField("status")
     ]
+    exclude_fields_from_list = ["_id"]
+    exclude_fields_from_create = ["bureauScore", "dpd6Months", "dpd2Years",
+                                  "writeoff", "settlement", "remarks", "employerLevel", "status"]
+    exclude_fields_from_edit = exclude_fields_from_create
 
     class Meta:
         model = EmployerLeads

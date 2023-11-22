@@ -7,10 +7,12 @@ import bson
 from dateutil.relativedelta import relativedelta
 
 from admin.apis.karza_api import KarzaApi
-from admin.services.bureau_report_generation_service import BureauReportService
-from admin.services.decentro_bureau_fetch_service import \
+from admin.services.bureau.bureau_report_generation_service import \
+    BureauReportService
+from admin.services.bureau.decentro_bureau_fetch_service import \
     DecentroBureauFetchService
-from admin.services.s3_report_upload_service import S3ReportService
+from admin.services.bureau.employer_lead_service import EmployerLeadService
+from admin.services.bureau.s3_report_upload_service import S3ReportService
 from dal.logger import get_app_logger
 from dal.models.risk_profile import RiskProfile
 from dal.utils import db_txn
@@ -97,6 +99,8 @@ class BureauFetchService:
                     "exception": traceback.format_exc(e)
                 })
         else:
+            EmployerLeadService(
+                self.stage, self.logger).update_lead_summary(pan)
             raise OpsException({
                 "reason": "retried too soon",
                 "previous_entry_filter": filter_

@@ -1,6 +1,7 @@
 import datetime
 import json
 
+from admin.services.bureau.employer_lead_service import EmployerLeadService
 from dal.models.risk_profile import RiskProfile
 
 
@@ -145,4 +146,7 @@ class BureauReportService:
             "data": risk_profile_insert_res
         })
 
-        return
+        pan = risk_profile_find_result["pan"]
+        data = risk_profile_find_result["data"]
+        EmployerLeadService(
+            self.stage, self.logger).generate_lead_summary(pan, data)
