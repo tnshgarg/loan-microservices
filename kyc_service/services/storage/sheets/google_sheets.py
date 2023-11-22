@@ -36,10 +36,22 @@ class GoogleSheetsService:
         if self.sheet_id is None:
             self.sheet_id = Config.KYC_STATUS_GOOGLE_SHEETS_ID
 
+    def encode_values(self, entries):
+        encoded_entries = []
+        for row in entries:
+            encoded_row = []
+            for value in row:
+                if not isinstance(value, str):
+                    encoded_row.append(str(value))
+                else:
+                    encoded_row.append(value)
+            encoded_entries.append(encoded_row)
+        return encoded_entries
+
     def append_entries(self, entries):
         return self._sheets_service.spreadsheets().values().append(
             spreadsheetId=self.sheet_id,
             range="RawEntries!A:A",
-            body={"values": entries},
+            body={"values": self.encode_values(entries)},
             valueInputOption="USER_ENTERED"
         ).execute()
