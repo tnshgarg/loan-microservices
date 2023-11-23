@@ -3,7 +3,7 @@ import re
 from dal.models.employer_leads import EmployerLeads
 
 
-class EmployerLeadService:
+class EmployerRiskAssessmentServiceLevel1:
 
     def __init__(self, stage, logger) -> None:
         self.stage = stage
@@ -34,6 +34,8 @@ class EmployerLeadService:
         exact_dpd = int(payment_status[:-1])
         return exact_dpd
 
+    # for dpd calculation, use freq of dpd , generate a map of dpd values for all 48 months
+    # key parsing of history mm-yy, take -6 and -24 from current time T
     def _fetch_dpd(self, report_data):
         retail_account_details = report_data.get("retailAccountDetails", [])
 

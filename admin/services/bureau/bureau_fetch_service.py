@@ -11,7 +11,8 @@ from admin.services.bureau.bureau_report_generation_service import \
     BureauReportService
 from admin.services.bureau.decentro_bureau_fetch_service import \
     DecentroBureauFetchService
-from admin.services.bureau.employer_lead_service import EmployerLeadService
+from admin.services.bureau.employer_risk_assessment_service_level_1 import \
+    EmployerRiskAssessmentServiceLevel1
 from admin.services.bureau.s3_report_upload_service import S3ReportService
 from dal.logger import get_app_logger
 from dal.models.risk_profile import RiskProfile
@@ -99,7 +100,7 @@ class BureauFetchService:
                     "exception": traceback.format_exc(e)
                 })
         else:
-            EmployerLeadService(
+            EmployerRiskAssessmentServiceLevel1(
                 self.stage, self.logger).update_lead_summary(pan)
             raise OpsException({
                 "reason": "retried too soon",
