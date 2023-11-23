@@ -1,84 +1,50 @@
+from admin.components.fields import CustomUrlField
+from admin.views.admin_view import AdminView
+from dal.models.employer import Employer
+from dal.models.sales_users import SalesUser
+from kyc_service.services.employers.employer_upload_service import EmployerUploadService
 from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
 from kyc_service.services.storage.uploads.media_upload_service import MediaUploadService
-from typing import Any, Coroutine, Dict, List, Optional, Sequence, Union
-from starlette.datastructures import FormData
-from starlette.requests import Request
-from starlette_admin._types import RowActionsDisplayType
-from starlette_admin.actions import row_action
-from starlette_admin.exceptions import ActionFailed
-from starlette_admin.contrib.mongoengine import ModelView
-import sys
-import os
 import bson
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-grandparent_dir = os.path.dirname(os.path.dirname(current_dir))
-
-sys.path.append(grandparent_dir)
-
-
-class EmployerUploadService(MediaUploadService):
-
-    def __init__(self,
-                 sales_user_id: bson.ObjectId,
-                 gdrive_upload_service: DriveUploadService,
-                 ) -> None:
-        super().__init__(None, sales_user_id, gdrive_upload_service, None, None)
-        self.sales_user_id = sales_user_id
-        self.gdrive_upload_service = gdrive_upload_service
-
-    def upload_agreement(self, agreement):
-        upload_agreement_drive_url = self._upload_media(
-            form_file=agreement,
-            filename="agreement"
-        )
-        return upload_agreement_drive_url
-
-    def upload_pan(self, pan):
-        upload_pan_drive_url = self._upload_media(
-            form_file=pan,
-            filename="pan"
-        )
-        return upload_pan_drive_url
-
-    def upload_gst(self, gst):
-        upload_gst_drive_url = self._upload_media(
-            form_file=gst,
-            filename="gst"
-        )
-        return upload_gst_drive_url
+from starlette_admin import CollectionField, StringField, URLField
+from typing import Any, Dict, List, Optional, Union
+from starlette.requests import Request
+from admin.utils import DictToObj
+from starlette_admin.exceptions import ActionFailed
+from starlette_admin.actions import row_action
+from starlette_admin._types import RowActionsDisplayType
+from starlette.requests import Request
+from starlette.datastructures import FormData
+from typing import Any
 
 
-class EmployerApprovalView(ModelView):
+class EmployerApprovalView(AdminView):
 
-    # def __init__(self,
-    #              sales_user_id: bson.ObjectId,
-    #              gdrive_upload_service: DriveUploadService,
-    #              ) -> None:
-    #     super().__init__(
-    #         sales_user_id,
-    #         gdrive_upload_service,
-    #     )
-    # @classmethod
-    # def get_row_actions(cls, request):
-    #     user_roles = request.state.user['roles']
+    identity="employer_approval"
+    name="Employer Approval"
+    label="Employer Approval"
+    icon="fa fa-users"
+    model=Employer
+    pk_attr="_id"
+    fields=[
+        StringField("_id"),
+        StringField("companyName"),
+        StringField("companyType"),
+        StringField("employeeCount"),
+        # JSONField("registrar"),
+        StringField("updatedAt"),
+        StringField("approvalStage"),
+        CollectionField("documents", fields=[
+            CollectionField("drive", fields=[
+                URLField("pan"),
+                URLField("agreement"),
+                URLField("gst"),
+            ])
+        ])
+    ]
 
-    #     actions_for_roles = {
-    #         'admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
-    #         'rm': ["view", "edit", "upload_details"],
-    #         'sm': ["view"],
-    #     }
-
-    #     actions = []
-    #     for role in user_roles:
-    #         actions.extend(actions_for_roles.get(role, []))
-
-    #     return list(set(actions))
-
-    # row_actions = get_row_actions()
     row_actions = ["view", "edit", "upload_details",
-                   "approve_employer", "delete"]
-    # fields = ["externalCustomerId","externalInstrementId"]
+                   "approve_employer"]
     row_actions_display_type = RowActionsDisplayType.ICON_LIST
 
     @row_action(
@@ -121,28 +87,21 @@ class EmployerApprovalView(ModelView):
         """,
     )
     async def upload_details_row_action(self, request: Request, pk: Any) -> str:
-        # Write your logic here
 
         user = request.state.user
         data: FormData = await request.form()
         employer_notes = data.get("employer-notes")
-        doc_employer_agreement = data.get("employer-agreement")
-        # doc_employer_pan = data.get("employer-pan")
-        # doc_employer_gst = data.get("employer-gst")
+        employer_agreement = data.get("employer-agreement")
+        employer_pan = data.get("employer-pan")
+        employer_gst = data.get("employer-gst")
         print("DATA: ", data)
-        # employer_upload_service = EmployerUploadService(
-        #     user, gdrive_upload_service=DriveUploadService)
-        # # pan_url = self._upload_media(doc_employer_pan, f"{doc_employer_pan.filename}-{user}")
-        # # pan_url = employer_upload_service.upload_pan(self, doc_employer_pan)
-        # agreement_url = employer_upload_service.upload_agreement(
-        #     doc_employer_agreement)
-        # # gst_url = employer_upload_service.upload_gst(self, doc_employer_gst)
-        # print("pan_url: ", pan_url)
 
-        if False:
-            # Display meaningfully error
-            raise ActionFailed("Sorry, We can't proceed this action now.")
-        # Display successfully message
+        employer_upload_service = EmployerUploadService(employer_id=pk)
+        # Assuming upload_documents expects a list of dictionaries for each document
+        employer_upload_service.upload_document("pan", employer_pan.file, employer_pan.content_type)
+        employer_upload_service.upload_document("agreement", employer_agreement.file, employer_agreement.content_type)
+        employer_upload_service.upload_document("gst", employer_gst.file, employer_gst.content_type)
+       
         return "You have successfully uploaded details of Employer"
 
     @row_action(
@@ -179,8 +138,35 @@ class EmployerApprovalView(ModelView):
         doc_employer_pan = data.get("employer-pan")
         doc_employer_gst = data.get("employer-gst")
 
-        if False:
-            # Display meaningfully error
-            raise ActionFailed("Sorry, We can't proceed this action now.")
-        # Display successfully message
+        print(employer_notes, doc_employer_agreement, doc_employer_gst, doc_employer_pan)
+        
         return "The article was successfully marked as published"
+
+    async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
+                       where: Union[Dict[str, Any], str, None] = None,
+                       order_by: Optional[List[str]] = None) -> List[Any]:
+        
+        # Retrieve userType, if he is SM, RM, or Manager from request.session
+        username = request.session.get("username", None)
+        if username:
+            user_data = SalesUser.find_one({"email": username})
+            if user_data:
+                userType = user_data.get("type")
+                userSalesId = user_data.get("_id")
+                print("User Type:", userType)
+
+
+        if userType == "admin":
+            where = {} 
+        elif userSalesId and (userType == "sm" or userType == "rm"):
+            where = {"salesUsers": {"$elemMatch": {"salesId": userSalesId}}}
+        else:
+            where = {"_id": None}
+
+        res = Employer.find(where)
+        res.skip(skip).limit(limit)
+        order_by
+        find_all_res = []
+        for employer_lead in res:
+            find_all_res.append(DictToObj(employer_lead))
+        return find_all_res

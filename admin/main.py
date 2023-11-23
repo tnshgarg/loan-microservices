@@ -12,11 +12,15 @@ from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette_admin.contrib.mongoengine import Admin
+from admin.views.commercial_loans_view import CommercialLoansView
 from admin.views.employer_approval_view import EmployerApprovalView
+from admin.views.promoters_view import PromotersView
+from admin.views.repayment_reconcilation_view import RepaymentReconcilation
 
 from dal.models.db_manager import DBManager
 from admin.views.employer_leads_view import \
     EmployerLeadsView
+from admin.config import config
 
 """Initialize Middlewares"""
 middleware = [
@@ -41,7 +45,7 @@ oauth.register(
 admin_app = Starlette(
     routes=[
         Route("/", lambda r: HTMLResponse(
-            '<a href="/qa/ops-admin/admin">Login to Employer Approval Portal</a>')),
+            '<a href="/dev/ops-admin/admin">Login to Employer Approval Portal</a>')),
         Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
@@ -88,14 +92,11 @@ admin = Admin(
 
 
 """Add Admin Views Here admin.add_view"""
-admin.add_view(
-    EmployerApprovalView(
-        StarletteEmployers,
-        label="Employer Approval",
-        icon="fa fa-users"
-    )
-)
+admin.add_view(EmployerApprovalView)
 admin.add_view(EmployerLeadsView)
+admin.add_view(CommercialLoansView)
+admin.add_view(PromotersView)
+admin.add_view(RepaymentReconcilation)
 
 
 """Mount All The Views"""
