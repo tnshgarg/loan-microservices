@@ -26,12 +26,6 @@ class BureauFetchService:
         self.stage = os.environ["STAGE"]
         self.logger = get_app_logger("ops-microservice", self.stage)
 
-    def _compress_string(self, msg):
-        import zlib
-        msg_bytes = msg.encode('utf-8')
-        msg_bytes = zlib.compress(msg_bytes)
-        return msg_bytes
-
     def _get_earlier_date(self):
         current_date = datetime.utcnow()
         earlier_date = current_date-relativedelta(months=6)
@@ -76,10 +70,9 @@ class BureauFetchService:
             data = DecentroBureauFetchService(self.stage, self.logger).fetch(
                 pan, name, mobile, dob
             )
-            compressed_data = self._compress_string(
-                json.dumps(data))
+            json_data = json.dumps(data)
 
-            S3ReportService(self.stage, self.logger).upload(compressed_data, pan,
+            S3ReportService(self.stage, self.logger).upload(json_data, pan,
                                                             provider, bureau)
             try:
                 risk_profile_find_res = {
