@@ -65,6 +65,27 @@ class EmployerRiskAssessmentServiceLevel1:
 
         return dpd_6_months, dpd_2_years
 
+    def _check_employer_level(self, summary):
+        remarks = []
+        bureau_score = summary.get(EmployerLeads.SummaryFields.BUREAU_SCORE, 0)
+        dpd_6_months = summary.get(EmployerLeads.SummaryFields.DPD_6_MONTHS, 0)
+        dpd_2_years = summary.get(EmployerLeads.SummaryFields.DPD_2_YEARS, 0)
+        writeoff = summary.get(EmployerLeads.SummaryFields.WRITEOFF, 0)
+        if bureau_score < 500:
+            remarks.append(
+                f"Bureau Score should be > 500, currently {bureau_score}")
+        if dpd_6_months > 0:
+            remarks.append(
+                f"DPD 6 Months (30+) should be 0, currently {dpd_6_months}")
+        if dpd_2_years > 0:
+            remarks.append(
+                f"DPD 2 Years (90+) should be 0, currently {dpd_2_years}")
+        if writeoff > 10000:
+            remarks.append(f"Writeoff should be <10000, currently {writeoff}")
+
+        level = 0 if len(remarks) else 1
+        return level, remarks
+
     def generate_lead_summary(self, pan, data):
         report_data = data.get("data", {}).get("cCRResponse").get("cIRReportDataLst", [{}])[0].get(
             "cIRReportData")
@@ -79,6 +100,9 @@ class EmployerRiskAssessmentServiceLevel1:
             EmployerLeads.SummaryFields.DPD_2_YEARS: dpd_2_years,
             EmployerLeads.SummaryFields.WRITEOFF: self._fetch_writeoff(report_data),
         }
+        employer_level, remarks = self._check_employer_level(summary)
+        summary[EmployerLeads.SummaryFields.EMPLOYER_LEVEL] = employer_level
+        summary[EmployerLeads.SummaryFields.REMARKS] = remarks
         self.update_lead_summary(pan, summary)
 
     def update_lead_summary(self, pan, summary=None):
