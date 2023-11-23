@@ -1,4 +1,7 @@
 import re
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from dal.models.employer_leads import EmployerLeads
 
@@ -34,24 +37,31 @@ class EmployerRiskAssessmentServiceLevel1:
         exact_dpd = int(payment_status[:-1])
         return exact_dpd
 
-    # for dpd calculation, use freq of dpd , generate a map of dpd values for all 48 months
-    # key parsing of history mm-yy, take -6 and -24 from current time T
+    def _is_valid_month(self, month_string, dpd_range_in_months):
+        month, year = list(map(int, month_string.split("-")))
+        test_date = datetime(year, month, 1)
+
+        current_date = datetime.now()
+        current_month, current_year = current_date.month, current_date.year
+        reference_date = datetime(current_year, current_month, 1)
+
+        time_difference = relativedelta(reference_date, test_date)
+        return time_difference.months <= dpd_range_in_months
+
     def _fetch_dpd(self, report_data):
         retail_account_details = report_data.get("retailAccountDetails", [])
 
         dpd_6_months, dpd_2_years = 0, 0
         for retail_account in retail_account_details:
             payment_history = retail_account.get("history48Months", [])
-            for index in range(min(6, len(payment_history))):
-                payment_status = payment_history[index].get("paymentStatus")
-                dpd_6_months += self._get_exact_dpd(payment_status)
-            dpd_2_years = dpd_6_months
-
-            if len(payment_history) > 6:
-                for index in range(6, min(24, len(payment_history))):
-                    payment_status = payment_history[index].get(
-                        "paymentStatus")
-                    dpd_2_years += self._get_exact_dpd(payment_status)
+            for monthly_history in payment_history:
+                month_string = monthly_history["key"]
+                payment_status = monthly_history["paymentStatus"]
+                current_dpd = self._get_exact_dpd(payment_status)
+                if self._is_valid_month(month_string=month_string, dpd_range_in_months=6) and current_dpd >= 30:
+                    dpd_6_months += 1
+                if self._is_valid_month(month_string=month_string, dpd_range_in_months=24) and current_dpd >= 90:
+                    dpd_2_years += 1
 
         return dpd_6_months, dpd_2_years
 
