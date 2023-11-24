@@ -1,6 +1,8 @@
 
 from dataclasses import dataclass
 
+APOLLO_DATE_FORMAT = "%d/%m/%Y"
+
 
 class MimeType:
     PDF = "application/pdf"
@@ -14,7 +16,7 @@ class ApolloDocument:
     name: str
     extension: str
     mime_type: str
-    internal: str = False
+    internal: bool = False
 
     @property
     def upload_key(self):

@@ -51,7 +51,8 @@ class MediaUploadService:
             fd=form_file.file,
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
         )
-        status, asset_url = self.s3_upload_service.upload(
+        # TODO: use status for exception raise
+        _, asset_url = self.s3_upload_service.upload(
             key=f"{s3_path_prefix}/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.{file_extension}",
             fd=form_file.file
         )
@@ -66,7 +67,8 @@ class MediaUploadService:
             fd=dummy_file,
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
         )
-        status, asset_url = self.s3_upload_service.upload(
+        # TODO: use status for exception raise
+        _, asset_url = self.s3_upload_service.upload(
             key=f"/kyc-service/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.txt",
             fd=dummy_file
         )

@@ -149,7 +149,8 @@ class EmployerApprovalView(AdminView):
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-
+        if where is None:
+            where = {"_id": None}
         # Retrieve userType, if he is SM, RM, or Manager from request.session
         username = request.session.get("username", None)
         if username:
@@ -163,8 +164,6 @@ class EmployerApprovalView(AdminView):
             where = {}
         elif sales_user_id and (user_type == "sm" or user_type == "rm"):
             where = {"salesUsers": {"$elemMatch": {"salesId": sales_user_id}}}
-        else:
-            where = {"_id": None}
 
         res = Employer.find(where)
         res.skip(skip).limit(limit)

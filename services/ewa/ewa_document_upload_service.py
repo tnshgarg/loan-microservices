@@ -43,7 +43,7 @@ class EwaDocumentUploadService(MediaUploadService):
         )
 
         s3_key = f"{self.provider}/{self.loan_application_id}/{self.offer_id}/{idx_filename}"
-        status, asset_url = self.s3_upload_service.upload(
+        status, _ = self.s3_upload_service.upload(
             key=s3_key,
             fd=fd,
             use_stage=False

@@ -18,7 +18,7 @@ users = {
         "avatar": "avatar.svg",
         "roles": ["read", "create", "edit", "update_details", "approve_employer", "delete", "view"],
     },
-    "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"], "password": "123456"},
+    "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"]},
 
 }
 

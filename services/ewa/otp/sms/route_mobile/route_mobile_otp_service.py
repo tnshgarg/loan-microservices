@@ -1,5 +1,6 @@
 from fastapi import HTTPException as HTTPResponseException
-from services.ewa_otp.mobile_verification_service import MobileVerificationService
+
+from services.ewa.otp.sms.mobile_verification_service import MobileVerificationService
 from .route_mobile_api import RouteMobileApi
 from .route_mobile_api_mock import RouteMobileApiMock
 from dal.models.offer import Offers

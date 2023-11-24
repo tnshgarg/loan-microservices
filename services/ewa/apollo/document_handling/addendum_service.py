@@ -5,6 +5,7 @@ from io import BytesIO
 import math
 import os
 from bson import ObjectId
+from services.ewa.apollo.constants import APOLLO_DATE_FORMAT
 
 
 from services.ewa.apollo.utils import convert_to_words
@@ -38,7 +39,7 @@ class ApolloAddendumService:
         addendum_html = template_str.format(
             partner_loan_id=self.loc_id,
             loc_created_at=self.loc_created_at,
-            disbursement_date=today_date.strftime("%d/%m/%Y"),
+            disbursement_date=today_date.strftime(APOLLO_DATE_FORMAT),
             city=self.customer_info["city"],
             drawdownId=self.disbursement_id,
             borrower_name=self.customer_info["first_name"] +
@@ -53,11 +54,12 @@ class ApolloAddendumService:
             processingFees=processing_fees,
             loanAmount=self.offer_doc["loanAmount"],
             APR="{:.02f} %".format(APR),
-            repaymentDate=self.offer_doc["dueDate"].strftime("%d/%m/%Y"),
+            repaymentDate=self.offer_doc["dueDate"].strftime(
+                APOLLO_DATE_FORMAT),
             tenor=tenor,
             bankAccountNumber=self.customer_info["bank_account_number"],
             bankIFSC=self.customer_info["ifsc_code"],
             timestamp=today_date.isoformat(),
-            disbursementDate=today_date.strftime("%d/%m/%Y"),
+            disbursementDate=today_date.strftime(APOLLO_DATE_FORMAT),
         )
         return PDFService.html_to_pdf(f"{self.loc_id}_addendum", addendum_html)
