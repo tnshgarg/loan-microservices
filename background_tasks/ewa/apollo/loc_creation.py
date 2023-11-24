@@ -1,7 +1,7 @@
 from bson import ObjectId
-from kyc_service.services.ewa.apollo.apollo_commercial_documentation_service import ApolloCommercialDocumentsService
-from kyc_service.services.ewa.apollo.apollo_documentation_service import ApolloDocumentsService
-from kyc_service.services.ewa.apollo.schema import ApolloLoanPayload
+from services.ewa.apollo.apollo_commercial_documentation_service import ApolloCommercialDocumentsService
+from services.ewa.apollo.apollo_documentation_service import ApolloDocumentsService
+from services.ewa.apollo.schema import ApolloLoanPayload
 from time import sleep
 
 

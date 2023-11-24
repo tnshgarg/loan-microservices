@@ -1,8 +1,8 @@
 
 
 from bson import ObjectId
-from kyc_service.services.ewa.apollo.apollo_commercial_documentation_service import ApolloCommercialDocumentsService
-from kyc_service.services.ewa.apollo.apollo_documentation_service import ApolloDocumentsService
+from services.ewa.apollo.apollo_commercial_documentation_service import ApolloCommercialDocumentsService
+from services.ewa.apollo.apollo_documentation_service import ApolloDocumentsService
 
 
 def sign_and_upload_addendum(apollo_loan_payload):

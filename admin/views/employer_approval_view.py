@@ -2,10 +2,7 @@ from admin.components.fields import CustomUrlField
 from admin.views.admin_view import AdminView
 from dal.models.employer import Employer
 from dal.models.sales_users import SalesUser
-from kyc_service.services.employers.employer_upload_service import EmployerUploadService
-from kyc_service.services.storage.uploads.drive_upload_service import DriveUploadService
-from kyc_service.services.storage.uploads.media_upload_service import MediaUploadService
-import bson
+from services.employer.uploads.employer_upload_service import EmployerUploadService
 from starlette_admin import CollectionField, StringField, URLField
 from typing import Any, Dict, List, Optional, Union
 from starlette.requests import Request
@@ -20,13 +17,13 @@ from typing import Any
 
 class EmployerApprovalView(AdminView):
 
-    identity="employer_approval"
-    name="Employer Approval"
-    label="Employer Approval"
-    icon="fa fa-users"
-    model=Employer
-    pk_attr="_id"
-    fields=[
+    identity = "employer_approval"
+    name = "Employer Approval"
+    label = "Employer Approval"
+    icon = "fa fa-users"
+    model = Employer
+    pk_attr = "_id"
+    fields = [
         StringField("_id"),
         StringField("companyName"),
         StringField("companyType"),
@@ -98,10 +95,16 @@ class EmployerApprovalView(AdminView):
 
         employer_upload_service = EmployerUploadService(employer_id=pk)
         # Assuming upload_documents expects a list of dictionaries for each document
-        employer_upload_service.upload_document("pan", employer_pan.file, employer_pan.content_type)
-        employer_upload_service.upload_document("agreement", employer_agreement.file, employer_agreement.content_type)
-        employer_upload_service.upload_document("gst", employer_gst.file, employer_gst.content_type)
-       
+        employer_upload_service.upload_document(
+            "pan", employer_pan.file, employer_pan.content_type)
+        employer_upload_service.upload_document(
+            "agreement", employer_agreement.file, employer_agreement.content_type)
+        employer_upload_service.upload_document(
+            "gst", employer_gst.file, employer_gst.content_type)
+        employer_upload_service.update_employer({
+            "sales_user_id": user,
+            "documents.notes": employer_notes
+        })
         return "You have successfully uploaded details of Employer"
 
     @row_action(
@@ -138,34 +141,34 @@ class EmployerApprovalView(AdminView):
         doc_employer_pan = data.get("employer-pan")
         doc_employer_gst = data.get("employer-gst")
 
-        print(employer_notes, doc_employer_agreement, doc_employer_gst, doc_employer_pan)
-        
+        print(employer_notes, doc_employer_agreement,
+              doc_employer_gst, doc_employer_pan)
+
         return "The article was successfully marked as published"
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-        
+
         # Retrieve userType, if he is SM, RM, or Manager from request.session
         username = request.session.get("username", None)
         if username:
             user_data = SalesUser.find_one({"email": username})
             if user_data:
-                userType = user_data.get("type")
-                userSalesId = user_data.get("_id")
-                print("User Type:", userType)
+                user_type = user_data.get("type")
+                sales_user_id = user_data.get("_id")
+                print("User Type:", user_type)
 
-
-        if userType == "admin":
-            where = {} 
-        elif userSalesId and (userType == "sm" or userType == "rm"):
-            where = {"salesUsers": {"$elemMatch": {"salesId": userSalesId}}}
+        if user_type == "admin":
+            where = {}
+        elif sales_user_id and (user_type == "sm" or user_type == "rm"):
+            where = {"salesUsers": {"$elemMatch": {"salesId": sales_user_id}}}
         else:
             where = {"_id": None}
 
         res = Employer.find(where)
         res.skip(skip).limit(limit)
-        order_by
+        # TODO: add order by to the cursor
         find_all_res = []
         for employer_lead in res:
             find_all_res.append(DictToObj(employer_lead))

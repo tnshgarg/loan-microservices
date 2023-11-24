@@ -2,8 +2,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dal.models.db_manager import DBManager
-from kyc_service.config import Config
-from kyc_service.main import app as kyc_app
+from kyc.config import Config
+from kyc.main import app as kyc_app
 from ops.main import employer_app
 from admin.main import admin_app
 app = FastAPI()

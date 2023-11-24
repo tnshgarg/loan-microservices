@@ -9,6 +9,8 @@ def main():
 
     parser.add_argument("-a", "--app",
                         help="name of the app to build")
+    parser.add_argument("-m", "--message",
+                        help="message for the current deployment")
     parser.add_argument("-b", "--build", action="store_true",
                         help="flag to determine wether to build new image")
     parser.add_argument("-p", "--push", action="store_true",
@@ -23,10 +25,10 @@ def main():
     args = parser.parse_args()
 
     app_name = args.app
-
+    description = args.message
     if args.build or args.full:
         call(
-            f"docker build -f ./{app_name}_service.Dockerfile ./ -t {app_name}-service",
+            f"docker build -f ./{app_name}_service.Dockerfile ./ -t {app_name}-service --label \"description={description}\"",
             shell=True
         )
     if args.push or args.full:

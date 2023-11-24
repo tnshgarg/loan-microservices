@@ -6,5 +6,9 @@
     "python.testing.pytestEnabled": true,
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
     "editor.formatOnSave": true,
-    "python.envFile": "${workspaceFolder}/.env"
+    "python.envFile": "${workspaceFolder}/.env",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "local-sonarqube",
+        "projectKey": "microservices"
+    }
 }
