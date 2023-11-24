@@ -13,14 +13,30 @@
         "main:app",
         "--reload",
         "--port",
-        "5000",
+        "8000",
         "--host",
         "0.0.0.0"
       ],
       "envFile": "${workspaceFolder}/.env",
       "console": "integratedTerminal",
       "jinja": true,
-      "justMyCode": true
+      "justMyCode": false
+    },
+    {
+      "name": "Uvicorn: Run Starlette Employer Service",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "admin.main:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "jinja": true,
+      "justMyCode": false,
     }
   ]
 }

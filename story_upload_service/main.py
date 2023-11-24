@@ -41,7 +41,6 @@ async def ping():
 
 @app.post('/{stage}/story-upload-service', summary="Upload user story to backend", response_model=UserUploadSchema)
 async def upload_story(user_story: Annotated[UploadFile, File()],  gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)], user: Annotated[TokenPayload, Depends(get_current_session)]):
-    print("Upload Service Working!")
     media_upload_service = StoryUploadService(
         user_story,
         unipe_employee_id=user.unipe_employee_id,

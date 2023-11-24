@@ -34,9 +34,6 @@ class MediaUploadService:
         now = datetime.now()
         self.ts_prefix = now.strftime("%Y_%m_%d_%H_%M")
         self.ts_datetime = now.strftime("%Y-%m-%d %H:%M:%S")
-        self.employee_doc = Employee.find_one({"_id": unipe_employee_id})
-        self.common_columns = [self.ts_datetime, self.employee_doc['mobile'], self.employee_doc['employeeName'],
-                               str(self.sales_user_id)]
 
     @staticmethod
     def _parse_extension(content_type):
@@ -55,7 +52,7 @@ class MediaUploadService:
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"
         )
         status, asset_url = self.s3_upload_service.upload(
-            key=f"{s3_path_prefix}/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.png",
+            key=f"{s3_path_prefix}/{self.unipe_employee_id}/{self.ts_prefix}_{filename}.{file_extension}",
             fd=form_file.file
         )
         return drive_upload_response["webViewLink"], asset_url
@@ -76,8 +73,11 @@ class MediaUploadService:
         return drive_upload_response["webViewLink"], asset_url
 
     def _update_tracking_google_sheet(self, entries):
+        employee_doc = Employee.find_one({"_id": self.unipe_employee_id})
+        common_columns = [self.ts_datetime, employee_doc['mobile'], employee_doc['employeeName'],
+                          str(self.sales_user_id)]
         folder_url = self.gdrive_upload_service.get_child_folder_root_url(
             str(self.unipe_employee_id))
-        sheet_rows = [self.common_columns + entry + [folder_url]
+        sheet_rows = [common_columns + entry + [folder_url]
                       for entry in entries]
         self.google_sheets_service.append_entries(sheet_rows)
