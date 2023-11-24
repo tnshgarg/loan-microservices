@@ -1,7 +1,7 @@
 
 import logging
 from kyc.config import Config
-from services.employers.employer_drive_upload_service import EmployerDriveUploadService
+from services.employer.uploads.employer_drive_upload_service import EmployerDriveUploadService
 from services.storage.sheets.google_sheets import GoogleSheetsService
 from services.storage.uploads.s3_upload_service import S3UploadService
 from cachetools import cached, TTLCache

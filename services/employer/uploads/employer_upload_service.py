@@ -64,7 +64,7 @@ class EmployerUploadService(MediaUploadService):
         )
 
     def _add_to_db(self, doc_type, drive_url, s3_path):
-        self.upset_employer({
+        self.update_employer({
             f"documents.drive.{doc_type}": drive_url,
             f"documents.s3.{doc_type}": s3_path,
         })
