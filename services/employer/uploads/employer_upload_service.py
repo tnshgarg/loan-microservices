@@ -3,7 +3,6 @@ import bson
 from fastapi import HTTPException
 from dal.models.employer import Employer
 from dal.utils import db_txn
-from services.employer.uploads.employer_drive_upload_service import EmployerDriveUploadService
 from services.storage.uploads.media_upload_service import MediaUploadService
 from kyc.dependencies.admin import admin_gdrive_upload_service, admin_google_sheets_service, admin_s3_upload_service
 from services.storage.uploads.drive_upload_service import DriveUploadService
