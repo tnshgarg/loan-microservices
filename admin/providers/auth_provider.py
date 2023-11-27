@@ -1,3 +1,4 @@
+import os
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 from starlette.requests import Request
@@ -45,6 +46,8 @@ class GoogleOAuthProvider(AuthProvider):
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
         redirect_uri = request.url_for('auth')
+        if os.getenv('STAGE') != "dev" and redirect_uri.startswith("http:"):
+            redirect_uri = "https:" + redirect_uri[5:]
         return await oauth.google.authorize_redirect(request, redirect_uri, state=request.query_params["next"])
 
     async def is_authenticated(self, request) -> bool:
