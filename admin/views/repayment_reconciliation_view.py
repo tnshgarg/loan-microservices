@@ -10,7 +10,13 @@ from typing import Any
 from bson import ObjectId
 from dal.models.scheduled_jobs import ScheduledJob
 
-REPAYMENT_RECONCILATION_PROJECTION = {
+REPAYMENT_RECONCILIATION_FILTER = {
+    "body.payload.payment.entity.amount": {"$gt": 0},
+    "body.event": "payment.captured",
+    "status": {"$in": ["ERROR", "OPS_ISSUE", "IN_QUEUE"]},
+    "eventType": "WEBHOOK_PAYMENT_UPDATE:RAZORPAY"
+}
+REPAYMENT_RECONCILIATION_PROJECTION = {
     "provider": "Razorpay",
     "payment_id": "$body.payload.payment.entity.id",
     "status": 1,
@@ -22,11 +28,10 @@ REPAYMENT_RECONCILATION_PROJECTION = {
 }
 
 
-class RepaymentReconcilation(AdminView):
-
-    identity = "repayment_reconcilation"
-    name = "Repayment Reconcilation"
-    label = "Repayment Reconcilation"
+class RepaymentReconciliationView(AdminView):
+    identity = "repayment_reconciliation"
+    name = "Repayment Reconciliation"
+    label = "Repayment Reconciliation"
     icon = "fa fa-inr"
     model = ScheduledJob
     pk_attr = "_id"
@@ -44,31 +49,18 @@ class RepaymentReconcilation(AdminView):
             StringField("employerId")
         ]),
     ]
-    custom_filter = {
-        "body.payload.payment.entity.amount": {"$gt": 0},
-        "body.event": "payment.captured",
-        "status": {"$in": ["ERROR", "OPS_ISSUE", "IN_QUEUE"]},
-        "eventType": "WEBHOOK_PAYMENT_UPDATE:RAZORPAY"
-    }
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
 
-        username = request.session.get("username", None)
-        if username:
-            user_data = SalesUser.find_one({"email": username})
-            if user_data:
-                user_type = user_data.get("type")
-                sales_user_id = user_data.get("_id")
-                print("User Type:", user_type)
+        # TODO: Check for Admin, RM and SM Conditions on what data to show
 
         res = self.model.aggregate(pipeline=[
-            {'$match': self.custom_filter},
-            {'$project': REPAYMENT_RECONCILATION_PROJECTION}
+            {'$match': REPAYMENT_RECONCILIATION_FILTER},
+            {'$project': REPAYMENT_RECONCILIATION_PROJECTION}
         ])
 
-        # order_by
         find_all_res = []
         for employer_lead in res:
             find_all_res.append(DictToObj(employer_lead))
@@ -86,7 +78,7 @@ class RepaymentReconcilation(AdminView):
 
         customFilter = {**self.custom_filter, **{"_id": pk}}
         document = self.model.find_one(
-            customFilter, projection=REPAYMENT_RECONCILATION_PROJECTION)
+            customFilter, projection=REPAYMENT_RECONCILIATION_PROJECTION)
 
         if document:
             return DictToObj(document)
@@ -107,13 +99,13 @@ class RepaymentReconcilation(AdminView):
         employer_id = data["notes"]["employerId"]
 
         if len(repayment_id) > 0:
-            update_res = self.model.update_one(
+            self.model.update_one(
                 filter_={"_id": bson.ObjectId(pk)},
                 update={"$set": {"body.payload.payment.entity.notes": {
                     "repaymentId": repayment_id}}}
             )
         elif len(employer_id) > 0:
-            update_res = self.model.update_one(
+            self.model.update_one(
                 filter_={"_id": bson.ObjectId(pk)},
                 update={"$set": {"body.payload.payment.entity.notes": {
                     "employerId": employer_id}}}

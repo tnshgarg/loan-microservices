@@ -11,15 +11,36 @@ from starlette.requests import Request
 from typing import Any
 
 
-class CommercialLoansView(AdminView):
+def create_where_filter(userType: str, userSalesId: bson.ObjectId):
+    where = {"commercialLoanDetails": {"$exists": 1}}
+    if userSalesId and (userType == "sm" or userType == "rm"):
+        where.update({
+            "salesUsers": {
+                "$elemMatch": {"salesId": userSalesId}
+            }
+        })
+    return where
 
+
+def get_sales_user_data(request: Request):
+    username = request.session.get("username", None)
+
+    if username:
+        user_data = SalesUser.find_one({"email": username})
+        if user_data:
+            user_type = user_data.get("type")
+            sales_user_id = user_data.get("_id")
+            return [user_type, sales_user_id]
+    raise Exception("User Not Present in the Database")
+
+
+class CommercialLoansView(AdminView):
     identity = "commercial_loans"
     name = "Commercial Loans"
     label = "Commercial Loans"
     icon = "fa fa-university"
     model = Employer
     pk_attr = "_id"
-    # exclude_fields_from_edit=["commercialLoanDetails.duns_number"]
     fields = [
         StringField("_id"),
         HasMany("promoters", identity="promoters"),
@@ -42,24 +63,10 @@ class CommercialLoansView(AdminView):
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-        if where is None:
-            where = {"commercialLoanDetails": {"$exists": 1}}
 
-        username = request.session.get("username", None)
+        [user_type, sales_user_id] = get_sales_user_data(request)
 
-        if username:
-            user_data = SalesUser.find_one({"email": username})
-            if user_data:
-                userType = user_data.get("type")
-                userSalesId = user_data.get("_id")
-                print("User Type:", userType)
-
-        if userSalesId and (userType == "sm" or userType == "rm"):
-            where.update({
-                "salesUsers": {
-                    "$elemMatch": {"salesId": userSalesId}
-                }
-            })
+        where = create_where_filter(user_type, sales_user_id)
 
         res = Employer.find(where).skip(skip).limit(limit)
         find_all_res = []
@@ -85,3 +92,10 @@ class CommercialLoansView(AdminView):
             find_all_res.append(employer_dict)
 
         return find_all_res
+
+    async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
+        [userType, userSalesId] = get_sales_user_data(request)
+
+        filter_ = create_where_filter(userType, userSalesId)
+        res = self.model.find(filter_)
+        return len(list(res))
