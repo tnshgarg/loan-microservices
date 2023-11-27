@@ -41,7 +41,7 @@ oauth.register(
 )
 
 
-class MyAuthProvider(AuthProvider):
+class GoogleOAuthProvider(AuthProvider):
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
         redirect_uri = request.url_for('auth')

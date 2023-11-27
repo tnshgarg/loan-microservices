@@ -12,7 +12,10 @@ origins = [
     "http://localhost:3000",
     "https://qa.d2ofz3ql5xiuyy.amplifyapp.com",
     "https://dev.d2ofz3ql5xiuyy.amplifyapp.com",
-    "https://sales-webapp.unipe.money"
+    "https://sales-webapp.unipe.money",
+    "https://app.unipe.money",
+    "https://app.unipe.money",
+    "https://prod.dzxakiwje8d7k.amplifyapp.com"
 ]
 
 app.add_middleware(

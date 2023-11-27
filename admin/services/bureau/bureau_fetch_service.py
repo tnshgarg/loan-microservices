@@ -13,7 +13,7 @@ from admin.services.bureau.decentro_bureau_fetch_service import \
     DecentroBureauFetchService
 from admin.services.bureau.employer_risk_assessment_service_level_1 import \
     EmployerRiskAssessmentServiceLevel1
-from admin.services.bureau.s3_report_upload_service import S3ReportService
+from admin.services.bureau.s3_report_service import S3ReportService
 from dal.logger import get_app_logger
 from dal.models.risk_profile import RiskProfile
 from dal.utils import db_txn
@@ -72,8 +72,8 @@ class BureauFetchService:
             )
             json_data = json.dumps(data)
 
-            S3ReportService(self.stage, self.logger).upload(json_data, pan,
-                                                            provider, bureau)
+            s3_key = S3ReportService(self.stage, self.logger).upload(json_data, pan,
+                                                                     provider, bureau)
             try:
                 risk_profile_find_res = {
                     "pan": pan,
@@ -82,6 +82,7 @@ class BureauFetchService:
                     "bureau": bureau,
                     "data": data,
                     "provider": provider,
+                    "s3Key": s3_key
                 }
 
                 BureauReportService(self.stage, self.logger).generate(

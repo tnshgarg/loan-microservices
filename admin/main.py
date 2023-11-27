@@ -3,7 +3,7 @@ import os
 from authlib.integrations.starlette_client import OAuth
 from admin.config import config
 from admin.models.employers import StarletteEmployers
-from admin.providers.auth_provider import MyAuthProvider
+from admin.providers.auth_provider import GoogleOAuthProvider
 from starlette.applications import Starlette
 from starlette.config import Config
 from starlette.middleware import Middleware
@@ -86,7 +86,7 @@ admin = Admin(
     base_url="/admin",
     logo_url="https://static.wixstatic.com/media/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png/v1/fill/w_400,h_80,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png",
     login_logo_url="https://static.wixstatic.com/media/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png/v1/fill/w_400,h_80,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png",
-    auth_provider=MyAuthProvider(),
+    auth_provider=GoogleOAuthProvider(),
     middlewares=[Middleware(SessionMiddleware, secret_key=config.secret)],
 )
 
