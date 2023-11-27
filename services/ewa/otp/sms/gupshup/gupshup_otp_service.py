@@ -1,7 +1,9 @@
 from fastapi import HTTPException as HTTPResponseException
+
+from services.ewa.otp.sms.mobile_verification_service import MobileVerificationService
 from .gupshup_api import GupshupApi
 from .gupshup_api_mock import GupshupApiMock
-from services.ewa.otp.sms.mobile_verification_service import MobileVerificationService
+
 
 
 class GupshupOtpService(MobileVerificationService):

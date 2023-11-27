@@ -39,7 +39,7 @@ async def upload_aadhaar(
         s3_upload_service,
         google_sheets_service
     )
-    kyc.perform_aadhaar_kyc(front_image, back_image, signature)
+    kyc_service.perform_aadhaar_kyc(front_image, back_image, signature)
 
     return {"foo": "bar"}
 
@@ -60,6 +60,6 @@ async def upload_user_photos(user_photo: Annotated[UploadFile, File()],
         s3_upload_service,
         google_sheets_service
     )
-    kyc.perform_user_verification(user_photo, user_idphoto)
+    kyc_service.perform_user_verification(user_photo, user_idphoto)
 
     return {"foo": "bar"}

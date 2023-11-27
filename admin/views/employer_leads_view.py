@@ -1,13 +1,17 @@
+import os
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import bson
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette_admin import BaseModelView, StringField
+from starlette_admin import BaseModelView, StringField, URLField
 
 from admin.services.bureau.bureau_fetch_service import BureauFetchService
+from admin.services.bureau.s3_report_service import S3ReportService
 from admin.utils import DictToObj
+from dal.logger import get_app_logger
 from dal.models.employer_leads import EmployerLeads
+from dal.models.risk_profile import RiskProfile
 from dal.models.sales_users import SalesUser
 
 
@@ -19,6 +23,18 @@ def trigger_bureau_fetch(inserted_object):
         BureauFetchService().fetch_bureau_details(name, mobile, pan)
     except Exception as e:
         raise HTTPException(500, str(e))
+
+
+def get_presigned_url(pan):
+    risk_profile_find_res = RiskProfile.find_one({"pan": pan})
+    s3_key = risk_profile_find_res.get("s3Key")
+    if not s3_key:
+        return None
+
+    stage = os.environ["STAGE"]
+    logger = get_app_logger("ops-microservice", stage)
+    presigned_url = S3ReportService(stage, logger).create_presigned_url(s3_key)
+    return presigned_url
 
 
 def create_search_filter(sales_user, term):
@@ -69,18 +85,20 @@ class EmployerLeadsView(BaseModelView):
         StringField("mobile"),
         StringField("pan"),
         StringField("bureauScore", label="Bureau Score"),
-        StringField("dpd6Months", label="DPD 6 Months"),
-        StringField("dpd2Years", label="DPD 2 Years"),
+        StringField("dpd6Months", label="DPD 6 Months (30+)"),
+        StringField("dpd2Years", label="DPD 2 Years (90+)"),
         StringField("writeoff"),
         StringField("settlement"),
         StringField("remarks"),
         StringField("employerLevel", label="Employer Level"),
         # add status field, try badge with tooltip
-        StringField("status")
+        StringField("status"),
+        URLField("url")
     ]
     exclude_fields_from_list = ["_id"]
     exclude_fields_from_create = ["bureauScore", "dpd6Months", "dpd2Years",
-                                  "writeoff", "settlement", "remarks", "employerLevel", "status"]
+                                  "writeoff", "settlement", "remarks", "employerLevel",
+                                  "status", "url"]
     exclude_fields_from_edit = exclude_fields_from_create
 
     class Meta:
@@ -100,12 +118,16 @@ class EmployerLeadsView(BaseModelView):
             sorter).skip(skip).limit(limit)
         find_res_objects = []
         for doc in find_res:
+            pan = doc["pan"]
+            doc["url"] = get_presigned_url(pan)
             find_res_objects.append(DictToObj(doc))
         return find_res_objects
 
     async def find_by_pk(self, request: Request, pk):
         find_one_res = self.Meta.model.find_one(
             {"_id": bson.ObjectId(pk)})
+        pan = find_one_res["pan"]
+        find_one_res["url"] = get_presigned_url(pan)
         return DictToObj(find_one_res)
 
     async def create(self, request: Request, data: Dict):
