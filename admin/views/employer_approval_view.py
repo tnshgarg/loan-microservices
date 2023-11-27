@@ -1,16 +1,16 @@
+from typing import Any, Dict, List, Optional, Union
+
+import bson
 from admin.views.admin_view import AdminView
 from dal.models.employer import Employer
 from dal.models.sales_users import SalesUser
 from services.employer.uploads.employer_upload_service import EmployerUploadService
 from starlette_admin import CollectionField, StringField, URLField
-from typing import Any, Dict, List, Optional, Union
 from starlette.requests import Request
 from admin.utils import DictToObj, MultiFormDataParser
 from starlette_admin.actions import row_action
 from starlette_admin._types import RowActionsDisplayType
-from starlette.requests import Request
 from starlette.datastructures import FormData
-from typing import Any
 
 TEMPLATE_PATHS = {
     "document_upload": "admin/templates/employer_approval/document_upload.html",
@@ -18,8 +18,26 @@ TEMPLATE_PATHS = {
 }
 
 
-class EmployerApprovalView(AdminView):
+def create_where_filter(user_type: str, sales_user_id: bson.ObjectId):
+    if user_type == "admin":
+        where = {}
+    elif sales_user_id and (user_type == "sm" or user_type == "rm"):
+        where = {"salesUsers": {"$elemMatch": {"salesId": sales_user_id}}}
+    return where
 
+
+def get_sales_user_data(request: Request):
+    username = request.session.get("username", None)
+    if username:
+        user_data = SalesUser.find_one({"email": username})
+        if user_data:
+            user_type = user_data.get("type")
+            sales_user_id = user_data.get("_id")
+            return [user_type, sales_user_id]
+    raise Exception("User Not Present in the Database")
+
+
+class EmployerApprovalView(AdminView):
     identity = "employer_approval"
     name = "Employer Approval"
     label = "Employer Approval"
@@ -65,7 +83,6 @@ class EmployerApprovalView(AdminView):
         employer_agreement = data.get("employer-agreement")
         employer_pan = data.get("employer-pan")
         employer_gst = data.get("employer-gst")
-        print("DATA: ", data)
 
         employer_upload_service = EmployerUploadService(employer_id=pk)
 
@@ -117,18 +134,9 @@ class EmployerApprovalView(AdminView):
         if where is None:
             where = {"_id": None}
 
-        username = request.session.get("username", None)
-        if username:
-            user_data = SalesUser.find_one({"email": username})
-            if user_data:
-                user_type = user_data.get("type")
-                sales_user_id = user_data.get("_id")
-                print("User Type:", user_type)
+        [user_type, sales_user_id] = get_sales_user_data(request)
 
-        if user_type == "admin":
-            where = {}
-        elif sales_user_id and (user_type == "sm" or user_type == "rm"):
-            where = {"salesUsers": {"$elemMatch": {"salesId": sales_user_id}}}
+        where = create_where_filter(user_type, sales_user_id)
 
         res = Employer.find(where)
         res.skip(skip).limit(limit)
@@ -137,3 +145,10 @@ class EmployerApprovalView(AdminView):
         for employer_lead in res:
             find_all_res.append(DictToObj(employer_lead))
         return find_all_res
+
+    async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
+        [user_type, sales_user_id] = get_sales_user_data(request)
+
+        filter_ = create_where_filter(user_type, sales_user_id)
+        res = self.model.find(filter_)
+        return len(list(res))

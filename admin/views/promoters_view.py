@@ -10,9 +10,16 @@ from admin.utils import DictToObj
 from starlette.requests import Request
 from typing import Any
 
+EMPLOYER_AGGREGATE_PIPELINE = [
+    {'$match': {'commercialLoanDetails': {'$exists': 1}}},
+    {'$project': {'commercialLoanDetails.promoters': 1}},
+    {'$unwind': {'path': '$commercialLoanDetails.promoters'}},
+    {'$lookup': {'from': 'employees', 'localField': 'commercialLoanDetails.promoters',
+                         'foreignField': '_id', 'as': 'employee'}}
+]
+
 
 class PromotersView(AdminView):
-
     identity = "promoters"
     name = "Promoters"
     label = "Promoters"
@@ -37,34 +44,9 @@ class PromotersView(AdminView):
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
 
-        # Retrieve userType, if he is SM, RM, or Manager from request.session
-        username = request.session.get("username", None)
-        if username:
-            user_data = SalesUser.find_one({"email": username})
-            if user_data:
-                userType = user_data.get("type")
-                userSalesId = user_data.get("_id")
-                print("User Type:", userType)
+        # TODO: Check for Admin, RM and SM Conditions on what data to show
 
-        # if userType == "admin":
-        #     where = {"commercialLoanDetails": {"$exists": 1}}
-        # elif userSalesId and (userType == "sm" or userType == "rm"):
-        #     where = {"salesUsers": {"$elemMatch": {"salesId": userSalesId}}, "commercialLoanDetails": {"$exists": 1}}
-        # else:
-        #     where = {"_id": None}
-
-        # res = Employer.find(where)
-        # promoters = Employee.find({}).skip(skip).limit(limit)
-        res = Employer.aggregate(pipeline=[
-            {'$match': {'commercialLoanDetails': {'$exists': 1}}},
-            {'$project': {'commercialLoanDetails.promoters': 1}},
-            {'$unwind': {'path': '$commercialLoanDetails.promoters'}},
-            {'$lookup': {'from': 'employees', 'localField': 'commercialLoanDetails.promoters',
-                         'foreignField': '_id', 'as': 'employee'}}
-        ])
-        print("Res: ", res)
-        # res.skip(skip).limit(limit)
-        # order_by
+        res = Employer.aggregate(pipeline=EMPLOYER_AGGREGATE_PIPELINE)
         find_all_res = []
         for employer_lead in res:
             find_all_res.append(DictToObj(employer_lead["employee"][0]))

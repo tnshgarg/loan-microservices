@@ -15,7 +15,7 @@ from starlette_admin.contrib.mongoengine import Admin
 from admin.views.commercial_loans_view import CommercialLoansView
 from admin.views.employer_approval_view import EmployerApprovalView
 from admin.views.promoters_view import PromotersView
-from admin.views.repayment_reconcilation_view import RepaymentReconcilation
+from admin.views.repayment_reconciliation_view import RepaymentReconciliationView
 
 from dal.models.db_manager import DBManager
 from admin.views.employer_leads_view import \
@@ -96,7 +96,7 @@ admin.add_view(EmployerApprovalView)
 admin.add_view(EmployerLeadsView)
 admin.add_view(CommercialLoansView)
 admin.add_view(PromotersView)
-admin.add_view(RepaymentReconcilation)
+admin.add_view(RepaymentReconciliationView)
 
 
 """Mount All The Views"""
