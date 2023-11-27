@@ -48,7 +48,7 @@ class TriggerEmployerApproval(BackgroundTask):
                     ],
                     [
                         ("Add Extra Details and Send For Approval",
-                         f"{self.ops_microservice_url}/start?employer_id={employer_id}",
+                         f"{self.ops_microservice_url}/admin/employer_approval/detail/{employer_id}",
                          "SkyBlue")
                     ]
                 )

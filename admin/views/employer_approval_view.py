@@ -1,4 +1,3 @@
-from admin.components.fields import CustomUrlField
 from admin.views.admin_view import AdminView
 from dal.models.employer import Employer
 from dal.models.sales_users import SalesUser
@@ -6,13 +5,17 @@ from services.employer.uploads.employer_upload_service import EmployerUploadServ
 from starlette_admin import CollectionField, StringField, URLField
 from typing import Any, Dict, List, Optional, Union
 from starlette.requests import Request
-from admin.utils import DictToObj
-from starlette_admin.exceptions import ActionFailed
+from admin.utils import DictToObj, MultiFormDataParser
 from starlette_admin.actions import row_action
 from starlette_admin._types import RowActionsDisplayType
 from starlette.requests import Request
 from starlette.datastructures import FormData
 from typing import Any
+
+TEMPLATE_PATHS = {
+    "document_upload": "admin/templates/employer_approval/document_upload.html",
+    "approve_or_deny": "admin/templates/employer_approval/approve_or_deny.html",
+}
 
 
 class EmployerApprovalView(AdminView):
@@ -28,7 +31,6 @@ class EmployerApprovalView(AdminView):
         StringField("companyName"),
         StringField("companyType"),
         StringField("employeeCount"),
-        # JSONField("registrar"),
         StringField("updatedAt"),
         StringField("approvalStage"),
         CollectionField("documents", fields=[
@@ -36,7 +38,8 @@ class EmployerApprovalView(AdminView):
                 URLField("pan"),
                 URLField("agreement"),
                 URLField("gst"),
-            ])
+            ]),
+            StringField("notes")
         ])
     ]
 
@@ -52,39 +55,10 @@ class EmployerApprovalView(AdminView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
         action_btn_class="btn-info",
-        form="""
-        <form>
-            <div class="mt-3">
-                <input type="text" class="form-control mt-2" name="employer-notes" placeholder="Enter Notes">
-                <div class="mt-3">
-                <label>Upload Agreement</label>
-                <input type="file" class="form-control mt-2" name="employer-agreement" placeholder="Upload Agreement">
-                </div>
-                <div class="mt-3">
-                    <label>Upload PAN</label>
-                    <input
-                        type="file"
-                        class="form-control mt-2"
-                        name="employer-pan"
-                        placeholder="Upload PAN"
-                    />
-                    </div>
-                    <div class="mt-3">
-                    <label>Upload GST</label>
-                    <input
-                        type="file"
-                        class="form-control mt-2"
-                        name="employer-gst"
-                        placeholder="Upload GST"
-                    />
-                    </div>
-
-            </div>
-        </form>
-        """,
+        form=open(TEMPLATE_PATHS.get("document_upload"),
+                  'r', encoding='utf-8').read()
     )
     async def upload_details_row_action(self, request: Request, pk: Any) -> str:
-
         user = request.state.user
         data: FormData = await request.form()
         employer_notes = data.get("employer-notes")
@@ -94,18 +68,24 @@ class EmployerApprovalView(AdminView):
         print("DATA: ", data)
 
         employer_upload_service = EmployerUploadService(employer_id=pk)
-        # Assuming upload_documents expects a list of dictionaries for each document
-        employer_upload_service.upload_document(
-            "pan", employer_pan.file, employer_pan.content_type)
-        employer_upload_service.upload_document(
-            "agreement", employer_agreement.file, employer_agreement.content_type)
-        employer_upload_service.upload_document(
-            "gst", employer_gst.file, employer_gst.content_type)
+
+        documents = {
+            "pan": employer_pan,
+            "agreement": employer_agreement,
+            "gst": employer_gst
+        }
+        sucessfully_uploaded_docs = []
+        for doc_type, doc in documents.items():
+            if doc and doc.size > 0:
+                employer_upload_service.upload_document(
+                    doc_type, doc.file, doc.content_type)
+                sucessfully_uploaded_docs.append(doc_type)
+
         employer_upload_service.update_employer({
             "sales_user_id": user,
             "documents.notes": employer_notes
         })
-        return "You have successfully uploaded details of Employer"
+        return f"You have successfully uploaded the {[doc for doc in sucessfully_uploaded_docs]} of Employer"
 
     @row_action(
         name="approve_employer",
@@ -115,43 +95,28 @@ class EmployerApprovalView(AdminView):
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
         action_btn_class="btn-info",
-        form="""
-        <form>
-            <div class="form-check mt-3">
-                <input class="form-check-input" type="radio" name="approval-status" id="approve" value="approve" checked>
-                <label class="form-check-label" for="approve">
-                    Approve
-                </label>
-            </div>
-            <div class="form-check mt-3">
-                <input class="form-check-input" type="radio" name="approval-status" id="deny" value="deny">
-                <label class="form-check-label" for="deny">
-                    Deny
-                </label>
-            </div>
-        </form>
-        """,
+        form=open(TEMPLATE_PATHS.get("approve_or_deny"),
+                  'r', encoding='utf-8').read()
     )
     async def approve_employer_row_action(self, request: Request, pk: Any) -> str:
-        # Write your logic here
+        data = await request.form()
+        approval_status = MultiFormDataParser.parse(data, "approval_status")
+        employer_upload_service = EmployerUploadService(employer_id=pk)
+        employer_approval_status = "approved" if approval_status == "approve" else "denied"
 
-        data: FormData = await request.form()
-        employer_notes = data.get("employer-notes")
-        doc_employer_agreement = data.get("employer-agreement")
-        doc_employer_pan = data.get("employer-pan")
-        doc_employer_gst = data.get("employer-gst")
+        employer_upload_service.update_employer({
+            "approvalStage": employer_approval_status
+        })
 
-        print(employer_notes, doc_employer_agreement,
-              doc_employer_gst, doc_employer_pan)
-
-        return "The article was successfully marked as published"
+        return f"The Employer is successfully {employer_approval_status}"
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
+
         if where is None:
             where = {"_id": None}
-        # Retrieve userType, if he is SM, RM, or Manager from request.session
+
         username = request.session.get("username", None)
         if username:
             user_data = SalesUser.find_one({"email": username})
@@ -167,7 +132,7 @@ class EmployerApprovalView(AdminView):
 
         res = Employer.find(where)
         res.skip(skip).limit(limit)
-        # TODO: add order by to the cursor
+        order_by
         find_all_res = []
         for employer_lead in res:
             find_all_res.append(DictToObj(employer_lead))

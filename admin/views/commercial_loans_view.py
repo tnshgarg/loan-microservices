@@ -19,19 +19,18 @@ class CommercialLoansView(AdminView):
     icon = "fa fa-university"
     model = Employer
     pk_attr = "_id"
+    # exclude_fields_from_edit=["commercialLoanDetails.duns_number"]
     fields = [
         StringField("_id"),
         HasMany("promoters", identity="promoters"),
+        HasMany("keyPromoter", identity="promoters"),
         CollectionField("commercialLoanDetails", fields=[
-            # HasMany("keyPromoter", identity="promoters"),
-            StringField("keyPromoter"),
             StringField("annual_turn_over"),
             StringField("address"),
             StringField("business_category"),
             StringField("city"),
             StringField("companyRegistrationNumber"),
             StringField("constitution"),
-            # 9999999999 - will be the default value
             StringField("duns_number"),
             StringField("industry_type"),
             StringField("pin"),
@@ -45,7 +44,9 @@ class CommercialLoansView(AdminView):
                        order_by: Optional[List[str]] = None) -> List[Any]:
         if where is None:
             where = {"commercialLoanDetails": {"$exists": 1}}
+
         username = request.session.get("username", None)
+
         if username:
             user_data = SalesUser.find_one({"email": username})
             if user_data:
@@ -59,8 +60,6 @@ class CommercialLoansView(AdminView):
                     "$elemMatch": {"salesId": userSalesId}
                 }
             })
-        else:
-            where = {"_id": None}
 
         res = Employer.find(where).skip(skip).limit(limit)
         find_all_res = []
@@ -69,15 +68,20 @@ class CommercialLoansView(AdminView):
             promoters = employer.get(
                 'commercialLoanDetails', {}).get('promoters', [])
             key_promoter_id = employer.get(
-                'commercialLoanDetails', {}).get('keyPromoter', "")
+                'commercialLoanDetails', {}).get('keyPromoter')
+
             if promoters:
-                promoters = Employee.find({"_id": {"$in": promoters}})
+                promoter_docs = Employee.find({"_id": {"$in": promoters}})
                 employer_dict.promoters = [
-                    DictToObj(promoter) for promoter in promoters]
-                key_promoters = Employee.find(
+                    DictToObj(promoter) for promoter in promoter_docs]
+
+            if key_promoter_id:
+                key_promoter_doc = Employee.find(
                     {"_id": bson.ObjectId(key_promoter_id)})
                 employer_dict.keyPromoter = [
-                    DictToObj(key_promoter) for key_promoter in key_promoters]
+                    DictToObj(key_promoter) for key_promoter in key_promoter_doc]
+
+            employer_dict.commercialLoanDetails["duns_number"] = "9999999999"
             find_all_res.append(employer_dict)
 
         return find_all_res

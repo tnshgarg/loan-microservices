@@ -86,7 +86,7 @@ class SendForFinalApproval(BackgroundTask):
                     ],
                     [
                         ("Approve or Deny",
-                         f"{self.ops_microservice_url}/approve?employer_id={employer_id}",
+                         f"{self.ops_microservice_url}/admin/employer_approval/detail/{employer_id}",
                          "SkyBlue")
                     ]
                 ),

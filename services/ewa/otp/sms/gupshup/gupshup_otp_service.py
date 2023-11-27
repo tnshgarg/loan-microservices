@@ -5,6 +5,7 @@ from .gupshup_api import GupshupApi
 from .gupshup_api_mock import GupshupApiMock
 
 
+
 class GupshupOtpService(MobileVerificationService):
 
     def __init__(self, logger, stage, use_mock=False) -> None:
