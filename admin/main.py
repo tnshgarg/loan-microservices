@@ -45,7 +45,7 @@ oauth.register(
 admin_app = Starlette(
     routes=[
         Route("/", lambda r: HTMLResponse(
-            '<a href="/dev/ops-admin/admin">Login to Employer Approval Portal</a>')),
+            f'<a href="/{os.getenv("STAGE")}/ops-admin/admin">Login to Employer Approval Portal</a>')),
         Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
