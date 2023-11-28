@@ -84,6 +84,12 @@ class KYCOCRService(MediaUploadService):
                           "gridlines_ocr_aadhaar_front")
         self._upload_text(json.dumps(back_ocr, indent=4),
                           "gridlines_ocr_aadhaar_back")
+        if "address" not in back_ocr_doc:
+            raise HTTPException(
+                status_code=400,
+                detail="Error Reading Address on Aadhaar Back Photo"
+            )
+
         front_ocr_doc["address"] = back_ocr_doc["address"]
 
         if not self.validate_aadhaar_doc(front_ocr_doc):

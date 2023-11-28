@@ -5,7 +5,7 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette_admin.auth import AdminUser, AuthProvider
 from starlette_admin.base import BaseAdmin
-
+from starlette.datastructures import URL
 from dal.models.sales_users import SalesUser
 
 users = {
@@ -46,8 +46,8 @@ class GoogleOAuthProvider(AuthProvider):
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
         redirect_uri = request.url_for('auth')
-        if os.getenv('STAGE') != "dev" and redirect_uri.startswith("http:"):
-            redirect_uri = "https:" + redirect_uri[5:]
+        if os.getenv('SECURITY') == "https" and not redirect_uri.is_secure:
+            redirect_uri = URL("https:"+str(redirect_uri)[5:])
         return await oauth.google.authorize_redirect(request, redirect_uri, state=request.query_params["next"])
 
     async def is_authenticated(self, request) -> bool:
@@ -76,4 +76,4 @@ class GoogleOAuthProvider(AuthProvider):
 
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()
-        return RedirectResponse(url='/{stage}/ops-service')
+        return RedirectResponse(url=f'/{os.getenv("STAGE")}/ops-service')

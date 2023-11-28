@@ -31,7 +31,7 @@ class EmployerPendingRepaymentsSummaryService:
     def _get_repayment_account_details(self):
         bank_account_find_res = BankAccounts.find_one({
             "pId": self.employer_info.employer_id,
-            "uType": "collectionAccount"
+            "uType": "employer-repayment"
         })
         if bank_account_find_res is None:
             return {}

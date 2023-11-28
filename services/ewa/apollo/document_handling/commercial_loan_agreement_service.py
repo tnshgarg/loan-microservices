@@ -46,7 +46,7 @@ class ApolloCommercialLoanAgreementService(ApolloLoanAgreementService):
             locWords=convert_to_words(self.loan_info["loan_amount"]) + " only",
             LOCexpiryDate=self.loan_info["first_emi_date"],
             loanAmount=self.loan_info["loan_amount"],
-            bankName=self.customer_info["bank_name"],
+            bankName=self.customer_info["customer_bank_name"],
             AccountNumber=self.customer_info["bank_account_number"],
             AccountHolderName=self.customer_info["customer_bank_account_name"],
             ifsc=self.customer_info["ifsc_code"],
