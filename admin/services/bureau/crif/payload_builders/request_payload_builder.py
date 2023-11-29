@@ -139,11 +139,16 @@ class RequestPayloadBuilder:
                         "DOB-DATE": dob
                     },
                     "IDS": {
-                        "ID": {
-                            "TYPE": IDType.PAN,
-                            "VALUE": pan
-                        }
-                        # TODO : check how can add DIN ID key as well
+                        "ID": [
+                            {
+                                "TYPE": IDType.PAN,
+                                "VALUE": pan
+                            },
+                            {
+                                "TYPE": IDType.DIN,
+                                "VALUE": din
+                            }
+                        ]
                     },
                     "PHONES": {
                         "PHONE": {
