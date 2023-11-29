@@ -13,6 +13,7 @@ from admin.utils import DictToObj, MultiFormDataParser
 from starlette_admin.actions import row_action
 from starlette_admin._types import RowActionsDisplayType
 from starlette.datastructures import FormData
+from starlette_admin.exceptions import ActionFailed
 
 TEMPLATE_PATHS = {
     "document_upload": "admin/templates/employer_approval/document_upload.html",
@@ -99,6 +100,8 @@ class EmployerApprovalView(AdminView):
                 employer_upload_service.upload_document(
                     doc_type, doc.file, doc.content_type)
                 sucessfully_uploaded_docs.append(doc_type)
+            else:
+                raise ActionFailed(f"{doc_type} is required, but not uploaded")
 
         employer_upload_service.update_employer({
             "sales_user_id": user,
