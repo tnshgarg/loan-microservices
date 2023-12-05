@@ -72,6 +72,9 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             )
 
     def _upload_apollo_document(self, fd, apollo_document, partner_tag):
+        if not fd:
+            raise Exception(
+                f"Error in fetching File Descriptor for {apollo_document.name}")
         fd.seek(0)
         loan_id = None
         if partner_tag in [ApolloPartnerTag.DISBURSEMENT_PERSONAL, ApolloPartnerTag.DISBURSEMENT_COMMERCIAL]:
@@ -197,6 +200,7 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             {"_id": self.offer_id},
             {
                 "$set": {
+                    "stage": "AGREEMENT",
                     "documentation.agreementLinks": {
                         "la_addendum": la_addendum_upload_response.s3_path,
                         "sl_kfs": sl_kfs_upload_response.s3_path
