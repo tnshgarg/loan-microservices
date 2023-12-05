@@ -77,7 +77,7 @@ class EmployerLeadsView(BaseModelView):
     identity = "employer_leads"
     name = "Employer Leads"
     label = "Employer Leads"
-    icon = "fa fa-id-card"
+    icon = "fa fa-file-invoice"
     pk_attr = "_id"
     fields = [
         StringField("_id"),

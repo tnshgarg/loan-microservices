@@ -22,7 +22,7 @@ class PendingRepaymentsEmail(BackgroundTask):
 
         # check if no pending repayments
         if pending_repayments_df is None:
-            return
+            raise Exception("No Pending Repayments for user")
 
         # get pending repayments summary
         pending_repayments_summary = EmployerPendingRepaymentsSummaryService(
@@ -36,7 +36,8 @@ class PendingRepaymentsEmail(BackgroundTask):
 
         # fetch addresses to mail to
         mail_to_addresses = RelatedEmailIDsService(
-            employer_info).fetch_related_email_ids()
+            employer_info
+        ).fetch_related_email_ids()
 
         # create email attachment
         csv_columns_map = EmployerPendingRepaymentsFetchService.fetch_csv_columns_map()

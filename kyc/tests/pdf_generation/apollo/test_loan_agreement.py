@@ -1,7 +1,7 @@
 
 from bson import ObjectId
 from dal.models.db_manager import DBManager
-from services.ewa.apollo.document_uploads.loan_agreement_service import ApolloLoanAgreementService
+from services.ewa.apollo.document_handling.loan_agreement_service import ApolloLoanAgreementService
 
 LOAN_APPLICATION_DOC = {
     "_id": ObjectId("652d30666f6a8969a059d74e"),

@@ -16,15 +16,6 @@ class AdminView(BaseModelView):
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
 
-        # Retrieve userType, if he is SM, RM, or Manager from request.session
-        # username = request.session.get("username", None)
-        # if username:
-        #     user_data = self.model.find_one({"email": username})
-        #     if user_data:
-        #         userType = user_data.get("type")
-
-        # create a roleChecker Method, through which we can show only specific data to the user type, suppose, if he is a
-
         res = self.model.find({})
         res.skip(skip).limit(limit)
         # TODO: integrate `order_by`

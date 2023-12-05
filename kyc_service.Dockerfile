@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.10.13-alpine3.18
 
 # set working directory
 WORKDIR /usr/src/app
@@ -19,4 +19,4 @@ RUN pip install -r /usr/src/app/requirements.txt
 COPY . /usr/src/app
 
 # run gunicorn
-CMD uvicorn --host 0.0.0.0 --port 80 main:app
+CMD uvicorn --host 0.0.0.0  --forwarded-allow-ips '*' --port 80 --proxy-headers main:app

@@ -3,7 +3,7 @@ from admin.views.admin_view import AdminView
 from dal.models.employees import Employee
 from dal.models.employer import Employer
 from dal.models.sales_users import SalesUser
-from starlette_admin import HasMany, StringField
+from starlette_admin import HasMany, HasOne, StringField
 from typing import Any, Dict, List, Optional, Union
 from starlette.requests import Request
 from admin.utils import DictToObj
@@ -12,7 +12,6 @@ from typing import Any
 
 EMPLOYER_AGGREGATE_PIPELINE = [
     {'$match': {'commercialLoanDetails': {'$exists': 1}}},
-    {'$project': {'commercialLoanDetails.promoters': 1}},
     {'$unwind': {'path': '$commercialLoanDetails.promoters'}},
     {'$lookup': {'from': 'employees', 'localField': 'commercialLoanDetails.promoters',
                          'foreignField': '_id', 'as': 'employee'}}
@@ -23,13 +22,15 @@ class PromotersView(AdminView):
     identity = "promoters"
     name = "Promoters"
     label = "Promoters"
-    icon = "fa fa-user"
+    icon = "fa fa-user-tie"
     model = Employee
     pk_attr = "_id"
     fields = [
         StringField("_id"),
         StringField("employeeName"),
         StringField("mobile"),
+        HasOne("loanDetails", identity="commercial_loans", label="Loan Details"),
+        StringField("companyName"),
         StringField("email"),
         StringField("gender"),
         StringField("nationality"),
@@ -38,6 +39,7 @@ class PromotersView(AdminView):
         StringField("motherName"),
         StringField("qualification"),
         StringField("currentAddress"),
+
     ]
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
@@ -49,7 +51,12 @@ class PromotersView(AdminView):
         res = Employer.aggregate(pipeline=EMPLOYER_AGGREGATE_PIPELINE)
         find_all_res = []
         for employer_lead in res:
-            find_all_res.append(DictToObj(employer_lead["employee"][0]))
+            promoter = employer_lead["employee"][0]
+            promoter["loanDetails"] = DictToObj({"_id": employer_lead["_id"]})
+            promoter["companyName"] = employer_lead.get("companyName")
+            promoter["_id"] = str(promoter["_id"])
+            find_all_res.append(DictToObj(promoter))
+
         return find_all_res
 
     async def find_by_pk(self, request: Request, pk):

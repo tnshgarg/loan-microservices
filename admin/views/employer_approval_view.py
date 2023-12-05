@@ -10,6 +10,7 @@ from starlette.requests import Request
 from admin.utils import DictToObj, MultiFormDataParser
 from starlette_admin.actions import row_action
 from starlette_admin._types import RowActionsDisplayType
+from starlette_admin.exceptions import ActionFailed
 from starlette.datastructures import FormData
 
 TEMPLATE_PATHS = {
@@ -19,6 +20,8 @@ TEMPLATE_PATHS = {
 
 
 def create_where_filter(user_type: str, sales_user_id: bson.ObjectId):
+    if user_type not in ["admin", "sm", "rm"]:
+        user_type = "rm"
     if user_type == "admin":
         where = {}
     elif sales_user_id and (user_type == "sm" or user_type == "rm"):
@@ -27,21 +30,16 @@ def create_where_filter(user_type: str, sales_user_id: bson.ObjectId):
 
 
 def get_sales_user_data(request: Request):
-    username = request.session.get("username", None)
-    if username:
-        user_data = SalesUser.find_one({"email": username})
-        if user_data:
-            user_type = user_data.get("type")
-            sales_user_id = user_data.get("_id")
-            return [user_type, sales_user_id]
-    raise Exception("User Not Present in the Database")
+    if request.state.user is not None:
+        return [request.state.user["roles"], request.state.user["sales_id"]]
+    raise ActionFailed("User Not Present in the Database")
 
 
 class EmployerApprovalView(AdminView):
-    identity = "employer_approval"
+    identity = "employer"
     name = "Employer Approval"
     label = "Employer Approval"
-    icon = "fa fa-users"
+    icon = "fa fa-user-check"
     model = Employer
     pk_attr = "_id"
     fields = [
@@ -50,7 +48,7 @@ class EmployerApprovalView(AdminView):
         StringField("companyType"),
         StringField("employeeCount"),
         StringField("updatedAt"),
-        StringField("approvalStage"),
+        StringField("approvalStage", label="Approval Stage"),
         CollectionField("documents", fields=[
             CollectionField("drive", fields=[
                 URLField("pan"),

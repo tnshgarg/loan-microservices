@@ -23,29 +23,23 @@ def create_where_filter(userType: str, userSalesId: bson.ObjectId):
 
 
 def get_sales_user_data(request: Request):
-    username = request.session.get("username", None)
-
-    if username:
-        user_data = SalesUser.find_one({"email": username})
-        if user_data:
-            user_type = user_data.get("type")
-            sales_user_id = user_data.get("_id")
-            return [user_type, sales_user_id]
-    raise Exception("User Not Present in the Database")
+    if request.state.user is not None:
+        return [request.state.user["roles"], request.state.user["sales_id"]]
+    raise ActionFailed("User Not Present in the Database")
 
 
 class CommercialLoansView(AdminView):
     identity = "commercial_loans"
     name = "Commercial Loans"
     label = "Commercial Loans"
-    icon = "fa fa-university"
+    icon = "fa fa-coins"
     model = Employer
     pk_attr = "_id"
     fields = [
         StringField("_id"),
-        HasMany("promoters", identity="promoters"),
-        HasMany("keyPromoter", identity="promoters"),
+        HasOne("keyPromoter", identity="promoters"),
         CollectionField("commercialLoanDetails", fields=[
+            # HasMany("promoters", identity="promoters"),
             StringField("annual_turn_over"),
             StringField("address"),
             StringField("business_category"),
@@ -59,6 +53,14 @@ class CommercialLoansView(AdminView):
             StringField("udyam_registration_number"),
         ]),
     ]
+
+    async def find_by_pk(self, request: Request, pk):
+        employer = await super().find_by_pk(request, pk)
+        employer.commercialLoanDetails["keyPromoter"] = DictToObj({
+            "_id": employer.commercialLoanDetails["keyPromoter"]})
+        # employer.commercialLoanDetails["promoters"] = [{"_id": promoter_id}
+        #                                                for promoter_id in employer.commercialLoanDetails["promoters"]]
+        return employer
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,

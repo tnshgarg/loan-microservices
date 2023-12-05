@@ -6,7 +6,11 @@ from kyc.config import Config
 from kyc.main import app as kyc_app
 from ops.main import employer_app
 from admin.main import admin_app
-app = FastAPI()
+app = FastAPI(
+    servers=[
+        {"url": "https://services.unipe.money", "description": "ECR Environment"}
+    ]
+)
 
 origins = [
     "http://localhost:3000",

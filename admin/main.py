@@ -20,6 +20,7 @@ from admin.views.repayment_reconciliation_view import RepaymentReconciliationVie
 from dal.models.db_manager import DBManager
 from admin.views.employer_leads_view import \
     EmployerLeadsView
+from admin.tasks.employer_emails import employer_emails_router
 from admin.config import config
 
 """Initialize Middlewares"""
@@ -65,21 +66,6 @@ def shutdown_db_client():
     DBManager.terminate()
 
 
-"""Routes"""
-
-
-@admin_app.route('/auth', name="auth")
-async def auth(request):
-    token = await oauth.google.authorize_access_token(request)
-    user = token.get('userinfo')
-    internal_redirect_uri = request.query_params["state"]
-
-    if user:
-        # request.session['user'] = user
-        request.session['username'] = user["email"]
-    return RedirectResponse(url=internal_redirect_uri)
-
-
 """Initialize Admin Dashboard App"""
 admin = Admin(
     "Unipe Employer Dashboard",
@@ -98,10 +84,12 @@ admin.add_view(CommercialLoansView)
 admin.add_view(PromotersView)
 admin.add_view(RepaymentReconciliationView)
 
-
 """Mount All The Views"""
 admin.mount_to(admin_app)
 
+"""Mount Additional Services"""
+
+admin_app.mount("/employer-emails", employer_emails_router)
 
 """Run the Server"""
 if __name__ == "__main__":

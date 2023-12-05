@@ -25,8 +25,5 @@ class EmployerRepaymentsEmailPayload(BaseModel):
     request_date: RequestDate = Field(alias="requestDate")
 
 
-class EmployerDisbursementsEmailPayload(BaseModel):
-
-    # required fields
-    employer_id: str = Field(alias="employerId")
-    request_date: datetime = Field(alias="requestDate")
+class EmployerDisbursementsEmailPayload(EmployerRepaymentsEmailPayload):
+    pass

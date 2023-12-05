@@ -1,6 +1,7 @@
 from dal.models.db_manager import DBManager
-from services.ewa.apollo.document_uploads.salary_slip_service import SalarySlipService
 from bson import ObjectId
+
+from services.ewa.apollo.document_handling.salary_slip_service import SalarySlipService
 
 
 def test_salary_slip():

@@ -45,8 +45,7 @@ class RelatedEmailIDsService:
 
         if len(aggregation_res_list):
             employer_res = aggregation_res_list[0]
-
-            registrar_email = employer_res.get("registrarEmail")
+            # registrar_email = employer_res.get("registrarEmail")
             sales_users_email = employer_res.get("salesUsersEmail")
 
             # comment these out

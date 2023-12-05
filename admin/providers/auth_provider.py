@@ -3,10 +3,13 @@ from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette_admin.auth import AdminUser, AuthProvider
+from starlette_admin.auth import AdminUser, AuthMiddleware, AuthProvider
 from starlette_admin.base import BaseAdmin
 from starlette.datastructures import URL
 from dal.models.sales_users import SalesUser
+from starlette.routing import Route
+from starlette.middleware import Middleware
+
 
 users = {
     "tanish@unipe.money": {
@@ -45,35 +48,55 @@ oauth.register(
 class GoogleOAuthProvider(AuthProvider):
 
     async def render_login(self, request: Request, admin: "BaseAdmin") -> Response:
-        redirect_uri = request.url_for('auth')
-        if os.getenv('SECURITY') == "https" and not redirect_uri.is_secure:
-            redirect_uri = URL("https:"+str(redirect_uri)[5:])
-        return await oauth.google.authorize_redirect(request, redirect_uri, state=request.query_params["next"])
+        redirect_uri = request.url_for('admin:auth')
+        return await oauth.google.authorize_redirect(
+            request,
+            redirect_uri,
+            state=request.query_params.get(
+                "next", str(request.url_for('admin:index')))
+        )
 
     async def is_authenticated(self, request) -> bool:
-        username = request.session.get("username", None)
-        if username:
-            user = SalesUser.find_one({"email": str(username)})
-            if user:
-                user_data = {
-                    "sales_id": user["_id"],
-                    "name": username,
-                    "roles": user["type"],
-                    "avatar": None,
-                }
-                request.state.user = user_data
-                return True
-
+        if request.session.get("user", None) is not None:
+            request.state.user = request.session.get("user")
+            return True
         return False
 
     def get_admin_user(self, request: Request) -> AdminUser:
         user = request.state.user  # Retrieve current user
-
         photo_url = None
-        if user["avatar"] is not None:
-            photo_url = request.url_for("static", path=user["avatar"])
+        if user["picture"] is not None:
+            photo_url = user["picture"]
         return AdminUser(username=user["name"], photo_url=photo_url)
 
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()
-        return RedirectResponse(url=f'/{os.getenv("STAGE")}/ops-service')
+        return RedirectResponse(url=request.url_for("admin:login"))
+
+    async def handle_auth_callback(self, request: Request):
+        token = await oauth.google.authorize_access_token(request)
+        user = token.get('userinfo')
+        internal_redirect_uri = request.query_params["state"]
+        if user:
+            sales_user = SalesUser.find_one({"email": user['email']})
+            user["sales_id"] = str(sales_user["_id"])
+            user["roles"] = sales_user["type"]
+            request.session.update({"user": user})
+        return RedirectResponse(internal_redirect_uri)
+
+    def setup_admin(self, admin: "BaseAdmin"):
+        super().setup_admin(admin)
+        """add custom authentication callback route"""
+        admin.routes.append(
+            Route(
+                "/auth",
+                self.handle_auth_callback,
+                methods=["GET"],
+                name="auth",
+            )
+        )
+
+    def get_middleware(self, admin: "BaseAdmin") -> Middleware:
+        return Middleware(
+            AuthMiddleware, provider=self, allow_paths=["/auth"]
+        )
