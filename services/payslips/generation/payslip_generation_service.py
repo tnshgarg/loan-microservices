@@ -3,7 +3,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from PyPDF2 import PdfWriter, PdfReader
 
-from payslips.utils.convert_to_inr import convert_to_inr
+# from payslips.utils.convert_to_inr import convert_to_inr
 # from services.ewa.apollo.utils import convert_to_words
 
 
@@ -54,7 +54,7 @@ class PayslipGenerationService:
     def __init__(self, payslip_data):
         self.header = payslip_data["header"]
         self.employee = payslip_data["employee_details"]
-        self.salary = payslip_data["salary_details"]
+        self.salary = payslip_data["attendance_details"]
         self.earnings = payslip_data["earnings"]
         self.deductions = payslip_data["deductions"]
         self.final = payslip_data["final"]
@@ -137,8 +137,12 @@ class PayslipGenerationService:
             page.merge_page(overlay_pdf.pages[0])
             output.add_page(page)
 
-        with open(output_path, "wb") as output_stream:
-            output.write(output_stream)
+        output_stream = io.BytesIO()
+        output.write(output_stream)
+        output_stream.seek(0)
+
+        print(output_stream.getvalue())
+        return output_stream.getvalue()
 
 
 # Example usage
@@ -183,3 +187,5 @@ payslip_data = {
 }
 
 service = PayslipGenerationService(payslip_data)
+service.generate_payslip(
+    "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/unipe_payslip_template.pdf", "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/generated.pdf")
