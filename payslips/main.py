@@ -12,7 +12,7 @@ FASTAPI_HOST = os.environ["fastapi_host"]
 SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 
 # App Initialization
-payslip_app = FastAPI()
+payslip_app = FastAPI(tags=["payslip"])
 payslip_app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 

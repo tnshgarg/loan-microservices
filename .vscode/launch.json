@@ -25,17 +25,6 @@
       "console": "integratedTerminal",
       "jinja": true,
       "justMyCode": false
-    },
-    {
-      "name": "Uvicorn: Run Payslip Generation Service",
-      "type": "python",
-      "request": "launch",
-      "module": "uvicorn",
-      "args": ["payslips.main:app", "--reload", "--port", "8000"],
-      "envFile": "${workspaceFolder}/.env",
-      "console": "integratedTerminal",
-      "jinja": true,
-      "justMyCode": false
     }
   ]
 }

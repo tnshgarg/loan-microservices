@@ -1,8 +1,10 @@
+from http.client import HTTPException
 import bson
-from fastapi import HTTPException
 from dal.models.payslips import Payslips
 from services.storage.uploads.media_upload_service import MediaUploadService
-from kyc.dependencies.admin import admin_gdrive_upload_service, admin_google_sheets_service, admin_s3_upload_service
+from kyc.dependencies.payslip import payslip_gdrive_upload_service, payslip_google_sheets_service, payslip_s3_upload_service
+
+PAYSLIP_S3_BASE_PATH = "payslip_upload_service"
 
 
 class PayslipUploadService(MediaUploadService):
@@ -12,36 +14,27 @@ class PayslipUploadService(MediaUploadService):
         super().__init__(
             None,
             employment_id,
-            admin_gdrive_upload_service(),
-            admin_s3_upload_service(),
-            admin_google_sheets_service()
+            payslip_gdrive_upload_service(),
+            payslip_s3_upload_service(),
+            payslip_google_sheets_service()
         )
         self.employment_id = employment_id
 
-    def upload_document(self,  file_name, form_file, content_type):
-        drive_url, s3_key = self._upload_media(
-            form_file=form_file,
-            filename=file_name,
-            content_type=content_type
-        )
-        self._add_to_db(drive_url, s3_key)
-        return drive_url
-
-    def _upload_media(self, form_file, filename, content_type, s3_prefix="admin_upload_service"):
-        file_extension = self._parse_extension(content_type)
-        idx_filename = f"{self.ts_prefix}_{filename}.{file_extension}"
+    def _upload_media(self, fd, filename, extension, mime):
+        idx_filename = f"{self.ts_prefix}_{filename}.{extension}"
         drive_upload_response = self.gdrive_upload_service.upload_file(
             child_folder_name=str(self.employment_id),
             name=idx_filename,
-            mime_type=content_type,
-            fd=form_file,
-            description=f"Employer Id: {self.employment_id}"
+            mime_type=mime,
+            fd=fd,
+            description=f"Payslips Data for {self.employment_id}"
         )
 
-        s3_key = f"{s3_prefix}/{self.employment_id}/{idx_filename}"
+        s3_key = f"{PAYSLIP_S3_BASE_PATH}/{self.employment_id}/{idx_filename}"
         status, _ = self.s3_upload_service.upload(
             key=s3_key,
-            fd=form_file
+            fd=fd,
+            use_stage=False
         )
         if status is False:
             raise HTTPException(
@@ -50,7 +43,27 @@ class PayslipUploadService(MediaUploadService):
             )
         return drive_upload_response["webViewLink"], s3_key
 
-    def update_employer(self, update):
+    def _upload_payslip(self, fd, payslip_data):
+        if not fd:
+            raise Exception(
+                f"Error in fetching File Descriptor for {self.employment_id}")
+        fd.seek(0)
+        drive_link, s3_key = self._upload_media(
+            fd,
+            filename=f"{self.employment_id}{payslip_data['header']['date']}",
+            extension="pdf",
+            mime="application/pdf"
+        )
+        return [drive_link, s3_key]
+
+    def upload_document(self, fd, payslip_data):
+        [drive_url, s3_key] = self._upload_payslip(
+            fd, payslip_data
+        )
+        self._add_to_db(drive_url, s3_key)
+        return drive_url
+
+    def update_payslips(self, update):
         return Payslips.update_one(
             {"_id": self.employment_id},
             {
@@ -59,7 +72,7 @@ class PayslipUploadService(MediaUploadService):
         )
 
     def _add_to_db(self, drive_url, s3_path):
-        self.update_employer({
+        self.update_payslips({
             f"documents.drive": drive_url,
             f"documents.s3": s3_path,
         })

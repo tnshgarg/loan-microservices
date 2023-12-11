@@ -9,7 +9,6 @@ from services.payslips.generation.payslip_generation_service import PayslipGener
 from services.payslips.uploads.payslip_upload_service import PayslipUploadService
 from services.storage.uploads.media_upload_service import MediaUploadService
 
-# Get environment variables
 STAGE = os.environ["STAGE"]
 TEMPLATE_PATH = "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/unipe_payslip_template.pdf"
 
@@ -19,50 +18,73 @@ payslip_generation_router = APIRouter(
 )
 
 
-@payslip_generation_router.get("/ping")
-def ping():
-    return {
-        "status": "success",
-        "message": "pong",
-    }
-
-
 @payslip_generation_router.post("/")
-def generate_payslips(
-    background_tasks: BackgroundTasks,
-    payslip_data: dict,
-    employmentId: Annotated[str, Form()],
-    month: Annotated[str, Form()],
-    year: Annotated[str, Form()],
-):
+def generate_payslips(payslipData: dict):
+    """
+        To use Payslip Generation Router, pass the payslips data in the following format:
 
+        {
+            "header": {
+                "date": "JUL 2022",
+                "company_name": "Click-Labs Pvt. Ltd",
+                "company_address": "IT Park, Plot No. 16, Sector 22, Panchkula, Haryana, 134109"
+            },
+            "employee_details": {
+                "employee_name": "ANANYA CHAKRABORTY",
+                "employee_no": "CL-0111",
+                "date_joined": "12 Aug 2019",
+                "department": "Product",
+                "sub_department": "N/A",
+                "designation": "Product Designer",
+                "pan": "AOSPC8746D",
+                "uan": "100915564037"
+            },
+            "attendance_details": {
+                "actual_payable_days": "31.0",
+                "total_working_days": "31.0",
+                "loss_of_pays_data": "0.0",
+                "days_payable": "31"
+            },
+            "earnings": {
+                "basic": "₹22,917",
+                "hra": "₹11,459",
+                "other_allowance": "₹11,459",
+                "total_earnings": "₹45,835"
+            },
+            "deductions": {
+                "tax_deducted": "0",
+                "pf_contribution": "₹2750",
+                "professional_tax": "₹200.00",
+                "other_deductions": "0",
+                "total_deductions": "₹2950"
+            },
+            "final": {
+                "net_pay": "₹2950"
+            },
+            "employment_details": {
+                "employment_id": "abc"
+            }
+    }
+    """
     try:
-        header = payslip_data.get("header", {})
-        employee_details = payslip_data.get("employee_details", {})
-        attendance_details = payslip_data.get("attendance_details", {})
-        earnings = payslip_data.get("earnings", {})
-        deductions = payslip_data.get("deductions", {})
-        final = payslip_data.get("final", {})
-        payslip_data = {header, employee_details,
-                        attendance_details, earnings, deductions, final}
+        """Generate Payslip"""
+        payslip_service = PayslipGenerationService(payslipData)
+        payslip_fd = payslip_service.generate_payslip()
 
-        payslip_service = PayslipGenerationService(payslip_data)
-        payslip_service.generate_payslip(
-            template_path=TEMPLATE_PATH, output_path=f"{employmentId}-{month}-{year}")
-
-        """Upload Payslips to GDrive and S3"""
+        """Upload Payslip to GDrive and S3"""
         payslip_upload_service = PayslipUploadService(
-            employment_id=employmentId)
+            employment_id=payslipData["employment_details"]["employment_id"])
+        payslip_drive_url = payslip_upload_service.upload_document(
+            fd=payslip_fd, payslip_data=payslipData)
 
-        # payslip_upload_service.upload_document(file_name=f"", doc.file, doc.content_type)
-        with open(LOCAL_FILE_PATH, "rb") as local_file:
-            payslip_upload_service.upload_document(
-                file_name="your_uploaded_file_name.pdf", file=local_file)
+        if (payslip_drive_url != None):
+            return {
+                "status": "SUCCESS",
+                "message": "employer approval triggered"
+            }
+        else:
+            raise Exception("File could not be uploaded")
 
-        return {
-            "status": "SUCCESS",
-            "message": "employer approval triggered"
-        }
     except Exception as e:
         raise HTTPException(
             status_code=400, detail="Invalid payslip data format")

@@ -3,8 +3,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from PyPDF2 import PdfWriter, PdfReader
 
+from services.payslips.uploads.payslip_upload_service import PayslipUploadService
+
 # from payslips.utils.convert_to_inr import convert_to_inr
 # from services.ewa.apollo.utils import convert_to_words
+
+TEMPLATE_PATH = "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/unipe_payslip_template.pdf"
 
 
 ONES = ["", "one", "two", "three", "four",
@@ -127,65 +131,75 @@ class PayslipGenerationService:
         new_pdf = PdfReader(packet)
         return new_pdf
 
-    def generate_payslip(self, template_path, output_path):
+    def generate_payslip(self):
         overlay_pdf = self._create_payslip_overlay()
 
-        existing_pdf = PdfReader(open(template_path, "rb"))
+        existing_pdf = PdfReader(open(TEMPLATE_PATH, "rb"))
         output = PdfWriter()
 
         for page in existing_pdf.pages:
             page.merge_page(overlay_pdf.pages[0])
             output.add_page(page)
 
+        # with open(output_path, "wb") as output_stream:
+        #     output.write(output_stream)
+
         output_stream = io.BytesIO()
         output.write(output_stream)
         output_stream.seek(0)
+        return output_stream
 
-        print(output_stream.getvalue())
-        return output_stream.getvalue()
+        # generated_payslip = {'fileInput': (
+        #     'generated.pdf', pdf_file_content, 'application/pdf')}
+
+        # payslip_upload_service = PayslipUploadService(employment_id)
+        # payslip_upload_service.upload_document(
+        #     file_name="demo", form_file=generated_payslip)
+
+        # return "Successfully Uploaded Payslip"
 
 
-# Example usage
-payslip_data = {
-    "header": {
-        "date": "JUL 2022",
-        "company_name": "Click-Labs Pvt. Ltd",
-        "company_address": "IT Park, Plot No. 16, Sector 22, Panchkula, Haryana, 134109"
-    },
-    "employee_details": {
-        "employee_name": "ANANYA CHAKRABORTY",
-        "employee_no": "CL-0111",
-        "date_joined": "12 Aug 2019",
-        "department": "Product",
-        "sub_department": "N/A",
-        "designation": "Product Designer",
-        "pan": "AOSPC8746D",
-        "uan": "100915564037"
-    },
-    "attendance_details": {
-        "actual_payable_days": "31.0",
-        "total_working_days": "31.0",
-        "loss_of_pays_data": "0.0",
-        "days_payable": "31",
-    },
-    "earnings": {
-        "basic": "₹22,917",
-        "hra": "₹11,459",
-        "other_allowance": "₹11,459",
-        "total_earnings": "₹45,835",
-    },
-    "deductions": {
-        "tax_deducted": "0",
-        "pf_contribution": "₹2750",
-        "professional_tax": "₹200.00",
-        "other_deductions": "0",
-        "total_deductions": "₹2950",
-    },
-    "final": {
-        "net_pay": "₹2950",
-    }
-}
+# # Example usage
+# payslip_data = {
+#     "header": {
+#         "date": "JUL 2022",
+#         "company_name": "Click-Labs Pvt. Ltd",
+#         "company_address": "IT Park, Plot No. 16, Sector 22, Panchkula, Haryana, 134109"
+#     },
+#     "employee_details": {
+#         "employee_name": "ANANYA CHAKRABORTY",
+#         "employee_no": "CL-0111",
+#         "date_joined": "12 Aug 2019",
+#         "department": "Product",
+#         "sub_department": "N/A",
+#         "designation": "Product Designer",
+#         "pan": "AOSPC8746D",
+#         "uan": "100915564037"
+#     },
+#     "attendance_details": {
+#         "actual_payable_days": "31.0",
+#         "total_working_days": "31.0",
+#         "loss_of_pays_data": "0.0",
+#         "days_payable": "31",
+#     },
+#     "earnings": {
+#         "basic": "₹22,917",
+#         "hra": "₹11,459",
+#         "other_allowance": "₹11,459",
+#         "total_earnings": "₹45,835",
+#     },
+#     "deductions": {
+#         "tax_deducted": "0",
+#         "pf_contribution": "₹2750",
+#         "professional_tax": "₹200.00",
+#         "other_deductions": "0",
+#         "total_deductions": "₹2950",
+#     },
+#     "final": {
+#         "net_pay": "₹2950",
+#     }
+# }
 
-service = PayslipGenerationService(payslip_data)
-service.generate_payslip(
-    "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/unipe_payslip_template.pdf", "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/generated.pdf")
+# service = PayslipGenerationService(payslip_data)
+# service.generate_payslip(
+#     "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/unipe_payslip_template.pdf", "/Users/tanishgarg/Documents/GitHub/microservices/templates/pdf/generated.pdf")
