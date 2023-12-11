@@ -30,6 +30,7 @@ class PayslipUploadService(MediaUploadService):
             description=f"Payslips Data for {self.employment_id}"
         )
 
+        # TODO: Need to create a bucket for Payslips
         s3_key = f"{PAYSLIP_S3_BASE_PATH}/{self.employment_id}/{idx_filename}"
         status, _ = self.s3_upload_service.upload(
             key=s3_key,
