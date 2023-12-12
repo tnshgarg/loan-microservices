@@ -5,6 +5,7 @@ from dal.models.db_manager import DBManager
 from kyc.config import Config
 from kyc.main import app as kyc_app
 from ops.main import employer_app
+from payslips.main import payslip_app
 from admin.main import admin_app
 app = FastAPI(
     servers=[
@@ -48,6 +49,7 @@ async def ping():
 
 app.mount(f"/{Config.STAGE}/ops-admin", admin_app)
 app.mount(f"/{Config.STAGE}/ops-service", employer_app)
+app.mount(f"/{Config.STAGE}/payslip-service", payslip_app)
 app.mount("/", kyc_app)
 
 
