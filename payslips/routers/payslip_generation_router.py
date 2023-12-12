@@ -35,7 +35,7 @@ def generate_payslips(background_tasks: BackgroundTasks, payslipsData: dict):
 
         Payload:
         {
-            "payslips": [ObjectId('64ddc25fa4f4ec0089ac780b'), ObjectId('64ddc25fa4f4ec0089ac780c')]
+            "payslips": ['64ddc25fa4f4ec0089ac780b', '64ddc25fa4f4ec0089ac780c']
         }
     }
     """
