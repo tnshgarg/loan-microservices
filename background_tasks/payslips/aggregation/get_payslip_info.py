@@ -33,6 +33,40 @@ def get_payslip_aggregation_info(payslips):
             },
         },
         {
+            '$lookup': {
+                'from': 'employments',
+                'localField': 'employmentId',
+                'foreignField': '_id',
+                'as': 'employmentDetails',
+            },
+        },
+        {
+            '$unwind': {
+                'path': '$employmentDetails',
+            },
+        },
+        {
+            '$lookup': {
+                'from': 'governmentIds',
+                'localField': 'unipeEmployeeId',
+                'foreignField': 'pId',
+                'as': 'governmentIdData',
+            },
+        },
+        {
+            '$unwind': {
+                'path': '$governmentIdData',
+            },
+        },
+        {
+            '$match': {
+                'governmentIdData.type': 'pan',
+            },
+        },
+        {
+            '$limit': 1,
+        },
+        {
             "$project": {
                 "header": {
                     "date": {
@@ -46,11 +80,11 @@ def get_payslip_aggregation_info(payslips):
                 "employee_details": {
                     "employee_name": "$employeeDetails.employeeName",
                     "employee_no": "$employerEmployeeId",
-                    "date_joined": "N/A",
-                    "department": "N/A",
-                    "sub_department": "N/A",
-                    "designation": "N/A",
-                    "pan": "N/A",
+                    "date_joined": "$employmentDetails.doj",
+                    "department": "$employmentDetails.department",
+                    "sub_department": "$employmentDetails.department",
+                    "designation": "$employmentDetails.designation",
+                    "pan": "$governmentIdData.number",
                     "uan": "N/A"
                 },
                 "attendance_details": {
@@ -118,7 +152,7 @@ def get_payslip_aggregation_info(payslips):
                 },
                 "employment_details": {
                     "employment_id": {
-                        "$toString": "$employerDetails._id"
+                        "$toString": "$employmentDetails._id"
                     }
                 }
             }
