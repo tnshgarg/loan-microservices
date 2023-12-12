@@ -65,4 +65,4 @@ def generate_payslips(background_tasks: BackgroundTasks, payslipsData: dict):
 
     except Exception as e:
         raise HTTPException(
-            status_code=400, detail="Invalid payslip data format")
+            status_code=400, detail="Some Error Occured")
