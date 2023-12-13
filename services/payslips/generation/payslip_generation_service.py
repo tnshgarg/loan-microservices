@@ -1,3 +1,4 @@
+from datetime import datetime
 import io
 import os
 from reportlab.pdfgen import canvas
@@ -26,8 +27,13 @@ class PayslipGenerationService:
 
     def _create_header(self, can):
         header = self.header
+        header_date_str = header.get("date", "N/A")
+        header_datetime = datetime.fromisoformat(
+            header_date_str.replace("Z", "+00:00"))
+        header_date = header_datetime.strftime("%b %Y").upper()
+
         can.setFont("Helvetica", 16)
-        can.drawString(36, 768, header.get("date", "N/A"))
+        can.drawString(36, 768, header_date)
         can.setFont("Helvetica", 8)
         can.drawString(36, 750, header.get("company_name", "N/A"))
         can.drawString(36, 735, header.get("company_address", "N/A"))

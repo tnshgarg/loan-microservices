@@ -88,10 +88,38 @@ def get_payslip_aggregation_info(payslips):
                     "uan": "N/A"
                 },
                 "attendance_details": {
-                    "actual_payable_days": "0",
-                    "total_working_days": "0",
-                    "loss_of_pays_data": "0",
-                    "days_payable": "0"
+                    "actual_payable_days": {
+                        "$toString": {
+                            "$arrayElemAt": [
+                                "$attendanceDetails.uploads.summary.totalPresentDays",
+                                -1
+                            ]
+                        }
+                    },
+                    "total_working_days": {
+                        "$toString": {
+                            "$arrayElemAt": [
+                                "$attendanceDetails.uploads.summary.totalWorkingDays",
+                                -1
+                            ]
+                        }
+                    },
+                    "loss_of_pay_days": {
+                        "$toString": {
+                            "$arrayElemAt": [
+                                "$attendanceDetails.uploads.summary.totalAbsentDays",
+                                -1
+                            ]
+                        }
+                    },
+                    "days_payable": {
+                        "$toString": {
+                            "$arrayElemAt": [
+                                "$attendanceDetails.uploads.summary.totalPresentDays",
+                                -1
+                            ]
+                        }
+                    },
                 },
 
                 "earnings": {
@@ -163,29 +191,36 @@ def get_payslip_aggregation_info(payslips):
 attendance_details = {
     "attendance_details": {
         "actual_payable_days": {
-            "$arrayElemAt": [
-                "$attendanceDetails.uploads.summary.totalWorkingDays",
-                -1
-            ]
+            "$toString": {
+                "$arrayElemAt": [
+                    "$attendanceDetails.uploads.summary.totalWorkingDays",
+                    -1
+                ]
+            }
         },
         "total_working_days": {
-            "$arrayElemAt": [
-                "$attendanceDetails.uploads.summary.totalWorkingDays",
-                -1
-            ]
+            "$toString": {
+                "$arrayElemAt": [
+                    "$attendanceDetails.uploads.summary.totalWorkingDays",
+                    -1
+                ]
+            }
         },
         "loss_of_pays_data": {
-
-            "$arrayElemAt": [
-                "$attendanceDetails.uploads.summary.totalWorkingDays",
-                -1
-            ]
+            "$toString": {
+                "$arrayElemAt": [
+                    "$attendanceDetails.uploads.summary.totalWorkingDays",
+                    -1
+                ]
+            }
         },
         "days_payable": {
-            "$arrayElemAt": [
-                "$attendanceDetails.uploads.summary.totalWorkingDays",
-                -1
-            ]
+            "$toString": {
+                "$arrayElemAt": [
+                    "$attendanceDetails.uploads.summary.totalWorkingDays",
+                    -1
+                ]
+            }
         },
     },
 }
