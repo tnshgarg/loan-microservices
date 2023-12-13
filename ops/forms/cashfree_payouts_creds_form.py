@@ -5,7 +5,7 @@ from ops.utils.urls import get_ops_microservice_url
 from services.comms.html_blocks_service import HTMLBlocksService
 
 
-def get_employer_approval_form(employer_id):
+def get_employer_creds_form(employer_id):
     # get cognito details
     ops_employer_login_info = get_ops_employer_login_info(employer_id)
     html_blocks = HTMLBlocksService.compile_html_blocks(

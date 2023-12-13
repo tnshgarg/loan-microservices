@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form
 from typing_extensions import Annotated
 from background_tasks.employer_creds.save_employer_creds import SaveEmployerCreds
 from ops.auth import get_user
+from ops.forms.cashfree_payouts_creds_form import get_employer_creds_form
 from ops.forms.form_submit_response import get_form_submit_response
 from ops.utils.privilege_level import is_sales_user_privileged
 
@@ -22,6 +23,13 @@ def ping():
         "status": "success",
         "message": "pong",
     }
+
+@employer_creds_router.get("/add-creds")
+def start_employer_approval(background_tasks: BackgroundTasks,
+                            employer_id: str,
+                            user: Optional[dict] = Depends(get_user)):
+
+    return get_employer_creds_form(employer_id)
 
 @employer_creds_router.post("/submit-creds")
 def submit_final_creds_form(background_tasks: BackgroundTasks,
