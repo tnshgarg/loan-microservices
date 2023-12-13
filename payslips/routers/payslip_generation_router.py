@@ -1,9 +1,11 @@
 import os
 from typing import Optional
 from typing_extensions import Annotated
+from bson import ObjectId
 
 from fastapi import APIRouter, HTTPException
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, UploadFile
+from background_tasks.payslips.generate_and_upload_payslips import GenerateAndUploadPayslips
 
 from services.payslips.generation.payslip_generation_service import PayslipGenerationService
 from services.payslips.uploads.payslip_upload_service import PayslipUploadService
@@ -18,73 +20,49 @@ payslip_generation_router = APIRouter(
 )
 
 
+def convert_to_objectids(ids):
+    try:
+        return [ObjectId(str_id) for str_id in ids]
+    except Exception as e:
+        print(f"Error converting to ObjectId: {e}")
+        return None
+
+
 @payslip_generation_router.post("/")
-def generate_payslips(payslipData: dict):
+def generate_payslips(background_tasks: BackgroundTasks, payslipsData: dict):
     """
         To use Payslip Generation Router, pass the payslips data in the following format:
 
+        Payload:
         {
-            "header": {
-                "date": "JUL 2022",
-                "company_name": "Click-Labs Pvt. Ltd",
-                "company_address": "IT Park, Plot No. 16, Sector 22, Panchkula, Haryana, 134109"
-            },
-            "employee_details": {
-                "employee_name": "ANANYA CHAKRABORTY",
-                "employee_no": "CL-0111",
-                "date_joined": "12 Aug 2019",
-                "department": "Product",
-                "sub_department": "N/A",
-                "designation": "Product Designer",
-                "pan": "AOSPC8746D",
-                "uan": "100915564037"
-            },
-            "attendance_details": {
-                "actual_payable_days": "31.0",
-                "total_working_days": "31.0",
-                "loss_of_pays_data": "0.0",
-                "days_payable": "31"
-            },
-            "earnings": {
-                "basic": "₹22,917",
-                "hra": "₹11,459",
-                "other_allowance": "₹11,459",
-                "total_earnings": "₹45,835"
-            },
-            "deductions": {
-                "tax_deducted": "0",
-                "pf_contribution": "₹2750",
-                "professional_tax": "₹200.00",
-                "other_deductions": "0",
-                "total_deductions": "₹2950"
-            },
-            "final": {
-                "net_pay": "₹2950"
-            },
-            "employment_details": {
-                "employment_id": "abc"
-            }
+            "payslips": ['64ddc25fa4f4ec0089ac780b', '64ddc25fa4f4ec0089ac780c']
+        }
     }
     """
     try:
-        """Generate Payslip"""
-        payslip_service = PayslipGenerationService(payslipData)
-        payslip_fd = payslip_service.generate_payslip()
+        # """Generate Payslip"""
+        # payslip_service = PayslipGenerationService(payslipData)
+        # payslip_fd = payslip_service.generate_payslip()
 
-        """Upload Payslip to GDrive and S3"""
-        payslip_upload_service = PayslipUploadService(
-            employment_id=payslipData["employment_details"]["employment_id"])
-        payslip_drive_url = payslip_upload_service.upload_document(
-            fd=payslip_fd, payslip_data=payslipData)
+        # """Upload Payslip to GDrive and S3"""
+        # payslip_upload_service = PayslipUploadService(
+        #     employment_id=payslipData["employment_details"]["employment_id"])
+        # payslip_drive_url = payslip_upload_service.upload_document(
+        #     fd=payslip_fd, payslip_data=payslipData)
 
-        if (payslip_drive_url != None):
-            return {
-                "status": "SUCCESS",
-                "message": "employer approval triggered"
-            }
-        else:
-            raise Exception("File could not be uploaded")
+        converted_payslips_data = convert_to_objectids(
+            payslipsData["payslips"])
+        handler_payload = {
+            "payslips": converted_payslips_data
+        }
+        background_tasks.add_task(
+            GenerateAndUploadPayslips().run, handler_payload)
+
+        return {
+            "status": "SUCCESS",
+            "message": "Payslips Generated And Uploaded Successfully"
+        }
 
     except Exception as e:
         raise HTTPException(
-            status_code=400, detail="Invalid payslip data format")
+            status_code=400, detail="Some Error Occured")
