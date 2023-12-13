@@ -31,7 +31,7 @@ class EmployerUploadService(MediaUploadService):
         self._add_to_db(document_type, drive_url, s3_key)
         return drive_url
 
-    def _upload_media(self, form_file, filename, content_type, s3_prefix="admin_upload_service"):
+    def _upload_media(self, form_file, filename, content_type, s3_prefix=""):
         file_extension = self._parse_extension(content_type)
         idx_filename = f"{self.ts_prefix}_{filename}.{file_extension}"
         drive_upload_response = self.gdrive_upload_service.upload_file(
@@ -42,7 +42,7 @@ class EmployerUploadService(MediaUploadService):
             description=f"Employer Id: {self.employer_id}"
         )
 
-        s3_key = f"{s3_prefix}/{self.employer_id}/{idx_filename}"
+        s3_key = f"/{self.employer_id}/uploads/{idx_filename}"
         status, _ = self.s3_upload_service.upload(
             key=s3_key,
             fd=form_file

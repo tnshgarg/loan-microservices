@@ -15,6 +15,7 @@ from services.ewa.apollo.document_handling.addendum_service import ApolloAddendu
 from services.ewa.apollo.document_handling.commercial_loan_agreement_service import ApolloCommercialLoanAgreementService
 from services.ewa.apollo.document_handling.directors_list_service import DirectorsListService
 from services.ewa.apollo.document_handling.document_signing_service import DocumentSigningService
+from services.ewa.apollo.document_handling.karza_aadhaar_service import AadhaarZipService
 from services.ewa.apollo.loan_application_api import ApolloLoanApplicationHook
 from services.storage.uploads.s3_upload_service import S3UploadService
 
@@ -91,6 +92,15 @@ class ApolloCommercialDocumentsService(ApolloDocumentsService):
             ApolloPartnerTag.LOC_PERSONAL
         )
 
+    def _upload_promotor_aadhaar(self):
+        aadhaar_service = AadhaarZipService(self.unipe_employee_id)
+        aadhaar_fd = aadhaar_service.generate_document()
+        self._upload_apollo_document(
+            aadhaar_fd,
+            ApolloDocumentList.AADHAAR,
+            ApolloPartnerTag.LOC_COMMERCIAL
+        )
+
     def _generate_agreement(self):
         loan_agreement_service = ApolloCommercialLoanAgreementService(
             self.loan_application)
@@ -116,6 +126,7 @@ class ApolloCommercialDocumentsService(ApolloDocumentsService):
     def upload_loan_documents(self):
         self._upload_list_of_directors()
         self._upload_gst_certificate()
+        self._upload_promotor_aadhaar()
         self._upload_incorporation_certificate()
         self._upload_bank_statement()
         self._upload_bureau_report()

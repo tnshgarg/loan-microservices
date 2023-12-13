@@ -11,24 +11,10 @@ from starlette.routing import Route
 from starlette.middleware import Middleware
 
 
-users = {
-    "tanish@unipe.money": {
-        "name": "Administrator",
-        "avatar": "avatar.svg",
-        "roles": ["read", "create", "edit", "delete", "view"],
-    },
-    "admin": {
-        "name": "John Doe",
-        "avatar": "avatar.svg",
-        "roles": ["read", "create", "edit", "update_details", "approve_employer", "delete", "view"],
-    },
-    "viewer": {"name": "Viewer", "avatar": None, "roles": ["read"]},
-
-}
-
 actions_for_roles = {
     'admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
-    'rm': ["view", "edit", "upload_details"],
+    "manager": ["view", "edit", "approve_employer"],
+    'rm': ["view", "upload_details"],
     'sm': ["view"],
 }
 
@@ -71,7 +57,8 @@ class GoogleOAuthProvider(AuthProvider):
 
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()
-        return RedirectResponse(url=request.url_for("admin:login"))
+        redirect_url = request.url_for("admin:prelogin")
+        return RedirectResponse(url=redirect_url)
 
     async def handle_auth_callback(self, request: Request):
         token = await oauth.google.authorize_access_token(request)
@@ -80,7 +67,7 @@ class GoogleOAuthProvider(AuthProvider):
         if user:
             sales_user = SalesUser.find_one({"email": user['email']})
             user["sales_id"] = str(sales_user["_id"])
-            user["roles"] = sales_user["type"]
+            user["roles"] = actions_for_roles[sales_user["type"]]
             request.session.update({"user": user})
         return RedirectResponse(internal_redirect_uri)
 

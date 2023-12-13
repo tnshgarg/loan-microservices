@@ -28,8 +28,9 @@ class PromotersView(AdminView):
     fields = [
         StringField("_id"),
         StringField("employeeName"),
+        HasOne("loanDetails", identity="commercial_loans", label="Employer"),
         StringField("mobile"),
-        HasOne("loanDetails", identity="commercial_loans", label="Loan Details"),
+
         StringField("companyName"),
         StringField("email"),
         StringField("gender"),
