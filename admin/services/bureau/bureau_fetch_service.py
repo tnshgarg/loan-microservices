@@ -36,20 +36,21 @@ class BureauFetchService:
 
         if status_code != 200:
             raise Exception(
-                f"Error in fetching PAN Info via Karza API with response - {pan_fetch_api_response}")
+                f"Karza PAN API Failed - [{status_code}]{pan_fetch_api_response}")
 
         dob = pan_fetch_api_response.get("result", {}).get("dob")
         return dob
 
     @db_txn
-    def fetch_bureau_details(self, name, mobile, pan):
+    def fetch_bureau_details(self, name, mobile, pan, employer_id):
         dob = self._fetch_dob(pan)
-        uType = "employer"
+        user_type = "employer"
 
         filter_ = {
             "pan": pan,
-            "uType": uType,
+            "uType": user_type,
             "active": True,
+            "employerId": employer_id,
             "_id": {
                 "$gte": bson.ObjectId.from_datetime(self._get_earlier_date())
             }
@@ -77,7 +78,7 @@ class BureauFetchService:
             try:
                 risk_profile_find_res = {
                     "pan": pan,
-                    "uType": uType,
+                    "uType": user_type,
                     "active": True,
                     "bureau": bureau,
                     "data": data,

@@ -1,6 +1,7 @@
 import os
 
 from authlib.integrations.starlette_client import OAuth
+from starlette_admin import CustomView
 from admin.config import config
 from admin.models.employers import StarletteEmployers
 from admin.providers.auth_provider import GoogleOAuthProvider
@@ -13,6 +14,7 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette_admin.contrib.mongoengine import Admin
 from admin.views.commercial_loans_view import CommercialLoansView
+from admin.views.employees_view import EmployeesView
 from admin.views.employer_approval_view import EmployerApprovalView
 from admin.views.promoters_view import PromotersView
 from admin.views.repayment_reconciliation_view import RepaymentReconciliationView
@@ -46,7 +48,7 @@ oauth.register(
 admin_app = Starlette(
     routes=[
         Route("/", lambda r: HTMLResponse(
-            f'<a href="/{os.getenv("STAGE")}/ops-admin/admin">Login to Employer Approval Portal</a>')),
+            f'<a href="/{os.getenv("STAGE")}/ops-admin/admin">Login to Employer Approval Portal</a>'), name="prelogin"),
         Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
@@ -74,6 +76,14 @@ admin = Admin(
     login_logo_url="https://static.wixstatic.com/media/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png/v1/fill/w_400,h_80,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/4d5c44_6938179427f345a0b5c4b2e491f50239~mv2.png",
     auth_provider=GoogleOAuthProvider(),
     middlewares=[Middleware(SessionMiddleware, secret_key=config.secret)],
+    templates_dir="admin/templates",
+    index_view=CustomView(
+        label="Home Page",
+        icon="fa fa-users",
+        name="Home Page",
+        add_to_menu=False,
+        template_path="/index.html"
+    )
 )
 
 
@@ -83,6 +93,7 @@ admin.add_view(EmployerLeadsView)
 admin.add_view(CommercialLoansView)
 admin.add_view(PromotersView)
 admin.add_view(RepaymentReconciliationView)
+admin.add_view(EmployeesView)
 
 """Mount All The Views"""
 admin.mount_to(admin_app)

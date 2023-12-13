@@ -5,12 +5,16 @@ import os
 import requests
 
 
+class DecentroAPIException(Exception):
+    pass
+
+
 class DecentroBureauFetchService:
 
     def __init__(self, stage, logger) -> None:
         self.stage = stage
         self.logger = logger
-        decentro_config = json.loads(os.environ[f"decentro_{self.stage}"])
+        decentro_config = json.loads(os.environ[f"decentro_config"])
         self.headers = {
             "Content-Type": "application/json",
             "client_id": decentro_config["client_id"],
@@ -22,10 +26,10 @@ class DecentroBureauFetchService:
 
     def fetch(self, pan, name, mobile, dob):
 
-        current_timestamp = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        current_timestamp = datetime.datetime.utcnow()
 
-        json_object = {
-            "reference_id": f"{pan}_{current_timestamp}",
+        bureau_request = {
+            "reference_id": f"{mobile}_{int(current_timestamp.timestamp())}",
             "consent": True,
             "consent_purpose": "Triggering Bureau Fetch for Personal Loan",
             "name": name,
@@ -38,9 +42,12 @@ class DecentroBureauFetchService:
 
         res = requests.post(
             url=self.report_url,
-            json=json_object,
+            json=bureau_request,
             headers=self.headers
         )
+        if res.status_code != 200:
+            raise DecentroAPIException(
+                f"Decentro API Failure: [{res.status_code}] {res.text}")
 
         res_json = res.json()
 

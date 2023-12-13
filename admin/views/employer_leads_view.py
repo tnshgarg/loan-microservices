@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 import bson
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
-from starlette_admin import BaseModelView, StringField, URLField
+from starlette_admin import BaseModelView, HasOne, StringField, URLField
 
 from admin.services.bureau.bureau_fetch_service import BureauFetchService
 from admin.services.bureau.s3_report_service import S3ReportService
@@ -72,6 +72,8 @@ def create_sorter(order_by):
 
     return sorter
 
+# TODO: [TECHDEBT] This is not useing the appropriate base class
+
 
 class EmployerLeadsView(BaseModelView):
     identity = "employer_leads"
@@ -90,10 +92,13 @@ class EmployerLeadsView(BaseModelView):
         StringField("writeoff"),
         StringField("settlement"),
         StringField("remarks"),
-        StringField("employerLevel", label="Employer Level"),
+        StringField("employerLevel", label="Employer Score"),
+        HasOne("employerId",
+               identity="employer",
+               label="Employer ID"),
         # add status field, try badge with tooltip
         StringField("status"),
-        URLField("url")
+        URLField("url", label="Download JSON")
     ]
     exclude_fields_from_list = ["_id"]
     exclude_fields_from_create = ["bureauScore", "dpd6Months", "dpd2Years",
@@ -103,6 +108,12 @@ class EmployerLeadsView(BaseModelView):
 
     class Meta:
         model = EmployerLeads
+
+    def can_edit(self, request: Request) -> bool:
+        return "super-admin" in request.state.user["roles"]
+
+    def can_delete(self, request: Request) -> bool:
+        return "super-admin" in request.state.user["roles"]
 
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
         filter_ = create_search_filter(request.state.user, where)
@@ -119,7 +130,12 @@ class EmployerLeadsView(BaseModelView):
         find_res_objects = []
         for doc in find_res:
             pan = doc["pan"]
+            # ifadmin
             doc["url"] = get_presigned_url(pan)
+            if "employerId" not in doc:
+                doc["employerId"] = None
+            else:
+                doc["employerId"] = DictToObj({"_id": doc["employerId"]})
             find_res_objects.append(DictToObj(doc))
         return find_res_objects
 
@@ -128,6 +144,11 @@ class EmployerLeadsView(BaseModelView):
             {"_id": bson.ObjectId(pk)})
         pan = find_one_res["pan"]
         find_one_res["url"] = get_presigned_url(pan)
+        if "employerId" not in find_one_res:
+            find_one_res["employerId"] = None
+        else:
+            find_one_res["employerId"] = DictToObj(
+                {"_id": find_one_res["employerId"]})
         return DictToObj(find_one_res)
 
     async def create(self, request: Request, data: Dict):

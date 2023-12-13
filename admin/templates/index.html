@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block header %}
+{% endblock %}
+{% block modal %}
+{% include "modals/loading.html" %}
+{% include "modals/error.html" %}
+{% include "modals/actions.html" %}
+{% endblock %}
+{% if (not _is_login_path ) and is_auth_enabled %}
+{% set current_user = (request | get_admin_user) %}
+{% endif %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div id="btn_container" class="card-title">
+                        {% if current_user %}
+                        <div>Hi! {{ current_user.username }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body border-bottom p-0">
+                    <div class="d-flex m-3" style="text-align: center;">
+                        <div id="pageLength_container"
+                            style="display: inline-block; margin: auto auto;text-align: center;">
+                            <div {% if current_user.photo_url
+                                %}style="background-image: url({{ current_user.photo_url }});width: 10vh;height:10vh;margin: auto auto;"
+                                {% endif %}>
+                                {% if not current_user.photo_url %}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user"
+                                    width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <h2>Hi! {{ current_user.username }}, Welcome to unipe Admin Portal</h2>
+                            <h3>Your Email: {{request.session.user.email}}</h3>
+                            <h3>Sales Id: {{request.session.user.sales_id}}</h3>
+                            <h3>Role: {{request.session.user.roles}}</h3>
+                        </div>
+                    </div>
+                    <div id="alertContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block head_css %}
+{{ super() }}
+{% endblock %}
+{% block script %}
+{{ super() }}
+{% endblock %}

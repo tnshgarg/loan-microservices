@@ -1,3 +1,4 @@
+import enum
 from typing import Any, Dict, List, Optional, Union
 
 import bson
@@ -5,7 +6,7 @@ from admin.views.admin_view import AdminView
 from dal.models.employer import Employer
 from dal.models.sales_users import SalesUser
 from services.employer.uploads.employer_upload_service import EmployerUploadService
-from starlette_admin import CollectionField, StringField, URLField
+from starlette_admin import CollectionField, EnumField, StringField, URLField, BooleanField, DateTimeField
 from starlette.requests import Request
 from admin.utils import DictToObj, MultiFormDataParser
 from starlette_admin.actions import row_action
@@ -18,8 +19,17 @@ TEMPLATE_PATHS = {
     "approve_or_deny": "admin/templates/employer_approval/approve_or_deny.html",
 }
 
+REQUIRED_DOCUMENTS = ["gst", "pan", "agreement"]
 
-def create_where_filter(user_type: str, sales_user_id: bson.ObjectId):
+
+class ApprovalStage(str, enum.Enum):
+    PENDING = "pending"
+    INPROGRESS = "inprogress"
+    APPROVED = "approved"
+    DENIED = "denied"
+
+
+def create_user_filter(user_type: str, sales_user_id: bson.ObjectId):
     if user_type not in ["admin", "sm", "rm"]:
         user_type = "rm"
     if user_type == "admin":
@@ -37,31 +47,40 @@ def get_sales_user_data(request: Request):
 
 class EmployerApprovalView(AdminView):
     identity = "employer"
-    name = "Employer Approval"
-    label = "Employer Approval"
+    name = "Employers"
+    label = "Employers"
     icon = "fa fa-user-check"
     model = Employer
     pk_attr = "_id"
     fields = [
-        StringField("_id"),
-        StringField("companyName"),
-        StringField("companyType"),
-        StringField("employeeCount"),
-        StringField("updatedAt"),
-        StringField("approvalStage", label="Approval Stage"),
+        StringField("_id", label="Employer ID"),
+        StringField("companyName", label="Name"),
+        StringField("companyType", label="Company Type"),
+        StringField("employeeCount", label="No. of Employees"),
+        DateTimeField("updatedAt", label="Last Updated At"),
+        EnumField("approvalStage", label="Approval Stage", enum=ApprovalStage),
         CollectionField("documents", fields=[
             CollectionField("drive", fields=[
-                URLField("pan"),
-                URLField("agreement"),
-                URLField("gst"),
+                URLField("pan", exclude_from_edit=True,
+                         exclude_from_list=True),
+                URLField("agreement", exclude_from_edit=True,
+                         exclude_from_list=True),
+                URLField("gst", exclude_from_edit=True,
+                         exclude_from_list=True),
             ]),
-            StringField("notes")
-        ])
+            StringField("notes", label="Notes", exclude_from_list=True)
+        ], required=True),
+        BooleanField(
+            "documentsUploaded",
+            label="Document Upload Status",
+            exclude_from_edit=True,
+            exclude_from_detail=True
+        )
     ]
-
-    row_actions = ["view", "edit", "upload_details",
-                   "approve_employer"]
     row_actions_display_type = RowActionsDisplayType.ICON_LIST
+
+    def is_accessible(self, request: Request) -> bool:
+        return True
 
     @row_action(
         name="upload_details",
@@ -125,28 +144,39 @@ class EmployerApprovalView(AdminView):
 
         return f"The Employer is successfully {employer_approval_status}"
 
-    async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
-                       where: Union[Dict[str, Any], str, None] = None,
-                       order_by: Optional[List[str]] = None) -> List[Any]:
-
-        if where is None:
-            where = {"_id": None}
+    def derive_filter(self, request, where):
+        filter_ = {}
+        if isinstance(where, str):
+            filter_ = self.create_text_search_filter(where)
 
         [user_type, sales_user_id] = get_sales_user_data(request)
 
-        where = create_where_filter(user_type, sales_user_id)
+        user_filter = create_user_filter(user_type, sales_user_id)
+        filter_.update(user_filter)
+        return filter_
 
-        res = Employer.find(where)
+    async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
+                       where: Union[Dict[str, Any], str, None] = None,
+                       order_by: Optional[List[str]] = None) -> List[Any]:
+        filter_ = self.parse_where_clause(where)
+
+        res = Employer.find(filter_)
         res.skip(skip).limit(limit)
         order_by
         find_all_res = []
         for employer_lead in res:
+            uploaded_documents = employer_lead.get(
+                "documents", {}).get("drive", {})
+            employer_lead["documentsUploaded"] = True
+            for document in REQUIRED_DOCUMENTS:
+                if document not in uploaded_documents:
+                    employer_lead["documentsUploaded"] = False
+                    break
+
             find_all_res.append(DictToObj(employer_lead))
         return find_all_res
 
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
-        [user_type, sales_user_id] = get_sales_user_data(request)
-
-        filter_ = create_where_filter(user_type, sales_user_id)
+        filter_ = self.derive_filter(request, where)
         res = self.model.find(filter_)
         return len(list(res))
