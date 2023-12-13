@@ -12,7 +12,9 @@ from starlette.middleware import Middleware
 
 
 actions_for_roles = {
+    'super-admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
     'admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
+    'ops-admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
     "manager": ["view", "edit", "approve_employer"],
     'rm': ["view", "upload_details"],
     'sm': ["view"],
