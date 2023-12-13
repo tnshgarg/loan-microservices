@@ -16,6 +16,7 @@ from starlette_admin.contrib.mongoengine import Admin
 from admin.views.commercial_loans_view import CommercialLoansView
 from admin.views.employees_view import EmployeesView
 from admin.views.employer_approval_view import EmployerApprovalView
+from admin.views.cashfree_credentials_view import CashfreeCredentialsViews
 from admin.views.promoters_view import PromotersView
 from admin.views.repayment_reconciliation_view import RepaymentReconciliationView
 
@@ -94,6 +95,7 @@ admin.add_view(CommercialLoansView)
 admin.add_view(PromotersView)
 admin.add_view(RepaymentReconciliationView)
 admin.add_view(EmployeesView)
+admin.add_view(CashfreeCredentialsViews)
 
 """Mount All The Views"""
 admin.mount_to(admin_app)
