@@ -9,7 +9,7 @@ from services.payslips.uploads.payslip_upload_service import PayslipUploadServic
 
 class GenerateAndUploadPayslips(BackgroundTask):
 
-    def cms_payslip_builder(payslip_data: dict, asset_url: str):
+    def cms_payslip_builder(self, payslip_data: dict, asset_url: str):
         existing_content = list(CMS.fetch_content(
             groups=[payslip_data["unipeEmployeeId"]]))
 
@@ -88,7 +88,7 @@ class GenerateAndUploadPayslips(BackgroundTask):
                 fd=payslip_fd, payslip_data=payslip_data)
 
             """Update CMS"""
-            payslip_data = self.cms_payslip_builder(
+            existing_payslip_data = self.cms_payslip_builder(
                 payslip_data, asset_url)
             CMS.set_content(
-                group=payslip_data["unipeEmployeeId"], content_type="payslips", content=payslip_data)
+                group=payslip_data["unipeEmployeeId"], content_type="payslips", content=existing_payslip_data)

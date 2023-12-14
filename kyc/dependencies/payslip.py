@@ -18,7 +18,7 @@ def payslip_gdrive_upload_service(employer_id):
 
 @cached(cache=TTLCache(maxsize=32, ttl=300))
 def payslip_s3_upload_service():
-    return S3UploadService(f"{Config.STAGE}-unipe-employer-salary-slips")
+    return S3UploadService(f"prod-unipe-employer-salary-slips")
 
 
 @cached(cache=TTLCache(maxsize=32, ttl=300))
