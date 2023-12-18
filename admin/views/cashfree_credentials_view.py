@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 from admin.views.admin_view import AdminView
 from dal.models.credentials import Credentials
-from starlette_admin import BooleanField, StringField, PasswordField
+from starlette_admin import StringField, PasswordField
 from starlette.requests import Request
 from admin.utils import DictToObj
 
@@ -18,6 +18,7 @@ class CashfreeCredentialsViews(AdminView):
         StringField("pId", label="Employer Id"),
         PasswordField("username", label="Username"),
         PasswordField("password" , label="Password"),
+        PasswordField("publicKey" , label="Public Key"),
         StringField("portal"),
     ]
 
@@ -25,7 +26,7 @@ class CashfreeCredentialsViews(AdminView):
         return True
     
     async def create(self, request: Request, data: Dict):
-        res = self.model.put_cashfree_creds(employerId=data["pId"], client_id=data["username"], client_secret=data["password"])
+        res = self.model.put_cashfree_creds(employerId=data["pId"], client_id=data["username"], client_secret=data["password"], public_key=data["public_key"])
         upserted_id = res.upserted_id
         data["_id"] = upserted_id
         return DictToObj(data)
