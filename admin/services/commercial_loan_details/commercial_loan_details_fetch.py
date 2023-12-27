@@ -35,6 +35,10 @@ class CommercialLoanDetailsModel:
         )
 
     @classmethod
+    def count(self, filter_):
+        return len(list(self.find(filter_, limit=10000000)))
+
+    @classmethod
     def find_one(self, filter_=None):
         employer_s3_service = S3UploadService(
             bucket=f"{Config.STAGE}-unipe-employer-final"
@@ -69,9 +73,12 @@ class CommercialLoanDetailsModel:
                 })
             employer["promoters"] = promoters_collection_field
             for key, value in employer["document_uploads"].items():
-                employer["document_uploads"][key] = employer_s3_service.get_presigned_url(
-                    employer["document_uploads"][key],
-                    use_stage=False
-                )
+                employer["document_uploads"][key] = {
+                    "url": employer_s3_service.get_presigned_url(
+                        value,
+                        use_stage=False
+                    ),
+                    "filename": value.split("/")[-1]
+                }
             return employer
         return None

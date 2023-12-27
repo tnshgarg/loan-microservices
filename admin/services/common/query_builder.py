@@ -3,7 +3,7 @@ BRANCH_CONDITIONS = {"and", "or"}
 
 OPERATORS = {
     "eq": lambda v: {"$eq": v},
-    "neq": lambda v: {"$neq": v},
+    "neq": lambda v: {"$ne": v},
     "lt": lambda v: {"$lt": v},
     "gt": lambda v: {"$gt": v},
     "le": lambda v: {"$lte": v},

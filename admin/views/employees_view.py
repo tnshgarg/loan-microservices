@@ -12,7 +12,7 @@ class EmployeesView(AdminView):
     model = Employee
     pk_attr = "_id"
     fields = [
-        StringField("_id"),
+        StringField("_id", label="Employee Id"),
         StringField("employeeName"),
         StringField("mobile"),
         StringField("companyName"),
@@ -27,3 +27,7 @@ class EmployeesView(AdminView):
         BooleanField("profileComplete"),
         StringField("remark"),
     ]
+
+    def is_accessible(self, request) -> bool:
+        roles = request.state.user["roles"]
+        return "admin" in roles or "super-admin" in roles or "ops-admin" in roles

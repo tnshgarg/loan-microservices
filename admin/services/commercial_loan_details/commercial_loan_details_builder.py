@@ -34,28 +34,36 @@ class CommercialLoanDetailsBuilder:
         self.details["state"] = state
         self.details["pin"] = pin
 
-    def add_promoters(self, promoters, key_promoter):
-        if key_promoter not in promoters:
-            self.errors["keyPromoter"] = "keyPromoter should be included in promoters"
+    def add_promoters(self, promoters):
 
-        self.details["keyPromoter"] = bson.ObjectId(key_promoter)
         self.details["promoters"] = []
         for promoter in promoters:
-            promoter_id = bson.ObjectId(promoter)
+            promoter_id = bson.ObjectId(promoter["employee"])
             active_employment = Employments.find_one({
                 "pId": promoter_id,
                 "employerId": self.employer_id,
                 "active": True
             })
             self.details["promoters"].append(promoter_id)
+            if promoter["key_promoter"]:
+                self.details["keyPromoter"] = promoter_id
             if active_employment is None:
                 self.errors["promoters"] = f"{promoter_id} is not employed for the provided employer"
+            self.add_promoter_details(
+                promoter_id,
+                pan_number=promoter["pan"],
+                aadhaar_number=promoter["aadhaar"],
+                address=promoter["currentAddress"]
+            )
 
-    def upsert_government_id(self, number, type):
+    def upsert_government_id(self, number, type, pId=None):
+        if pId is None:
+            pId = self.details["keyPromoter"],
         government_id = {
-            "pId": self.details["keyPromoter"],
+            "pId": pId,
             "uType": "employee",
-            "type": type
+            "type": type,
+            "provider": "karza"
         }
         existing_id = EncryptedGovernmentIds.find_one(government_id)
         if existing_id is None or existing_id["verifyStatus"] != "SUCCESS":
@@ -72,10 +80,10 @@ class CommercialLoanDetailsBuilder:
                 "number": number
             })
 
-    def add_promoter_details(self, pan_number, aadhaar_number, address):
+    def add_promoter_details(self, promoter_id, pan_number, aadhaar_number, address):
         """Verify Possible Ids and generate tempate objects for key promoter"""
-        self.upsert_government_id(pan_number, "pan")
-        self.upsert_government_id(aadhaar_number, "aadhaar")
+        self.upsert_government_id(pan_number, "pan", pId=promoter_id)
+        self.upsert_government_id(aadhaar_number, "aadhaar", pId=promoter_id)
         Employee.update_one({
             "_id": self.details["keyPromoter"],
             "currentAddress": {"$exists": 0}

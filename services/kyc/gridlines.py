@@ -32,3 +32,23 @@ class GridlinesApi:
         status_code = response.status_code
         body = response.json()
         return status_code, body
+
+    def verify_bank_account(self, account_number, ifsc):
+        url = f'{self.base_url}/bank-api/verify'
+        self.logger.info("bank_verify_account_url", extra={
+            "data": {"url": url}
+        })
+        response = requests.post(
+            url=url,
+            headers=self.headers,
+            json={
+                "account_number": account_number,
+                "ifsc": ifsc,
+                "consent": "Y",
+            }
+        )
+        response_json = response.json()
+        self.logger.info("bank_verify_account_res", extra={
+            "data": response_json
+        })
+        return response_json

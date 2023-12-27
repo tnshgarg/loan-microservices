@@ -23,10 +23,10 @@ REQUIRED_DOCUMENTS = ["gst", "pan", "agreement"]
 
 
 class ApprovalStage(str, enum.Enum):
-    PENDING = "pending"
-    INPROGRESS = "inprogress"
-    APPROVED = "approved"
-    DENIED = "denied"
+    pending = "pending"
+    inprogress = "inprogress"
+    approved = "approved"
+    denied = "denied"
 
 
 def create_user_filter(user_type: str, sales_user_id: bson.ObjectId):
@@ -37,12 +37,6 @@ def create_user_filter(user_type: str, sales_user_id: bson.ObjectId):
     elif sales_user_id and (user_type == "sm" or user_type == "rm"):
         where = {"salesUsers": {"$elemMatch": {"salesId": sales_user_id}}}
     return where
-
-
-def get_sales_user_data(request: Request):
-    if request.state.user is not None:
-        return [request.state.user["roles"], request.state.user["sales_id"]]
-    raise ActionFailed("User Not Present in the Database")
 
 
 class EmployerApprovalView(AdminView):
@@ -58,18 +52,31 @@ class EmployerApprovalView(AdminView):
         StringField("companyType", label="Company Type"),
         StringField("employeeCount", label="No. of Employees"),
         DateTimeField("updatedAt", label="Last Updated At"),
-        EnumField("approvalStage", label="Approval Stage", enum=ApprovalStage),
+        EnumField("approvalStage", label="Approval Stage",
+                  enum=ApprovalStage, read_only=True, exclude_from_edit=True, exclude_from_create=True),
         CollectionField("documents", fields=[
             CollectionField("drive", fields=[
-                URLField("pan", exclude_from_edit=True,
-                         exclude_from_list=True),
-                URLField("agreement", exclude_from_edit=True,
-                         exclude_from_list=True),
-                URLField("gst", exclude_from_edit=True,
-                         exclude_from_list=True),
+                URLField(
+                    "pan",
+                    exclude_from_edit=True,
+                    exclude_from_list=True,
+                    exclude_from_create=True,
+                ),
+                URLField(
+                    "agreement",
+                    exclude_from_edit=True,
+                    exclude_from_list=True,
+                    exclude_from_create=True,
+                ),
+                URLField(
+                    "gst",
+                    exclude_from_edit=True,
+                    exclude_from_list=True,
+                    exclude_from_create=True,
+                ),
             ]),
-            StringField("notes", label="Notes", exclude_from_list=True)
-        ], required=True),
+            StringField("notes", label="Notes", exclude_from_create=True)
+        ]),
         BooleanField(
             "documentsUploaded",
             label="Document Upload Status",
@@ -80,7 +87,36 @@ class EmployerApprovalView(AdminView):
     row_actions_display_type = RowActionsDisplayType.ICON_LIST
 
     def is_accessible(self, request: Request) -> bool:
-        return True
+        return "employers" in request.state.user["roles"]
+
+    def can_create(self, request: Request) -> bool:
+        return False
+
+    async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
+                       where: Union[Dict[str, Any], str, None] = None,
+                       order_by: Optional[List[str]] = None) -> List[Any]:
+        filter_ = self.parse_where_clause(where)
+
+        res = Employer.find(filter_)
+        res.skip(skip).limit(limit)
+        order_by
+        find_all_res = []
+        for employer_lead in res:
+            uploaded_documents = employer_lead.get(
+                "documents", {}).get("drive", {})
+            employer_lead["documentsUploaded"] = True
+            for document in REQUIRED_DOCUMENTS:
+                if document not in uploaded_documents:
+                    employer_lead["documentsUploaded"] = False
+                    break
+
+            find_all_res.append(DictToObj(employer_lead))
+        return find_all_res
+
+    async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
+        filter_ = self.parse_where_clause(where)
+        res = self.model.find(filter_)
+        return len(list(res))
 
     @row_action(
         name="upload_details",
@@ -89,7 +125,7 @@ class EmployerApprovalView(AdminView):
         icon_class="fas fa-upload",
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        action_btn_class="btn-warning",
         form=open(TEMPLATE_PATHS.get("document_upload"),
                   'r', encoding='utf-8').read()
     )
@@ -128,7 +164,7 @@ class EmployerApprovalView(AdminView):
         icon_class="fas fa-check",
         submit_btn_text="Yes, proceed",
         submit_btn_class="btn-success",
-        action_btn_class="btn-info",
+        action_btn_class="btn-success",
         form=open(TEMPLATE_PATHS.get("approve_or_deny"),
                   'r', encoding='utf-8').read()
     )
@@ -143,40 +179,3 @@ class EmployerApprovalView(AdminView):
         })
 
         return f"The Employer is successfully {employer_approval_status}"
-
-    def derive_filter(self, request, where):
-        filter_ = {}
-        if isinstance(where, str):
-            filter_ = self.create_text_search_filter(where)
-
-        [user_type, sales_user_id] = get_sales_user_data(request)
-
-        user_filter = create_user_filter(user_type, sales_user_id)
-        filter_.update(user_filter)
-        return filter_
-
-    async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
-                       where: Union[Dict[str, Any], str, None] = None,
-                       order_by: Optional[List[str]] = None) -> List[Any]:
-        filter_ = self.parse_where_clause(where)
-
-        res = Employer.find(filter_)
-        res.skip(skip).limit(limit)
-        order_by
-        find_all_res = []
-        for employer_lead in res:
-            uploaded_documents = employer_lead.get(
-                "documents", {}).get("drive", {})
-            employer_lead["documentsUploaded"] = True
-            for document in REQUIRED_DOCUMENTS:
-                if document not in uploaded_documents:
-                    employer_lead["documentsUploaded"] = False
-                    break
-
-            find_all_res.append(DictToObj(employer_lead))
-        return find_all_res
-
-    async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
-        filter_ = self.derive_filter(request, where)
-        res = self.model.find(filter_)
-        return len(list(res))

@@ -1,9 +1,8 @@
-from fastapi import HTTPException as HTTPResponseException
 
+from fastapi import HTTPException as HTTPResponseException
 from services.ewa.otp.sms.mobile_verification_service import MobileVerificationService
 from .gupshup_api import GupshupApi
 from .gupshup_api_mock import GupshupApiMock
-
 
 
 class GupshupOtpService(MobileVerificationService):
@@ -55,7 +54,12 @@ class GupshupOtpService(MobileVerificationService):
                 mobile_number=payload.mobile_number,
                 otp=payload.otp,
             )
-            if mobile_verify_otp_response.get("response", {}).get("status") == "success":
+            response_status = mobile_verify_otp_response.get(
+                "response", {}).get("status")
+            response_body_code = mobile_verify_otp_response.get(
+                "body", {}).get("code")
+
+            if response_status == "success":
                 token, employee_details = self.generate_jwt_token(
                     mobile_verify_otp_response["response"]["phone"][-10:], secret)
                 if token is None:
@@ -67,15 +71,17 @@ class GupshupOtpService(MobileVerificationService):
                 mobile_verify_otp_response["response"]["token"] = token
                 mobile_verify_otp_response["response"]["employeeDetails"] = employee_details
                 mobile_verify_otp_response["response"]["status"] = 200
-            elif mobile_verify_otp_response.get("body", {}).get("code") == "INVALID_OTP":
+            elif response_body_code == "INVALID_OTP":
                 mobile_verify_otp_response["response"]["status"] = 406
-            elif mobile_verify_otp_response.get("response", {}).get("status") != "success":
+            elif response_status != "success":
                 mobile_verify_otp_response["response"]["status"] = 408
             else:
                 mobile_verify_otp_response["response"]["status"] = 400
+
             self.logger.info("mobile_verify_otp_res", extra={
                 "data": mobile_verify_otp_response
             })
+
             return mobile_verify_otp_response.get("response", {})
         except Exception as e:
             self.logger.info("mobile_generate_otp_res", extra={

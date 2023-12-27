@@ -43,7 +43,7 @@ class EmployerUploadService(MediaUploadService):
         )
 
         s3_key = f"/{self.employer_id}/uploads/{idx_filename}"
-        status, _ = self.s3_upload_service.upload(
+        status, uploaded_key = self.s3_upload_service.upload(
             key=s3_key,
             fd=form_file
         )
@@ -52,7 +52,7 @@ class EmployerUploadService(MediaUploadService):
                 status_code=500,
                 detail="s3 upload failure"
             )
-        return drive_upload_response["webViewLink"], s3_key
+        return drive_upload_response["webViewLink"], uploaded_key
 
     def update_employer(self, update):
         return Employer.update_one(

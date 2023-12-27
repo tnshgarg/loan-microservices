@@ -1,9 +1,8 @@
 import os
 
 from authlib.integrations.starlette_client import OAuth
-from starlette_admin import CustomView
+from starlette_admin import CustomView, DropDown
 from admin.config import config
-from admin.models.employers import StarletteEmployers
 from admin.providers.auth_provider import GoogleOAuthProvider
 from starlette.applications import Starlette
 from starlette.config import Config
@@ -16,6 +15,8 @@ from starlette_admin.contrib.mongoengine import Admin
 from admin.views.commercial_loans_view import CommercialLoansView
 from admin.views.employees_view import EmployeesView
 from admin.views.employer_approval_view import EmployerApprovalView
+from admin.views.loan_application_view import LoanApplicationsView
+from admin.views.offers_view import OffersView
 from admin.views.promoters_view import PromotersView
 from admin.views.repayment_reconciliation_view import RepaymentReconciliationView
 
@@ -48,7 +49,7 @@ oauth.register(
 admin_app = Starlette(
     routes=[
         Route("/", lambda r: HTMLResponse(
-            f'<a href="/{os.getenv("STAGE")}/ops-admin/admin">Login to Employer Approval Portal</a>'), name="prelogin"),
+            f'<a href="/{os.getenv("STAGE")}/ops-admin/admin">Login to Employer Approval Portal</a>'), name="admin:prelogin"),
         Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
@@ -89,11 +90,32 @@ admin = Admin(
 
 """Add Admin Views Here admin.add_view"""
 admin.add_view(EmployerApprovalView)
-admin.add_view(EmployerLeadsView)
-admin.add_view(CommercialLoansView)
-admin.add_view(PromotersView)
-admin.add_view(RepaymentReconciliationView)
 admin.add_view(EmployeesView)
+admin.add_view(EmployerLeadsView)
+
+# admin.add_view(LoanApplicationsView)
+admin.add_view(
+    DropDown(
+        "Loan Ops",
+        icon="fa fa-inr",
+        views=[
+            OffersView(),
+            LoanApplicationsView(),
+            RepaymentReconciliationView(),
+        ],
+    )
+)
+
+admin.add_view(
+    DropDown(
+        "Commercial Loans",
+        icon="fa fa-coins",
+        views=[
+            CommercialLoansView(),
+            PromotersView()
+        ],
+    )
+)
 
 """Mount All The Views"""
 admin.mount_to(admin_app)

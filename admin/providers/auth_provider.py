@@ -12,12 +12,13 @@ from starlette.middleware import Middleware
 
 
 actions_for_roles = {
-    'super-admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
-    'admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
-    'ops-admin': ["view", "edit", "upload_details", "approve_employer", "delete"],
-    "manager": ["view", "edit", "approve_employer"],
-    'rm': ["view", "upload_details"],
-    'sm': ["view"],
+    'super-admin': ["super-admin", "commercial_loans", "commercial_loans_create", "commercial_loan_loc", "employers", "commercial_loan_kyc"],
+    'admin': ["admin", "employers", "commercial_loans", "commercial_loans_create", "commercial_loan_loc", "commercial_loan_kyc"],
+    'ops': ["commercial_loans", "commercial_loans_create", "ops-admin", "employers", "commercial_loan_kyc"],
+    "manager": ["employers"],
+    'rm': ["employers"],
+    'sm': ["employers"],
+    "default": [],
 }
 
 googleConfig = Config('.env')
@@ -47,6 +48,9 @@ class GoogleOAuthProvider(AuthProvider):
     async def is_authenticated(self, request) -> bool:
         if request.session.get("user", None) is not None:
             request.state.user = request.session.get("user")
+            request.state.user["roles"] = actions_for_roles[
+                request.state.user.get(
+                    "sales_user_type", "default")]
             return True
         return False
 
@@ -68,8 +72,14 @@ class GoogleOAuthProvider(AuthProvider):
         internal_redirect_uri = request.query_params["state"]
         if user:
             sales_user = SalesUser.find_one({"email": user['email']})
-            user["sales_id"] = str(sales_user["_id"])
-            user["roles"] = actions_for_roles[sales_user["type"]]
+            if sales_user is not None:
+                user["sales_id"] = str(sales_user["_id"])
+                user["sales_user_type"] = sales_user["type"]
+                user["roles"] = actions_for_roles[sales_user["type"]]
+            else:
+                user["sales_id"] = "aaaaaaaaaaaaaaaaaaaaaaaa"
+                user["sales_user_type"] = "default"
+                user["roles"] = actions_for_roles["default"]
             request.session.update({"user": user})
         return RedirectResponse(internal_redirect_uri)
 

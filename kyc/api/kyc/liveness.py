@@ -3,7 +3,6 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, Depends, status
 from kyc.dependencies.auth import get_sales_current_session
 from kyc.dependencies.kyc import gdrive_upload_service, loans_gdrive_upload_service, s3_upload_service, google_sheets_service
 from kyc.schemas.auth import TokenPayload
-from services.kyc.gridlines import GridlinesApi
 from services.kyc.liveness_service import LivenessService
 from services.storage.sheets.google_sheets import GoogleSheetsService
 from services.storage.uploads.drive_upload_service import DriveUploadService
