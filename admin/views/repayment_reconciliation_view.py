@@ -1,7 +1,9 @@
+import os
 import bson
+from admin.constants import BusinessType
 from admin.views.admin_view import AdminView
 from dal.models.sales_users import SalesUser
-from starlette_admin import CollectionField,  StringField
+from starlette_admin import CollectionField, EnumField,  StringField
 from typing import Any, Dict, List, Optional, Union
 from starlette.requests import Request
 from admin.utils import DictToObj
@@ -25,7 +27,11 @@ REPAYMENT_RECONCILIATION_PROJECTION = {
     "email": "$body.payload.payment.entity.email",
     "contact": "$body.payload.payment.entity.contact",
     "notes": "$body.payload.payment.entity.notes",
+    "account_id": "$body.account_id"
 }
+
+APOLLO_ACCOUNT_ID = os.getenv("APOLLO_ACCOUNT_ID")
+LIQUILOANS_ACCOUNT_ID = os.getenv("LIQUILOANS_ACCOUNT_ID")
 
 
 class RepaymentReconciliationView(AdminView):
@@ -39,6 +45,9 @@ class RepaymentReconciliationView(AdminView):
         StringField("_id", read_only=True),
         StringField("provider", read_only=True),
         StringField("payment_id", read_only=True),
+        StringField("account_id", read_only=True),
+        StringField("provider", read_only=True),
+        StringField("account_name", read_only=True),
         StringField("status", read_only=True),
         StringField("amount", read_only=True),
         StringField("description", read_only=True),
@@ -48,7 +57,12 @@ class RepaymentReconciliationView(AdminView):
             StringField("repaymentId"),
             StringField("employerId")
         ]),
+        EnumField("businessType", enum=BusinessType)
     ]
+    custom_filter = {}
+
+    def is_accessible(self, request: Request) -> bool:
+        return True
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
@@ -60,9 +74,14 @@ class RepaymentReconciliationView(AdminView):
             {'$match': REPAYMENT_RECONCILIATION_FILTER},
             {'$project': REPAYMENT_RECONCILIATION_PROJECTION}
         ])
+        print("FINDALL: ", res)
 
         find_all_res = []
         for employer_lead in res:
+            if employer_lead["account_id"] == APOLLO_ACCOUNT_ID:
+                employer_lead["account_name"] = "apollo"
+            else:
+                employer_lead["account_name"] = "liquiloans"
             find_all_res.append(DictToObj(employer_lead))
         return find_all_res
 
