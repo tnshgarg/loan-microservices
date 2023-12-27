@@ -1,8 +1,11 @@
+from datetime import datetime
+from random import randint
 import bson
+import pytz
 from admin.views.admin_view import AdminView
 from dal.models.sales_users import SalesUser
-from starlette_admin import CollectionField,  StringField
-from typing import Any, Dict, List, Optional, Union
+from starlette_admin import CollectionField,  StringField, TextAreaField, TinyMCEEditorField
+from typing import Any, Coroutine, Dict, List, Optional, Union
 from starlette.requests import Request
 from admin.utils import DictToObj
 from starlette.requests import Request
@@ -22,9 +25,11 @@ REPAYMENT_RECONCILIATION_PROJECTION = {
     "status": 1,
     "amount": "$body.payload.payment.entity.amount",
     "description": "$body.payload.payment.entity.description",
-    "email": "$body.payload.payment.entity.email",
+    "email": "$body.payload.payment.stringentity.email",
     "contact": "$body.payload.payment.entity.contact",
     "notes": "$body.payload.payment.entity.notes",
+    "message": "$context.exception.message",
+    "error": {"$concat": ["<details><summary>", "$context.exception.message", "</summary><pre><code>", "$context.exception.stacktrace", "</code></pre></details>"]}
 }
 
 
@@ -36,33 +41,62 @@ class RepaymentReconciliationView(AdminView):
     model = ScheduledJob
     pk_attr = "_id"
     fields = [
-        StringField("_id", read_only=True),
-        StringField("provider", read_only=True),
-        StringField("payment_id", read_only=True),
-        StringField("status", read_only=True),
-        StringField("amount", read_only=True),
-        StringField("description", read_only=True),
-        StringField("email", read_only=True),
-        StringField("contact", read_only=True),
+        StringField("_id", read_only=True, disabled=True),
+        StringField("created_at", read_only=True, disabled=True),
+        StringField("provider", read_only=True, disabled=True),
+        StringField("payment_id", read_only=True, disabled=True),
+        StringField("status", read_only=True, disabled=True),
+        StringField("amount", read_only=True, disabled=True),
+        StringField("description", read_only=True, disabled=True),
+        StringField("email", read_only=True, disabled=True),
+        StringField("contact", read_only=True, disabled=True),
+
         CollectionField("notes", fields=[
             StringField("repaymentId"),
             StringField("employerId")
         ]),
+        StringField("message", exclude_from_detail=True,
+                    read_only=True, disabled=True),
+        TinyMCEEditorField("error", exclude_from_list=True,
+                           read_only=True, disabled=True, exclude_from_edit=True)
     ]
+
+    def is_accessible(self, request: Request) -> bool:
+        roles = request.state.user["roles"]
+        return "admin" in roles or "super-admin" in roles
+
+    def can_edit(self, request: Request) -> bool:
+        return self.is_accessible(request)
+
+    async def count(self, request: Request, where: Dict[str, Any] | str | None = None) -> Coroutine[Any, Any, int]:
+        res = self.model.aggregate(pipeline=[
+            {'$match': REPAYMENT_RECONCILIATION_FILTER},
+            {'$count': "ct"}
+        ])
+        res = res.try_next()
+        if res is None:
+            return 0
+        return res.get("ct", 0)
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
 
         # TODO: Check for Admin, RM and SM Conditions on what data to show
-
+        sort_key = self.create_sort_key(order_by)
         res = self.model.aggregate(pipeline=[
             {'$match': REPAYMENT_RECONCILIATION_FILTER},
+            {"$sort": {k: v for k, v in sort_key}},
+            {"$skip": skip},
+            {"$limit": limit},
             {'$project': REPAYMENT_RECONCILIATION_PROJECTION}
         ])
-
         find_all_res = []
         for employer_lead in res:
+            employer_lead["created_at"] = employer_lead["_id"].generation_time
+            employer_lead["created_at"] = employer_lead["created_at"].astimezone(
+                pytz.timezone("Asia/Kolkata"))
+            employer_lead["amount"] /= 100
             find_all_res.append(DictToObj(employer_lead))
         return find_all_res
 
@@ -75,10 +109,9 @@ class RepaymentReconciliationView(AdminView):
                 pk = ObjectId(pk)
             except Exception as e:
                 raise ValueError("Invalid primary key format") from e
-
-        customFilter = {**self.custom_filter, **{"_id": pk}}
-        document = self.model.find_one(
-            customFilter, projection=REPAYMENT_RECONCILIATION_PROJECTION)
+        document = self.model.find_one({
+            "_id": pk
+        }, projection=REPAYMENT_RECONCILIATION_PROJECTION)
 
         if document:
             return DictToObj(document)
@@ -98,19 +131,22 @@ class RepaymentReconciliationView(AdminView):
         repayment_id = data["notes"]["repaymentId"]
         employer_id = data["notes"]["employerId"]
 
+        update = {
+            "contentHash": f"ops-portal-reconciliation-view-{datetime.now().timestamp()}",
+            "status": "RETRY",
+        }
         if len(repayment_id) > 0:
+            update["body.payload.payment.entity.notes"] = {
+                "repaymentId": repayment_id}
             self.model.update_one(
                 filter_={"_id": bson.ObjectId(pk)},
-                update={"$set": {"body.payload.payment.entity.notes": {
-                    "repaymentId": repayment_id}}}
-            )
+                update={"$set": update})
         elif len(employer_id) > 0:
+            update["body.payload.payment.entity.notes"] = {
+                "employerId": employer_id}
             self.model.update_one(
                 filter_={"_id": bson.ObjectId(pk)},
-                update={"$set": {"body.payload.payment.entity.notes": {
-                    "employerId": employer_id}}}
-            )
-
+                update={"$set": update})
         else:
             # TODO: Either Repayment Id or Employer Id must be there
             raise Exception("Invalid Update")

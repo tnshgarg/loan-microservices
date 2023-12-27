@@ -1,6 +1,8 @@
 
 from dataclasses import dataclass
 
+from kyc.config import Config
+
 APOLLO_DATE_FORMAT = "%d/%m/%Y"
 
 
@@ -42,9 +44,9 @@ class ApolloDocumentList:
     SALARY_SLIP = ApolloDocument("salary_slip", "pdf", MimeType.PDF)
 
     SIGNED_LOAN_AGREEMENT = ApolloDocument(
-        "loan_agreement", "pdf", MimeType.PDF)
+        "loan_agreement", "pdf", MimeType.PDF, internal=Config.STAGE != "prod")
     SIGNED_SL_KFS = ApolloDocument(
-        "signed_sanction_letter_and_KFS", "pdf", MimeType.PDF)
+        "signed_sanction_letter_and_KFS", "pdf", MimeType.PDF, internal=Config.STAGE != "prod")
     SIGNED_ADDENDUM = ApolloDocument(
         "addendum", "pdf", MimeType.PDF)
     LOAN_AGREEMENT = ApolloDocument(

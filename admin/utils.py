@@ -11,6 +11,12 @@ class DictToObj(object):
         for key in dictionary:
             setattr(self, key, dictionary[key])
 
+    def update(self, key, value):
+        setattr(self, key, value)
+
+    def convert_to_fk(self, key):
+        setattr(self, key, DictToObj({"_id": str(getattr(self, key))}))
+
 
 class MultiFormDataParser:
     @staticmethod

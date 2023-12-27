@@ -43,13 +43,23 @@ class PromotersView(AdminView):
 
     ]
 
+    async def is_accessible(self, request: Request) -> bool:
+        roles = request.state.user["roles"]
+        return "commercial_loans" in roles
+
+    async def count(self, request, where):
+        res = Employer.aggregate(
+            pipeline=EMPLOYER_AGGREGATE_PIPELINE+[{"$unwind": {"path": "$employee"}}, {"$project": {"_id": 1}}])
+        return len(list(res))
+
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
 
         # TODO: Check for Admin, RM and SM Conditions on what data to show
 
-        res = Employer.aggregate(pipeline=EMPLOYER_AGGREGATE_PIPELINE)
+        res = Employer.aggregate(
+            pipeline=EMPLOYER_AGGREGATE_PIPELINE + [{"$skip": skip}, {"$limit": limit}])
         find_all_res = []
         for employer_lead in res:
             promoter = employer_lead["employee"][0]

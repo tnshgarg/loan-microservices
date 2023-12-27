@@ -202,8 +202,8 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
                 "$set": {
                     "stage": "AGREEMENT",
                     "documentation.agreementLinks": {
-                        "la_addendum": la_addendum_upload_response.s3_path,
-                        "sl_kfs": sl_kfs_upload_response.s3_path
+                        "Loan Agreement and Addendum": la_addendum_upload_response.s3_path,
+                        "Sanction Letter and KFS": sl_kfs_upload_response.s3_path
                     }
                 }
             }

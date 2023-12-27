@@ -1,5 +1,7 @@
 
 
+from datetime import datetime
+import pytz
 import requests
 from kyc.config import Config
 
@@ -21,6 +23,10 @@ class ApolloLoanApplicationHook:
         self.unipe_employee_id = unipe_employee_id
         self.offer_id = offer_id
 
+    @property
+    def debounce_timestamp(self):
+        return datetime.now().astimezone(pytz.timezone('Asia/Kolkata')).isoformat()[:-10]
+
     def post_event(self, action, status):
         response = requests.post(
             url=self.api_url,
@@ -28,7 +34,8 @@ class ApolloLoanApplicationHook:
                 "unipeEmployeeId": str(self.unipe_employee_id),
                 "offerId": str(self.offer_id),
                 "action": action,
-                "status": status
+                "status": status,
+                "ts": self.debounce_timestamp
             }
         )
         return response.status_code == 200

@@ -2,16 +2,8 @@
 from base64 import b64encode
 from datetime import datetime
 import io
-import json
-from typing import Annotated
 import bson
-from fastapi import Depends
 from dal.models.employees import Employee
-from dal.models.government_ids import GovernmentIds
-from dal.utils import db_txn
-from kyc.config import Config
-from kyc.dependencies.kyc import gdrive_upload_service, gridlines_api, s3_upload_service
-from services.kyc.gridlines import GridlinesApi
 from services.storage.sheets.google_sheets import GoogleSheetsService
 from services.storage.uploads.drive_upload_service import DriveUploadService
 from services.storage.uploads.s3_upload_service import S3UploadService

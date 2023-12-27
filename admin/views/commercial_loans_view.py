@@ -1,29 +1,21 @@
 import bson
 from admin.services.commercial_loan_details.commercial_loan_details_builder import CommercialLoanDetailsBuilder
 from admin.services.commercial_loan_details.commercial_loan_details_fetch import CommercialLoanDetailsModel
+from admin.services.commercial_loan_details.commercial_loans_kyc_service import CommercialLoansKycService
 from admin.views.admin_view import AdminView
 from dal.models.employees import Employee
 from dal.models.employer import Employer
 from dal.models.employments import Employments
 from dal.models.sales_users import SalesUser
-from starlette_admin import CollectionField, EnumField, HasMany, HasOne, StringField, FileField, IntegerField, ListField, BooleanField
+from starlette_admin import CollectionField, EnumField, HasMany, HasOne, StringField, FileField, IntegerField, ListField, BooleanField, action, row_action
 from typing import Any, Dict, List, Optional, Union
 from starlette.requests import Request
 from admin.utils import DictToObj
-from starlette_admin.exceptions import FormValidationError
+from starlette_admin.exceptions import FormValidationError, ActionFailed
 from starlette.requests import Request
 from typing import Any
 
-
-def create_where_filter(userType: str, userSalesId: bson.ObjectId):
-    where = {"commercialLoanDetails": {"$exists": 1}}
-    if userSalesId and (userType == "sm" or userType == "rm"):
-        where.update({
-            "salesUsers": {
-                "$elemMatch": {"salesId": userSalesId}
-            }
-        })
-    return where
+from services.storage.uploads.s3_upload_service import S3UploadService
 
 
 def get_sales_user_data(request: Request):
@@ -35,7 +27,7 @@ def get_sales_user_data(request: Request):
 class CommercialLoansView(AdminView):
     identity = "commercial_loans"
     name = "Commercial Loan"
-    label = "Commercial Loans"
+    label = "Apollo Loans"
     icon = "fa fa-coins"
     model = Employer
     search_builder = False
@@ -102,23 +94,51 @@ class CommercialLoansView(AdminView):
             FileField(
                 "gst_certificate",
                 required=True,
+                display_template="fields/file.html",
                 exclude_from_list=True),
             FileField(
                 "bank_statement",
                 required=True,
+                display_template="fields/file.html",
                 exclude_from_list=True),
             FileField(
                 "bureau",
                 required=True,
+                display_template="fields/file.html",
                 exclude_from_list=True),
             FileField(
                 "incorporation_certificate",
                 required=True,
+                display_template="fields/file.html",
                 exclude_from_list=True)
         ], required=True),
     ]
 
     exclude_fields_from_list = ["promoters"]
+
+    def is_accessible(self, request: Request) -> bool:
+        return "commercial_loans" in request.state.user["roles"]
+
+    def can_create(self, request: Request) -> bool:
+        return "commercial_loans_create" in request.state.user["roles"]
+
+    def can_edit(self, request: Request, obj: Any = None) -> bool:
+        return False
+
+    def can_delete(self, request: Request, obj: Any = None) -> bool:
+        return False
+
+    async def is_row_action_allowed(self, request: Request, name: str) -> bool:
+        roles = request.state.user["roles"]
+        if name in ["delete", "edit"]:
+            return "super-admin" in roles
+        if name == "create":
+            return "commercial_loans_create" in roles
+        if name in ["view"]:
+            return "commercial_loans" in roles
+        if name in roles:
+            return True
+        return "super-admin" in roles
 
     async def find_by_pk(self, request: Request, pk):
         commercial_loan_details = CommercialLoanDetailsModel.find_one({
@@ -130,38 +150,16 @@ class CommercialLoansView(AdminView):
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-
-        [user_type, sales_user_id] = get_sales_user_data(request)
-
-        where = create_where_filter(user_type, sales_user_id)
         sort = self.create_sort_key(order_by)
-        res = CommercialLoanDetailsModel.find(where, skip, limit, sort)
+        res = CommercialLoanDetailsModel.find({}, skip, limit, sort)
         find_all_res = []
         for employer in res:
-            # promoters = employer.get(
-            #     'commercialLoanDetails', {}).get('promoters', [])
-            # key_promoter_id = employer.get(
-            #     'commercialLoanDetails', {}).get('keyPromoter')
-
-            # if promoters:
-            #     promoters = employer["commercialLoanDetails"]["promoters"]
-            #     employer["promoters"] = [
-            #         DictToObj({"_id": str(promoter)}) for promoter in promoters
-            #     ]
-
-            # if key_promoter_id:
-            #     employer["keyPromoter"] = DictToObj({"_id": str(
-            #         employer["commercialLoanDetails"]["keyPromoter"])})
             find_all_res.append(DictToObj(employer))
 
         return find_all_res
 
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
-        [userType, userSalesId] = get_sales_user_data(request)
-
-        filter_ = create_where_filter(userType, userSalesId)
-        res = self.model.find(filter_)
-        return len(list(res))
+        return CommercialLoanDetailsModel.count({})
 
     async def create(self, request: Request, data: Dict):
         """Validate loan details are not already present"""
@@ -180,12 +178,7 @@ class CommercialLoansView(AdminView):
             **data["commercial_loan_details"])
         loan_details_service.add_address(**data["employer_address"])
         loan_details_service.add_promoters(
-            promoters=data["promoter_details"]["promoters"], key_promoter=data["promoter_details"]["keyPromoter"])
-        loan_details_service.add_promoter_details(
-            pan_number=data["promoter_details"]["pan"],
-            aadhaar_number=data["promoter_details"]["aadhaar"],
-            address=data["promoter_details"]["currentAddress"],
-        )
+            promoters=data["promoters"])
 
         loan_details_service.add_employer_government_ids(
             **data["employer_ids"]
@@ -199,3 +192,42 @@ class CommercialLoansView(AdminView):
 
     async def edit(self, request: Request, pk, data: Dict):
         raise Exception("Not Supported")
+
+    @row_action(
+        name="commercial_loan_kyc",
+        text="Loan KYC",
+        icon_class="fas fa-id-card",
+        confirmation="Are you sure you want to perform KYC for the selected loan?",
+        submit_btn_text="Yes, proceed",
+        submit_btn_class="btn-success",
+        action_btn_class="btn-primary",
+        exclude_from_list=True,
+    )
+    async def commercial_loan_kyc_action(self, request: Request, pk: str) -> str:
+        roles = request.state.user["roles"]
+        if "admin" not in roles and "super-admin" not in roles:
+            raise ActionFailed("Insufficient User Permissions")
+        kyc_service = CommercialLoansKycService(employer_id=pk)
+        kyc_service.perform_kyc()
+        return "KYC Completed for this loan"
+
+    @row_action(
+        name="commercial_loan_loc",
+        text="Create Apollo LOC",
+        icon_class="fas fa-file-alt",
+        confirmation="Are you sure you want to create apollo loc for the selected loan?",
+        submit_btn_text="Yes, proceed",
+        submit_btn_class="btn-warning",
+        action_btn_class="btn-danger",
+        exclude_from_list=True,
+        form=open("admin/templates/commercial_loans/create_loc_form.html").read()
+    )
+    async def commercial_loan_loc_action(self, request: Request, pk: str) -> str:
+        roles = request.state.user["roles"]
+        data = await request.form()
+        offer_id = bson.ObjectId(data["loan_offer_id"])
+        if "admin" not in roles and "super-admin" not in roles:
+            raise ActionFailed("Insufficient User Permissions")
+        kyc_service = CommercialLoansKycService(employer_id=pk)
+        kyc_service.trigger_loc_creation(offer_id)
+        return "LOC Creation Triggered for Employer"
