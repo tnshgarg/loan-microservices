@@ -8,7 +8,7 @@ from dal.models.employees import Employee
 from dal.models.employer import Employer
 from services.ewa.apollo.document_handling.loan_agreement_service import ApolloLoanAgreementService
 
-from services.ewa.apollo.utils import convert_to_words
+from services.ewa.apollo.utils import convert_to_words, generate_loc_id
 from services.storage.uploads.pdf_service import PDFService
 
 
@@ -41,7 +41,7 @@ class ApolloCommercialLoanAgreementService(ApolloLoanAgreementService):
         loan_agreement_html = template_str.format(
             todayDate=self.loan_info["disbursement_date"],
             district=self.customer_info["city"],
-            LOCID=self.loc_id,
+            LOCID=generate_loc_id(self.loc_id, "UFC"),
             limitAmount=str(self.loan_info["loan_amount"]) + "/-",
             locWords=convert_to_words(self.loan_info["loan_amount"]) + " only",
             LOCexpiryDate=self.loan_info["first_emi_date"],

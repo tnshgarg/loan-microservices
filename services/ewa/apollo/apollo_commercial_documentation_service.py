@@ -114,7 +114,7 @@ class ApolloCommercialDocumentsService(ApolloDocumentsService):
 
     def _generate_addendum(self):
         addendum_service = ApolloAddendumService(
-            self.loan_application, self.offer)
+            self.loan_application, self.offer, type="commercial")
         addendum_fd = addendum_service.generate_document()
         self._upload_apollo_document(
             addendum_fd,
