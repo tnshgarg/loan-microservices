@@ -5,7 +5,7 @@ import os
 from bson import ObjectId
 from pyhtml2pdf import converter
 
-from services.ewa.apollo.utils import convert_to_words
+from services.ewa.apollo.utils import convert_to_words, generate_loc_id
 from services.storage.uploads.pdf_service import PDFService
 
 
@@ -25,7 +25,7 @@ class ApolloLoanAgreementService:
         loan_agreement_html = template_str.format(
             todayDate=self.loan_info["disbursement_date"],
             district=self.customer_info["city"],
-            LOCID=self.loc_id,
+            LOCID=generate_loc_id(self.loc_id),
             limitAmount=str(self.loan_info["loan_amount"]) + "/-",
             locWords=convert_to_words(self.loan_info["loan_amount"]) + " only",
             panName=self.customer_info["first_name"] +

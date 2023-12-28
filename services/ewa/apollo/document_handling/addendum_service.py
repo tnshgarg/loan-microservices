@@ -8,16 +8,17 @@ from bson import ObjectId
 from services.ewa.apollo.constants import APOLLO_DATE_FORMAT
 
 
-from services.ewa.apollo.utils import convert_to_words
+from services.ewa.apollo.utils import generate_loc_id
 from services.storage.uploads.pdf_service import PDFService
 
 
 class ApolloAddendumService:
 
-    def __init__(self, loan_application_doc, offer_doc) -> None:
+    def __init__(self, loan_application_doc, offer_doc, type="personal") -> None:
         self.loan_info = loan_application_doc["data"]["payloads"]["loc"]["loan_information"]
         self.customer_info = loan_application_doc["data"]["payloads"]["loc"]["customer_information"]
         self.loc_id = loan_application_doc["externalLoanId"]
+        self.partner_tag = "UFC" if type == "commercial" else "UEC"
         self.disbursement_id = loan_application_doc["data"]["nextDisbursementLoanId"]
         self.offer_doc = offer_doc
         self.loc_created_at = loan_application_doc["_id"].generation_time
@@ -37,7 +38,7 @@ class ApolloAddendumService:
         APR = self.calculate_apr(
             tenor, self.offer_doc["loanAmount"], processing_fees)
         addendum_html = template_str.format(
-            partner_loan_id=self.loc_id,
+            partner_loan_id=generate_loc_id(self.loc_id, self.partner_tag),
             loc_created_at=self.loc_created_at,
             disbursement_date=today_date.strftime(APOLLO_DATE_FORMAT),
             city=self.customer_info["city"],

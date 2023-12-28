@@ -5,6 +5,8 @@ TEENS = ["ten", "eleven", "twelve", "thirteen", "fourteen",
 TENS = ["", "", "twenty", "thirty", "forty",
         "fifty", "sixty", "seventy", "eighty", "ninety"]
 
+def generate_loc_id(partner_loan_id, partner_tag="UEC", loan_type="ML"):
+    return f"AFIL{partner_tag}{loan_type}{partner_loan_id}"
 
 def convert_to_words(num):
     if num == 0:
