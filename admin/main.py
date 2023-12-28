@@ -17,6 +17,7 @@ from admin.views.employees_view import EmployeesView
 from admin.views.employer_approval_view import EmployerApprovalView
 from admin.views.loan_application_view import LoanApplicationsView
 from admin.views.offers_view import OffersView
+from admin.views.cashfree_credentials_view import CashfreeCredentialsViews
 from admin.views.promoters_view import PromotersView
 from admin.views.repayment_reconciliation_view import RepaymentReconciliationView
 
@@ -116,6 +117,7 @@ admin.add_view(
         ],
     )
 )
+admin.add_view(CashfreeCredentialsViews)
 
 """Mount All The Views"""
 admin.mount_to(admin_app)
