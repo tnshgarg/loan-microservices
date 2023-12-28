@@ -1,4 +1,5 @@
 def get_payslip_aggregation_info(payslips):
+
     return [
         {"$match": {"_id": {"$in": payslips}}},
         {
@@ -124,65 +125,48 @@ def get_payslip_aggregation_info(payslips):
 
                 "earnings": {
                     "basic": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$earnings.basicSalary"}
-                        ]
+                        "$toString": "$earnings.basicSalary"
                     },
                     "hra": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$earnings.hra"}
-                        ]
+
+                        "$toString": "$earnings.hra"
                     },
                     "other_allowance": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$earnings.otherAllowance"}
-                        ]
+
+                        "$toString": "$earnings.otherAllowance"
                     },
                     "total_earnings": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$earnings.totalEarnings"}
-                        ]
+
+                        "$toString": "$earnings.totalEarnings"
                     }
                 },
                 "deductions": {
                     "tax_deducted": {"$toString": "$deductions.taxDeducted"},
                     "pf_contribution": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$deductions.pfContribution"}
-                        ]
+                        "$toString": "$deductions.pfContribution"
                     },
                     "professional_tax": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$deductions.professionalTax"}
-                        ]
+                        "$toString": "$deductions.professionalTax"
                     },
                     "other_deductions": {"$toString": "$deductions.otherDeductions"},
                     "total_deductions": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$deductions.totalDeductions"}
-                        ]
+                        "$toString": "$deductions.totalDeductions"
                     }
                 },
                 "final": {
-                    "net_pay": {
-                        "$concat": [
-                            "₹",
-                            {"$toString": "$netPay.netPayPostTax"}
-                        ]
-                    }
+                    "net_pay":
+                        {"$toString": "$netPay.netPayPostTax"}
+
                 },
                 "employment_details": {
                     "employment_id": {
                         "$toString": "$employmentDetails._id"
                     }
-                }
+                },
+                "year": "$year",
+                "month": "$month",
+                "employer_id": "$employmentDetails.employerId",
+                "unipeEmployeeId": "$unipeEmployeeId"
             }
         }
     ]

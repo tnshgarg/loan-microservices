@@ -8,13 +8,17 @@ from cachetools import cached, TTLCache
 
 
 @cached(cache=TTLCache(maxsize=32, ttl=300))
-def payslip_gdrive_upload_service():
-    return EmployerDriveUploadService(base_folder_id=Config.GDRIVE_PAYSLIP_BASE_FOLDERID)
+def payslip_gdrive_upload_service(employer_id):
+    root_employer_service = EmployerDriveUploadService(
+        base_folder_id=Config.GDRIVE_PAYSLIP_BASE_FOLDERID)
+    employer_folder_id = root_employer_service.get_or_create_child_folder_root(
+        employer_id)
+    return EmployerDriveUploadService(base_folder_id=employer_folder_id)
 
 
 @cached(cache=TTLCache(maxsize=32, ttl=300))
 def payslip_s3_upload_service():
-    return S3UploadService(f"{Config.STAGE}-unipe-payslip-final")
+    return S3UploadService(f"prod-unipe-employer-salary-slips")
 
 
 @cached(cache=TTLCache(maxsize=32, ttl=300))
