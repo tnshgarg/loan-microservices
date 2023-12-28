@@ -63,7 +63,6 @@ class RepaymentReconciliationView(AdminView):
             StringField("repaymentId"),
             StringField("employerId")
         ]),
-        EnumField("businessType", enum=BusinessType),
         StringField("message", exclude_from_detail=True,
                     read_only=True, disabled=True),
         TinyMCEEditorField("error", exclude_from_list=True,
