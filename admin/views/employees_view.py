@@ -12,7 +12,7 @@ class EmployeesView(AdminView):
     model = Employee
     pk_attr = "_id"
     fields = [
-        StringField("_id"),
+        StringField("_id", label="Employee Id"),
         StringField("employeeName"),
         StringField("mobile"),
         StringField("companyName"),

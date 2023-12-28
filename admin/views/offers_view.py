@@ -29,7 +29,7 @@ class OffersView(AdminView):
     model = Offers
     pk_attr = "_id"
     fields = [
-        StringField("_id"),
+        StringField("_id", label="Offer Id"),
         HasOne("employerId", identity="employer", required=True),
         HasOne("unipeEmployeeId", identity="employees", required=True),
         EnumField("provider", enum=LoanProvider, required=True),
