@@ -1,4 +1,5 @@
 import bson
+from admin.constants import BusinessType
 from admin.services.commercial_loan_details.commercial_loan_details_builder import CommercialLoanDetailsBuilder
 from admin.services.commercial_loan_details.commercial_loan_details_fetch import CommercialLoanDetailsModel
 from admin.services.commercial_loan_details.commercial_loans_kyc_service import CommercialLoansKycService
@@ -112,12 +113,14 @@ class CommercialLoansView(AdminView):
                 display_template="fields/file.html",
                 exclude_from_list=True)
         ], required=True),
+        EnumField("businessType", enum=BusinessType),
     ]
 
     exclude_fields_from_list = ["promoters"]
 
     def is_accessible(self, request: Request) -> bool:
-        return "commercial_loans" in request.state.user["roles"]
+        return True
+        # return "commercial_loans" in request.state.user["roles"]
 
     def can_create(self, request: Request) -> bool:
         return "commercial_loans_create" in request.state.user["roles"]

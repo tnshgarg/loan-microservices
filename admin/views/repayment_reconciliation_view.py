@@ -2,10 +2,12 @@ from datetime import datetime
 from random import randint
 import bson
 import pytz
+from admin.constants import BusinessType
 from admin.views.admin_view import AdminView
 from dal.models.sales_users import SalesUser
-from starlette_admin import CollectionField,  StringField, TextAreaField, TinyMCEEditorField
+from starlette_admin import CollectionField, EnumField,  StringField, TextAreaField, TinyMCEEditorField
 from typing import Any, Coroutine, Dict, List, Optional, Union
+import os
 from starlette.requests import Request
 from admin.utils import DictToObj
 from starlette.requests import Request
@@ -28,9 +30,13 @@ REPAYMENT_RECONCILIATION_PROJECTION = {
     "email": "$body.payload.payment.stringentity.email",
     "contact": "$body.payload.payment.entity.contact",
     "notes": "$body.payload.payment.entity.notes",
+    "account_id": "$body.account_id",
     "message": "$context.exception.message",
     "error": {"$concat": ["<details><summary>", "$context.exception.message", "</summary><pre><code>", "$context.exception.stacktrace", "</code></pre></details>"]}
 }
+
+APOLLO_ACCOUNT_ID = os.getenv("APOLLO_ACCOUNT_ID")
+LIQUILOANS_ACCOUNT_ID = os.getenv("LIQUILOANS_ACCOUNT_ID")
 
 
 class RepaymentReconciliationView(AdminView):
@@ -44,6 +50,8 @@ class RepaymentReconciliationView(AdminView):
         StringField("_id", read_only=True, disabled=True),
         StringField("created_at", read_only=True, disabled=True),
         StringField("provider", read_only=True, disabled=True),
+        StringField("account_id", read_only=True),
+        StringField("account_name", read_only=True),
         StringField("payment_id", read_only=True, disabled=True),
         StringField("status", read_only=True, disabled=True),
         StringField("amount", read_only=True, disabled=True),
@@ -60,6 +68,7 @@ class RepaymentReconciliationView(AdminView):
         TinyMCEEditorField("error", exclude_from_list=True,
                            read_only=True, disabled=True, exclude_from_edit=True)
     ]
+    custom_filter = {}
 
     def is_accessible(self, request: Request) -> bool:
         roles = request.state.user["roles"]
@@ -97,6 +106,10 @@ class RepaymentReconciliationView(AdminView):
             employer_lead["created_at"] = employer_lead["created_at"].astimezone(
                 pytz.timezone("Asia/Kolkata"))
             employer_lead["amount"] /= 100
+            if employer_lead["account_id"] == APOLLO_ACCOUNT_ID:
+                employer_lead["account_name"] = "apollo"
+            else:
+                employer_lead["account_name"] = "liquiloans"
             find_all_res.append(DictToObj(employer_lead))
         return find_all_res
 
