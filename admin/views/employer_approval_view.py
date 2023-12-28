@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import bson
 from admin.views.admin_view import AdminView
+from background_tasks.employer_approval.final_employer_approval import FinalEmployerApproval
+from background_tasks.employer_approval.send_for_final_approval import SendForFinalApproval
 from dal.models.employer import Employer
 from dal.models.sales_users import SalesUser
 from services.employer.uploads.employer_upload_service import EmployerUploadService
@@ -13,6 +15,7 @@ from starlette_admin.actions import row_action
 from starlette_admin._types import RowActionsDisplayType
 from starlette_admin.exceptions import ActionFailed
 from starlette.datastructures import FormData
+from starlette_admin.exceptions import ActionFailed
 
 TEMPLATE_PATHS = {
     "document_upload": "admin/templates/employer_approval/document_upload.html",
@@ -150,10 +153,18 @@ class EmployerApprovalView(AdminView):
                 employer_upload_service.upload_document(
                     doc_type, doc.file, doc.content_type)
                 sucessfully_uploaded_docs.append(doc_type)
+            else:
+                raise ActionFailed(f"{doc_type} is required, but not uploaded")
 
         employer_upload_service.update_employer({
             "sales_user_id": user,
             "documents.notes": employer_notes
+        })
+        email_service = SendForFinalApproval()
+        email_service.run(payload={
+            "notes": employer_notes,
+            "employer_id": pk,
+            "files": [employer_pan, employer_agreement, employer_gst]
         })
         return f"You have successfully uploaded the {[doc for doc in sucessfully_uploaded_docs]} of Employer"
 
@@ -172,10 +183,15 @@ class EmployerApprovalView(AdminView):
         data = await request.form()
         approval_status = MultiFormDataParser.parse(data, "approval_status")
         employer_upload_service = EmployerUploadService(employer_id=pk)
-        employer_approval_status = "approved" if approval_status == "approve" else "denied"
+        employer_approval_status = Employer.ApprovalStage.APPROVED if approval_status == "approve" else Employer.ApprovalStage.DENIED
 
         employer_upload_service.update_employer({
             "approvalStage": employer_approval_status
         })
 
+        email_service = FinalEmployerApproval()
+        email_service.run({
+            "employer_id": pk,
+            "approve_or_deny": approval_status
+        })
         return f"The Employer is successfully {employer_approval_status}"
