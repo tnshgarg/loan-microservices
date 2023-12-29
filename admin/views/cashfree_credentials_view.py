@@ -17,16 +17,18 @@ class CashfreeCredentialsViews(AdminView):
         StringField("_id"),
         StringField("pId", label="Employer Id"),
         PasswordField("username", label="Username"),
-        PasswordField("password" , label="Password"),
-        PasswordField("publicKey" , label="Public Key"),
+        PasswordField("password", label="Password"),
+        PasswordField("publicKey", label="Public Key"),
         StringField("portal"),
     ]
 
     def is_accessible(self, request: Request) -> bool:
-        return True
-    
+        roles = request.state.user["roles"]
+        return "payouts_credentials" in roles
+
     async def create(self, request: Request, data: Dict):
-        res = self.model.put_cashfree_creds(employerId=data["pId"], client_id=data["username"], client_secret=data["password"], public_key=data["public_key"])
+        res = self.model.put_cashfree_creds(
+            employerId=data["pId"], client_id=data["username"], client_secret=data["password"], public_key=data["public_key"])
         upserted_id = res.upserted_id
         data["_id"] = upserted_id
         return DictToObj(data)
@@ -36,20 +38,21 @@ class CashfreeCredentialsViews(AdminView):
                        order_by: Optional[List[str]] = None) -> List[Any]:
         filter_ = self.parse_where_clause(where)
         res = self.model.aggregate(pipeline=[
-        {'$match': filter_ },
-        {'$lookup': {
-            'from': 'employers',
-            'localField': 'pId',
-            'foreignField': '_id',
-            'as': 'credentials'
-        }},
-        { "$match" : 
-            { "credentials" : 
-                { "$ne" : []}
-            }
-        }
+            {'$match': filter_},
+            {'$lookup': {
+                'from': 'employers',
+                'localField': 'pId',
+                'foreignField': '_id',
+                'as': 'credentials'
+            }},
+            {"$match":
+             {"credentials":
+              {"$ne": []}
+              }
+             }
         ])
         find_all_res = []
         for employer_lead in res:
-            find_all_res.append(DictToObj(self.model.modify_result(employer_lead)))
+            find_all_res.append(
+                DictToObj(self.model.modify_result(employer_lead)))
         return find_all_res

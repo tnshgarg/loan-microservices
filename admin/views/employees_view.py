@@ -1,4 +1,5 @@
 import bson
+from starlette.requests import Request
 from admin.views.admin_view import AdminView
 from dal.models.employees import Employee
 from starlette_admin import BooleanField, StringField
@@ -30,4 +31,7 @@ class EmployeesView(AdminView):
 
     def is_accessible(self, request) -> bool:
         roles = request.state.user["roles"]
-        return "admin" in roles or "super-admin" in roles or "ops-admin" in roles
+        return "employees" in roles
+
+    def can_edit(self, request: Request) -> bool:
+        return "admin" in request.state.user["roles"]

@@ -12,12 +12,12 @@ from starlette.middleware import Middleware
 
 
 actions_for_roles = {
-    'super-admin': ["super-admin", "commercial_loans", "commercial_loans_create", "commercial_loan_loc", "employers", "commercial_loan_kyc"],
-    'admin': ["admin", "employers", "commercial_loans", "commercial_loans_create", "commercial_loan_loc", "commercial_loan_kyc"],
-    'ops': ["commercial_loans", "commercial_loans_create", "ops-admin", "employers", "commercial_loan_kyc"],
+    'super-admin': ["super-admin", "admin", "commercial_loans", "commercial_loans_create", "commercial_loan_loc", "employers", "commercial_loan_kyc", "payouts_credentials"],
+    'admin': ["admin", "employers", "commercial_loans", "commercial_loans_create", "commercial_loan_loc", "commercial_loan_kyc", "payouts_credentials"],
+    'ops': ["commercial_loans", "commercial_loans_create", "ops-admin", "employers", "employees", "commercial_loan_kyc", "payouts_credentials"],
     "manager": ["employers"],
-    'rm': ["employers"],
-    'sm': ["employers"],
+    'rm': ["employers", "employees"],
+    'sm': ["employers", "employees"],
     "default": [],
 }
 
