@@ -14,6 +14,7 @@ from starlette.requests import Request
 from typing import Any
 from bson import ObjectId
 from dal.models.scheduled_jobs import ScheduledJob
+from kyc.config import Config
 
 REPAYMENT_RECONCILIATION_FILTER = {
     "body.payload.payment.entity.amount": {"$gt": 0},
@@ -34,9 +35,6 @@ REPAYMENT_RECONCILIATION_PROJECTION = {
     "message": "$context.exception.message",
     "error": {"$concat": ["<details><summary>", "$context.exception.message", "</summary><pre><code>", "$context.exception.stacktrace", "</code></pre></details>"]}
 }
-
-APOLLO_ACCOUNT_ID = os.getenv("APOLLO_ACCOUNT_ID")
-LIQUILOANS_ACCOUNT_ID = os.getenv("LIQUILOANS_ACCOUNT_ID")
 
 
 class RepaymentReconciliationView(AdminView):
@@ -101,16 +99,16 @@ class RepaymentReconciliationView(AdminView):
             {'$project': REPAYMENT_RECONCILIATION_PROJECTION}
         ])
         find_all_res = []
-        for employer_lead in res:
-            employer_lead["created_at"] = employer_lead["_id"].generation_time
-            employer_lead["created_at"] = employer_lead["created_at"].astimezone(
+        for scheduled_job in res:
+            scheduled_job["created_at"] = scheduled_job["_id"].generation_time.astimezone(
                 pytz.timezone("Asia/Kolkata"))
-            employer_lead["amount"] /= 100
-            if employer_lead["account_id"] == APOLLO_ACCOUNT_ID:
-                employer_lead["account_name"] = "apollo"
-            else:
-                employer_lead["account_name"] = "liquiloans"
-            find_all_res.append(DictToObj(employer_lead))
+            scheduled_job["amount"] /= 100
+            scheduled_job["account_name"] = Config.RZP_ACCOUNT_IDS.get(
+                scheduled_job["account_id"],
+                "not mapped"
+            )
+
+            find_all_res.append(DictToObj(scheduled_job))
         return find_all_res
 
     async def find_by_pk(self, request: Request, pk: str) -> Any:
@@ -153,13 +151,13 @@ class RepaymentReconciliationView(AdminView):
                 "repaymentId": repayment_id}
             self.model.update_one(
                 filter_={"_id": bson.ObjectId(pk)},
-                update={"$set": update})
+                update={"$set": update}, upsert=False)
         elif len(employer_id) > 0:
             update["body.payload.payment.entity.notes"] = {
                 "employerId": employer_id}
             self.model.update_one(
                 filter_={"_id": bson.ObjectId(pk)},
-                update={"$set": update})
+                update={"$set": update}, upsert=False)
         else:
             # TODO: Either Repayment Id or Employer Id must be there
             raise Exception("Invalid Update")

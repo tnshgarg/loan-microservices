@@ -19,8 +19,9 @@ def trigger_bureau_fetch(inserted_object):
     name = inserted_object.name
     mobile = inserted_object.mobile
     pan = inserted_object.pan
+    employer_id = inserted_object.employer_id
     try:
-        BureauFetchService().fetch_bureau_details(name, mobile, pan)
+        BureauFetchService().fetch_bureau_details(name, mobile, pan, employer_id)
     except Exception as e:
         raise HTTPException(500, str(e))
 
@@ -155,7 +156,7 @@ class EmployerLeadsView(BaseModelView):
         sales_id = request.state.user.get("sales_id")
         data["sales_id"] = bson.ObjectId(sales_id)
         data["status"] = self.Meta.model.Status.PENDING
-
+        data["employer_id"] = data.get("employer_id", None)
         insert_res = self.Meta.model.insert_one(data)
         inserted_id = insert_res.inserted_id
         data["_id"] = inserted_id

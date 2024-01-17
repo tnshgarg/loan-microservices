@@ -46,6 +46,7 @@ class Config:
         "IOTA_ACCESS_TOKEN_EXPIRE_MINUTES",
         10080
     )
+    RZP_ACCOUNT_IDS = json.loads(os.getenv("RZP_ACCOUNT_IDS", "{}"))
 
 
 class SlackWebhooks:
