@@ -15,7 +15,7 @@ from admin.utils import DictToObj
 from starlette_admin.exceptions import FormValidationError, ActionFailed
 from starlette.requests import Request
 from typing import Any
-
+from admin.models.employers import EmployerApprovals
 from services.storage.uploads.s3_upload_service import S3UploadService
 
 
@@ -26,6 +26,7 @@ def get_sales_user_data(request: Request):
 
 
 class CommercialLoansView(AdminView):
+    document = EmployerApprovals
     identity = "commercial_loans"
     name = "Commercial Loan"
     label = "Apollo Loans"

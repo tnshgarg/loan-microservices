@@ -6,6 +6,7 @@ from starlette.requests import Request
 from admin.services.offers.offer_creation import create_offer
 from admin.utils import DictToObj
 from admin.views.admin_view import AdminView
+from admin.models.offers import Offer
 from dal.models.offer import Offers
 from starlette_admin import BooleanField, DateField, HasOne, StringField, DateTimeField, EnumField, DecimalField, IntegerField
 from starlette_admin.exceptions import ActionFailed
@@ -22,6 +23,7 @@ class LoanProvider(enum.Enum):
 
 
 class OffersView(AdminView):
+    document = Offer
     identity = "offer"
     name = "Offer"
     label = "Offers"
@@ -30,8 +32,10 @@ class OffersView(AdminView):
     pk_attr = "_id"
     fields = [
         StringField("_id", label="Offer Id"),
-        HasOne("employerId", identity="employer", required=True),
-        HasOne("unipeEmployeeId", identity="employees", required=True),
+        StringField("employerId", label="employerId"),
+        StringField("unipeEmployeeId", label="unipeEmployeeId"),
+        # HasOne("employerId", identity="employer", required=True),
+        # HasOne("unipeEmployeeId", identity="employees", required=True),
         EnumField("provider", enum=LoanProvider, required=True),
         EnumField("loanType", enum=LoanType, required=True),
         StringField("year", exclude_from_create=True),
@@ -64,9 +68,9 @@ class OffersView(AdminView):
 
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100, where: Dict[str, Any] | str | None = None, order_by: List[str] | None = None) -> List[Any]:
         results = await super().find_all(request, skip, limit, where, order_by)
-        for result in results:
-            result.convert_to_fk("unipeEmployeeId")
-            result.convert_to_fk("employerId")
+        # for result in results:
+        #     result.convert_to_fk("unipeEmployeeId")
+        #     result.convert_to_fk("employerId")
         return results
 
     async def create(self, request: Request, data: Dict[str, Any]) -> DictToObj:

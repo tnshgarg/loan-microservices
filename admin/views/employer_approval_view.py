@@ -16,6 +16,7 @@ from starlette_admin._types import RowActionsDisplayType
 from starlette_admin.exceptions import ActionFailed
 from starlette.datastructures import FormData
 from starlette_admin.exceptions import ActionFailed
+from admin.models.employers import EmployerApprovals
 
 TEMPLATE_PATHS = {
     "document_upload": "admin/templates/employer_approval/document_upload.html",
@@ -43,12 +44,12 @@ def create_user_filter(user_type: str, sales_user_id: bson.ObjectId):
 
 
 class EmployerApprovalView(AdminView):
+    document = EmployerApprovals
     identity = "employer"
     name = "Employers"
     label = "Employers"
     icon = "fa fa-user-check"
     model = Employer
-    pk_attr = "_id"
     fields = [
         StringField("_id", label="Employer ID"),
         StringField("companyName", label="Name"),
@@ -89,6 +90,7 @@ class EmployerApprovalView(AdminView):
     ]
     row_actions_display_type = RowActionsDisplayType.ICON_LIST
 
+        
     def is_accessible(self, request: Request) -> bool:
         return "employers" in request.state.user["roles"]
 
@@ -98,11 +100,10 @@ class EmployerApprovalView(AdminView):
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-        filter_ = self.parse_where_clause(where)
-
-        res = Employer.find(filter_)
+        q = await self._build_query(request, where)
+        filter_ = q.to_query(self.document)
+        res = self.model.find(filter_)
         res.skip(skip).limit(limit)
-        order_by
         find_all_res = []
         for employer_lead in res:
             uploaded_documents = employer_lead.get(
@@ -112,12 +113,12 @@ class EmployerApprovalView(AdminView):
                 if document not in uploaded_documents:
                     employer_lead["documentsUploaded"] = False
                     break
-
             find_all_res.append(DictToObj(employer_lead))
         return find_all_res
 
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
-        filter_ = self.parse_where_clause(where)
+        q = await self._build_query(request, where)
+        filter_ = q.to_query(self.document)
         res = self.model.find(filter_)
         return len(list(res))
 

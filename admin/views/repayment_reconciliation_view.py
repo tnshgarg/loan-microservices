@@ -15,6 +15,7 @@ from typing import Any
 from bson import ObjectId
 from dal.models.scheduled_jobs import ScheduledJob
 from kyc.config import Config
+from admin.models.scheduleJob import ScheduledJobModel
 
 REPAYMENT_RECONCILIATION_FILTER = {
     "body.payload.payment.entity.amount": {"$gt": 0},
@@ -38,6 +39,7 @@ REPAYMENT_RECONCILIATION_PROJECTION = {
 
 
 class RepaymentReconciliationView(AdminView):
+    document = ScheduledJobModel
     identity = "repayment_reconciliation"
     name = "Repayment Reconciliation"
     label = "Repayment Reconciliation"
@@ -80,7 +82,7 @@ class RepaymentReconciliationView(AdminView):
             {'$match': REPAYMENT_RECONCILIATION_FILTER},
             {'$count': "ct"}
         ])
-        res = res.try_next()
+        res = res._try_next(get_more_allowed=True)
         if res is None:
             return 0
         return res.get("ct", 0)

@@ -1,14 +1,16 @@
+import functools
 import bson
-from typing import Any, Coroutine, Dict, List, Optional, Sequence, Union
+from typing import Any, Coroutine, Dict, List, Optional, Sequence, Type, Union
+from mongoengine.document import Document
 from starlette.requests import Request
-from starlette_admin import BaseModelView
+from starlette_admin.contrib.mongoengine import ModelView
 from admin.services.common.employer_filter import get_related_employers_filter
-from admin.services.common.query_builder import build_query
+from admin.services.common.query_builder import OPERATORS, build_query
 from admin.utils import DictToObj
-
-
-class AdminView(BaseModelView):
-
+from starlette_admin.contrib.mongoengine.helpers import build_order_clauses
+class AdminView(ModelView):
+    def __init__(self,):
+        super().__init__(self.document, self.icon, self.name, self.label, self.identity)
     def is_accessible(self, request: Request) -> bool:
         roles = request.state.user["roles"]
         return "admin" in roles or "super-admin" in roles
@@ -39,30 +41,28 @@ class AdminView(BaseModelView):
     def create_complex_filter(self, where: Dict[str, Any]) -> Dict[str, Any]:
         return build_query(where)
 
-    def parse_where_clause(self, where: Union[Dict[str, Any], str, None] = None) -> Dict[str, Any]:
-        if where is None:
-            return {}
-        if isinstance(where, (str, int)):
-            return self.create_text_search_filter(where)
-        elif isinstance(where, dict):
-            return self.create_complex_filter(where)
-
     def create_sort_key(self, order_by: List[str]) -> List[tuple]:
         return [(field, 1) if sort_order == "asc" else (field, -1) for order_by_op in order_by for field, sort_order in [order_by_op.split()]]
 
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
-        filter_ = self.parse_where_clause(where)
+        q = await self._build_query(request, where)
+        filter_ = q.to_query(self.document)
         return len(list(self.model.find(filter_)))
 
-    async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
-                       where: Union[Dict[str, Any], str, None] = None,
-                       order_by: Optional[List[str]] = None) -> List[Any]:
-        filter_ = self.parse_where_clause(where)
-        sort_key = self.create_sort_key(order_by)
-        res = self.model.find(filter_).sort(sort_key).skip(skip).limit(limit)
+    async def find_all(
+        self,
+        request: Request,
+        skip: int = 0,
+        limit: int = 100,
+        where: Union[Dict[str, Any], str, None] = None,
+        order_by: Optional[List[str]] = None,
+    ) :
+        q = await self._build_query(request, where)
+        filter_ = q.to_query(self.document)
+        res = self.model.find(filter_)
         find_all_res = [DictToObj(employer_lead) for employer_lead in res]
         return find_all_res
-
+    
     async def find_by_pk(self, request: Request, pk: str) -> DictToObj:
         obj_id = bson.ObjectId(pk) if len(pk) == 24 else pk
         res = self.model.find_one({"_id": obj_id})
