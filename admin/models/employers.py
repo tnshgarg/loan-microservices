@@ -36,6 +36,7 @@ class EmployerApprovals(me.Document):
         employeeCount = me.StringField("employeeCount", label="No. of Employees")
         updatedAt = me.DateTimeField("updatedAt", label="Last Updated At")
         approvalStage = me.EnumField(label="Approval Stage",enum=ApprovalStage)
+        selfie = me.FileField("selfie", label="Selfie")
         documents = me.ListField("documents", fields=[
             me.ListField("drive", fields=[
                 me.URLField(

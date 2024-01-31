@@ -62,11 +62,13 @@ class LivenessService(MediaUploadService):
             liveness_pic_drive_url,
             liveness_pic_aws_url
         )
-
-        if liveness_check_result["statusCode"] == 101:
-            return "SUCCESS"
-        else:
-            return liveness_check_result["statusMessage"]
+        try: 
+            if liveness_check_result["statusCode"] == 101:
+                return "SUCCESS"
+            else:
+                return liveness_check_result["statusMessage"]
+        except:
+            return liveness_check_result
 
     def _karza_liveness_check(self, liveness_pic_aws_url):
         endpoint_url = f"{self.KARZA_BASE_URL}/v3/liveness-detection"

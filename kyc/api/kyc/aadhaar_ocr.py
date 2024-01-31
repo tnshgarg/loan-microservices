@@ -27,7 +27,7 @@ async def upload_aadhaar(
     signature: Annotated[UploadFile, File()],
     gridlines_api: Annotated[GridlinesApi, Depends(gridlines_api)],
     gdrive_upload_service: Annotated[DriveUploadService, Depends(gdrive_upload_service)],
-    s3_upload_service: Annotated[DriveUploadService, Depends(s3_upload_service)],
+    s3_upload_service: Annotated[S3UploadService, Depends(s3_upload_service)],
     google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)],
     user: Annotated[TokenPayload, Depends(get_sales_current_session)]
 ):
