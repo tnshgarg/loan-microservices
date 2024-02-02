@@ -1,4 +1,5 @@
 import bson
+from fastapi import Depends
 from admin.constants import BusinessType
 from admin.services.commercial_loan_details.commercial_loan_details_builder import CommercialLoanDetailsBuilder
 from admin.services.commercial_loan_details.commercial_loan_details_fetch import CommercialLoanDetailsModel
@@ -9,15 +10,19 @@ from dal.models.employer import Employer
 from dal.models.employments import Employments
 from dal.models.sales_users import SalesUser
 from starlette_admin import CollectionField, EnumField, HasMany, HasOne, StringField, FileField, IntegerField, ListField, BooleanField, action, row_action
-from typing import Any, Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 from starlette.requests import Request
 from admin.utils import DictToObj
 from starlette_admin.exceptions import FormValidationError, ActionFailed
 from starlette.requests import Request
 from typing import Any
-
+from admin.models.employers import EmployerApprovals
 from services.storage.uploads.s3_upload_service import S3UploadService
-
+from kyc.dependencies.kyc import loans_gdrive_upload_service, s3_upload_service, google_sheets_service
+from services.kyc.liveness_service import LivenessService
+from services.storage.sheets.google_sheets import GoogleSheetsService
+from services.storage.uploads.drive_upload_service import DriveUploadService
+from services.storage.uploads.s3_upload_service import S3UploadService
 
 def get_sales_user_data(request: Request):
     if request.state.user is not None:
@@ -26,6 +31,7 @@ def get_sales_user_data(request: Request):
 
 
 class CommercialLoansView(AdminView):
+    document = EmployerApprovals
     identity = "commercial_loans"
     name = "Commercial Loan"
     label = "Apollo Loans"
@@ -46,6 +52,7 @@ class CommercialLoansView(AdminView):
         ),
         StringField("companyName", label="Company Name",
                     read_only=True, exclude_from_create=True),
+        FileField("selfie", label="Selfie"),
         CollectionField("commercial_loan_details", fields=[
             IntegerField("annual_turn_over", required=True),
             StringField("business_category", required=True),
@@ -119,6 +126,7 @@ class CommercialLoansView(AdminView):
     exclude_fields_from_list = ["promoters"]
 
     def is_accessible(self, request: Request) -> bool:
+        a = request.state.user["sales_id"]
         return True
         # return "commercial_loans" in request.state.user["roles"]
 
@@ -164,6 +172,29 @@ class CommercialLoansView(AdminView):
     async def count(self, request: Request, where: Union[Dict[str, Any], str, None] = None) -> int:
         return CommercialLoanDetailsModel.count({})
 
+    async def get_key_promoter(self, data):
+        for promoter in data["promoters"]:
+            if promoter["key_promoter"]:
+                return promoter
+        return False
+    async def liveness_check(self, data, request: Request, gdrive_upload_service: Annotated[DriveUploadService, Depends(loans_gdrive_upload_service)],
+    s3_upload_service: Annotated[S3UploadService, Depends(s3_upload_service)],
+    google_sheets_service: Annotated[GoogleSheetsService, Depends(google_sheets_service)]):
+        profile_pic, status = data["selfie"]
+        key_promoter = await self.get_key_promoter(data)
+        liveness_service = LivenessService(
+            unipe_employee_id=bson.ObjectId(key_promoter["employee"]),
+            sales_user_id=bson.ObjectId(request.state.user["sales_id"]),
+            gdrive_upload_service=gdrive_upload_service,
+            s3_upload_service=s3_upload_service,
+            google_sheets_service=google_sheets_service
+        )
+        liveness_check_result = liveness_service.perform_liveness_check(
+            profile_pic)
+
+        if liveness_check_result != "SUCCESS":
+            FormValidationError(liveness_check_result)
+
     async def create(self, request: Request, data: Dict):
         """Validate loan details are not already present"""
         existing_loan_details = self.model.find_one({
@@ -190,6 +221,7 @@ class CommercialLoansView(AdminView):
             **data["disbursement_bank_account"]
         )
         loan_details_service.upload_documents(data["document_uploads"])
+        await self.liveness_check(data, request, loans_gdrive_upload_service(), s3_upload_service(), google_sheets_service())
         loan_details_service.write_to_db()
         return DictToObj(data)
 

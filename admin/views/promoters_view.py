@@ -9,6 +9,7 @@ from starlette.requests import Request
 from admin.utils import DictToObj
 from starlette.requests import Request
 from typing import Any
+from admin.models.employees import Employees
 
 EMPLOYER_AGGREGATE_PIPELINE = [
     {'$match': {'commercialLoanDetails': {'$exists': 1}}},
@@ -19,6 +20,7 @@ EMPLOYER_AGGREGATE_PIPELINE = [
 
 
 class PromotersView(AdminView):
+    document = Employees
     identity = "promoters"
     name = "Promoters"
     label = "Promoters"
@@ -30,7 +32,6 @@ class PromotersView(AdminView):
         StringField("employeeName"),
         HasOne("loanDetails", identity="commercial_loans", label="Employer"),
         StringField("mobile"),
-
         StringField("companyName"),
         StringField("email"),
         StringField("gender"),

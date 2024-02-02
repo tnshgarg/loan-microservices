@@ -93,7 +93,6 @@ admin.add_view(EmployerApprovalView)
 admin.add_view(EmployeesView)
 admin.add_view(EmployerLeadsView)
 
-# admin.add_view(LoanApplicationsView)
 admin.add_view(
     DropDown(
         "Loan Ops",

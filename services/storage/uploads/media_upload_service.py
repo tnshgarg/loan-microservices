@@ -37,8 +37,8 @@ class MediaUploadService:
     def _upload_media(self, form_file, filename, s3_path_prefix="kyc_service"):
         file_extension = self._parse_extension(form_file.content_type)
         drive_upload_response = self.gdrive_upload_service.upload_file(
-            str(self.unipe_employee_id),
-            f"{self.ts_prefix}_{filename}.{file_extension}",
+            child_folder_name=str(self.unipe_employee_id),
+            name=f"{self.ts_prefix}_{filename}.{file_extension}",
             mime_type=form_file.content_type,
             fd=form_file.file,
             description=f"Unipe Employee Id: {self.unipe_employee_id} \n Sales User: {self.sales_user_id}"

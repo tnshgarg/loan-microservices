@@ -72,8 +72,8 @@ class CommercialLoanDetailsModel:
                     "key_promoter": promoter["_id"] == employer["keyPromoter"],
                 })
             employer["promoters"] = promoters_collection_field
-            for key, value in employer["document_uploads"].items():
-                employer["document_uploads"][key] = {
+            for key, value in employer["documents"]["s3"].items():
+                employer["documents"][key] = {
                     "url": employer_s3_service.get_presigned_url(
                         value,
                         use_stage=False

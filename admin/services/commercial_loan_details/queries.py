@@ -102,7 +102,7 @@ COMMERCIAL_LOANS_VIEW_AGGREGATE_PIPELINE = [
             "promoters": "$fetched_promoters",
             "keyPromoter": "$commercialLoanDetails.keyPromoter",
             "government_ids": 1,
-            "document_uploads": 1,
+            "documents": 1,
         }
     }
 ]

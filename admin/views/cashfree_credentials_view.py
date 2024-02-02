@@ -4,9 +4,10 @@ from dal.models.credentials import Credentials
 from starlette_admin import StringField, PasswordField
 from starlette.requests import Request
 from admin.utils import DictToObj
-
+from admin.models.credential import Credential
 
 class CashfreeCredentialsViews(AdminView):
+    document = Credential
     identity = "cashfree_credentials"
     name = "Cashfree Credentials"
     label = "Cashfree Credentials"
@@ -36,7 +37,8 @@ class CashfreeCredentialsViews(AdminView):
     async def find_all(self, request: Request, skip: int = 0, limit: int = 100,
                        where: Union[Dict[str, Any], str, None] = None,
                        order_by: Optional[List[str]] = None) -> List[Any]:
-        filter_ = self.parse_where_clause(where)
+        q = await self._build_query(request, where)
+        filter_ = q.to_query(self.document)
         res = self.model.aggregate(pipeline=[
             {'$match': filter_},
             {'$lookup': {
