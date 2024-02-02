@@ -17,13 +17,14 @@ from admin.services.bureau.s3_report_service import S3ReportService
 from dal.logger import get_app_logger
 from dal.models.risk_profile import RiskProfile
 from dal.utils import db_txn
+from kyc.config import Config
 from ops.exceptions.ops_exceptions import DevOpsException, OpsException
 
 
 class BureauFetchService:
 
     def __init__(self):
-        self.stage = os.environ["STAGE"]
+        self.stage = Config.STAGE
         self.logger = get_app_logger("ops-microservice", self.stage)
 
     def _get_earlier_date(self):

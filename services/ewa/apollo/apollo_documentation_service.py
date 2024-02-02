@@ -120,19 +120,19 @@ class ApolloDocumentsService(ApolloDocumentUploadsService):
             ApolloPartnerTag.LOC_PERSONAL
         )
 
-    def _upload_liveness_check(self):
+    def _upload_liveness_check(self, partner_tag=ApolloPartnerTag.LOC_PERSONAL):
         liveness_check_service = LivenessCheckService(self.unipe_employee_id)
         liveness_check_fd = liveness_check_service.generate_document()
         self._upload_apollo_document(
             liveness_check_fd,
             ApolloDocumentList.LIVENESS_CHECK,
-            ApolloPartnerTag.LOC_PERSONAL
+            partner_tag
         )
         selfie_fd = liveness_check_service.get_selfie()
         self._upload_apollo_document(
             selfie_fd,
             ApolloDocumentList.SELFIE,
-            ApolloPartnerTag.LOC_PERSONAL
+            partner_tag
         )
 
     def _download_sl_kfs(self):

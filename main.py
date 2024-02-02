@@ -34,7 +34,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup_db_client():
-    stage = os.environ["STAGE"]
+    stage = Config.STAGE
     DBManager.init(stage=stage, asset="ops-service")
 
 

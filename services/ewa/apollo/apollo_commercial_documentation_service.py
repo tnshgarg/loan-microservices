@@ -198,6 +198,9 @@ class ApolloCommercialDocumentsService(ApolloDocumentsService):
             apollo_document=ApolloDocumentList.SIGNED_ADDENDUM,
             partner_tag=ApolloPartnerTag.DISBURSEMENT_COMMERCIAL
         )
+        self._upload_liveness_check(
+            partner_tag=ApolloPartnerTag.DISBURSEMENT_COMMERCIAL
+        )
         Disbursements.update_one({
             "offerId": self.offer_id
         }, {

@@ -8,16 +8,18 @@ from starlette.datastructures import URL
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-# Get environment variables
-GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
-GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
-STAGE = os.environ["STAGE"]
+from kyc.config import OAuthConfig
 
-# Set up OAuth
-config_data = {'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID,
-               'GOOGLE_CLIENT_SECRET': GOOGLE_CLIENT_SECRET}
-starlette_config = Config(environ=config_data)
-oauth = OAuth(starlette_config)
+
+oauth = OAuth(
+    Config(
+        environ={
+            'GOOGLE_CLIENT_ID': OAuthConfig.GOOGLE_CLIENT_ID,
+            'GOOGLE_CLIENT_SECRET': OAuthConfig.GOOGLE_CLIENT_SECRET
+        }
+    )
+)
+
 oauth.register(
     name='google',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',

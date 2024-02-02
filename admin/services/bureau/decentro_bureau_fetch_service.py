@@ -4,6 +4,8 @@ import os
 
 import requests
 
+from kyc.config import Config
+
 
 class DecentroAPIException(Exception):
     pass
@@ -14,7 +16,7 @@ class DecentroBureauFetchService:
     def __init__(self, stage, logger) -> None:
         self.stage = stage
         self.logger = logger
-        decentro_config = json.loads(os.environ[f"decentro_config"])
+        decentro_config = Config.DECENTRO
         self.headers = {
             "Content-Type": "application/json",
             "client_id": decentro_config["client_id"],

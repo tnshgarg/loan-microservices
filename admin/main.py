@@ -25,7 +25,7 @@ from dal.models.db_manager import DBManager
 from admin.views.employer_leads_view import \
     EmployerLeadsView
 from admin.tasks.employer_emails import employer_emails_router
-from admin.config import config
+from kyc.config import Config as UnipeConfig
 
 """Initialize Middlewares"""
 middleware = [
@@ -50,7 +50,7 @@ oauth.register(
 admin_app = Starlette(
     routes=[
         Route("/", lambda r: HTMLResponse(
-            f'<a href="/{os.getenv("STAGE")}/ops-admin/admin">Login to Employer Approval Portal</a>'), name="admin:prelogin"),
+            f'<a href="/{UnipeConfig.STAGE}/ops-admin/admin">Login to Employer Approval Portal</a>'), name="admin:prelogin"),
         Mount("/static", app=StaticFiles(directory="admin/static"), name="static"),
     ]
 )
@@ -61,8 +61,7 @@ admin_app.add_middleware(SessionMiddleware, secret_key=config.secret)
 
 @admin_app.on_event("startup")
 def startup_db_client():
-    stage = os.environ["STAGE"]
-    DBManager.init(stage=stage, asset="employer-approval-service")
+    DBManager.init(stage=UnipeConfig.STAGE, asset="employer-approval-service")
 
 
 @admin_app.on_event("shutdown")

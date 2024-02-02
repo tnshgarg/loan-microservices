@@ -13,6 +13,7 @@ from dal.logger import get_app_logger
 from dal.models.employer_leads import EmployerLeads
 from dal.models.risk_profile import RiskProfile
 from dal.models.sales_users import SalesUser
+from kyc.config import Config
 
 
 def trigger_bureau_fetch(inserted_object):
@@ -32,7 +33,7 @@ def get_presigned_url(pan):
     if not s3_key:
         return None
 
-    stage = os.environ["STAGE"]
+    stage = Config.STAGE
     logger = get_app_logger("ops-microservice", stage)
     presigned_url = S3ReportService(stage, logger).create_presigned_url(s3_key)
     return presigned_url

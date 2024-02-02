@@ -3,12 +3,13 @@ import os
 
 import requests
 
+from kyc.config import Config
+
 
 class KarzaApi:
 
     def __init__(self) -> None:
-        self.karza_assets = json.loads(
-            os.environ.get(f"KARZA_CREDENTIALS", "{}"))
+        self.karza_assets = Config.KARZA
         self.base_url = self.karza_assets.get("base_url")
         self.api_key = self.karza_assets.get("api_key")
         self.headers = {

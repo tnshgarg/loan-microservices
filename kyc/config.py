@@ -3,6 +3,11 @@ import json
 import os
 
 
+class OAuthConfig:
+    GOOGLE_CLIENT_ID = os.environ["GOOGLE_CLIENT_ID"]
+    GOOGLE_CLIENT_SECRET = os.environ["GOOGLE_CLIENT_SECRET"]
+
+
 class Config:
     STAGE = os.environ.get("STAGE", "dev")
     BUCKET = os.environ.get("S3_UPLOAD_BUCKET", "dev-unipe-campaign-assets")
@@ -28,12 +33,13 @@ class Config:
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 
     APOLLO_CREDENTIALS = json.loads(os.getenv("APOLLO_CREDENTIALS", "{}"))
+    APOLLO_LOAN_APPLICATION_HOOK = os.getenv("APOLLO_LOAN_APPLICATION_HOOK")
+
     GDRIVE_LOANS_BASE_FOLDERID = os.getenv('GDRIVE_LOANS_BASE_FOLDERID')
     LOANS_BUCKET = os.getenv('LOANS_BUCKET')
     LOANS_GOOGLE_SHEET = os.getenv('LOANS_GOOGLE_SHEET')
-    LOANS_GDRIVE_BASE_FOLDER_ID = os.getenv("LOANS_GDRIVE_BASE_FOLDER_ID")
+    LOANS_GDRIVE_BASE_FOLDER_ID = os.getenv("GDRIVE_LOANS_BASE_FOLDERID")
 
-    APOLLO_LOAN_APPLICATION_HOOK = os.getenv("APOLLO_LOAN_APPLICATION_HOOK")
     GDRIVE_ADMIN_BASE_FOLDERID = os.getenv('GDRIVE_ADMIN_BASE_FOLDERID')
     ADMIN_BUCKET = os.getenv('ADMIN_BUCKET')
     ADMIN_GOOGLE_SHEET = os.getenv('ADMIN_GOOGLE_SHEET')
@@ -47,6 +53,7 @@ class Config:
         10080
     )
     RZP_ACCOUNT_IDS = json.loads(os.getenv("RZP_ACCOUNT_IDS", "{}"))
+    DECENTRO_CONFIG = json.loads(os.environ["decentro_config"])
 
 
 class SlackWebhooks:
